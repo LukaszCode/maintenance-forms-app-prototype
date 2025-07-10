@@ -1,0 +1,9 @@
+# React Native
+# Ignore node_modules and other common directories
+node_modules/
+.expo/
+android/
+ios/
+.env
+*.log
+*.lock
