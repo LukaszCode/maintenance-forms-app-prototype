@@ -1,18 +1,15 @@
-/*
-This file is part of a Maintenance Forms Application Prototpype 
-and is used to handle user login functionality.
-It allows users to enter their username and password, and handles the login process.
-
-The screen is usig NativeStackScreenProps 
-to manage navigation and screen properties.
-
-*/
-
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+} from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
-// Define the type for the navigation parameters
 type RootStackParamList = {
   Login: undefined;
   MainMenu: { engineerName: string };
@@ -21,39 +18,130 @@ type RootStackParamList = {
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleLogin = () => {
-    if (name.trim() === "") {
-      alert("Error: Please enter your name");
-    } else {
-      navigation.navigate("MainMenu", { engineerName: name });
+    if (!username.trim()) {
+      alert("Please enter your username.");
+      return;
     }
+
+    navigation.navigate("MainMenu", { engineerName: username });
   };
 
   return (
     <View style={styles.container}>
-      <Text>Engineer Name:</Text>
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder="Enter your name"
-      />
-      <Button title="Login" onPress={handleLogin} />
+      {/* Header */}
+      <View style={styles.header}>
+        <Image
+          source={{ uri: "https://via.placeholder.com/75" }}
+          style={styles.logo}
+        />
+        <Text style={styles.title}>Maintenance Forms App</Text>
+        <Image
+          source={{ uri: "https://via.placeholder.com/50" }}
+          style={styles.userIcon}
+        />
+      </View>
+
+      {/* Login Card */}
+      <View style={styles.card}>
+        <Text style={styles.loginTitle}>Log in</Text>
+
+        <Text>Username</Text>
+        <TextInput
+          style={styles.input}
+          value={username}
+          onChangeText={setUsername}
+          placeholder="Enter username"
+        />
+
+        <Text>Password</Text>
+        <TextInput
+          style={styles.input}
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Enter password"
+          secureTextEntry
+        />
+
+        <Button title="Log in" onPress={handleLogin} />
+
+        <Text style={styles.signupText}>
+          No account? Sign Up using the button below.
+        </Text>
+
+        <TouchableOpacity style={styles.signupButton}>
+          <Text style={styles.signupButtonText}>Sign Up</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Footer */}
+      <Text style={styles.footer}>All rights reserved.</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: "#e6f2f2",
+    paddingHorizontal: 20,
+    justifyContent: "space-between",
+  },
+  header: {
+    marginTop: 50,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  logo: {
+    width: 75,
+    height: 75,
+  },
+  userIcon: {
+    width: 50,
+    height: 50,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  card: {
+    backgroundColor: "white",
     padding: 20,
-    marginTop: 100,
+    borderColor: "#66b2b2",
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  loginTitle: {
+    fontSize: 24,
+    textAlign: "center",
+    marginBottom: 20,
   },
   input: {
     borderWidth: 1,
-    marginVertical: 10,
-    padding: 8,
+    padding: 10,
+    marginBottom: 15,
+  },
+  signupText: {
+    textAlign: "center",
+    marginTop: 20,
+  },
+  signupButton: {
+    backgroundColor: "#ccc",
+    padding: 10,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  signupButtonText: {
+    fontWeight: "bold",
+  },
+  footer: {
+    textAlign: "center",
+    marginBottom: 10,
+    color: "#666",
   },
 });
 
