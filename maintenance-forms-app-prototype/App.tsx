@@ -3,6 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 // Import screens
+import SignUpScreen from "./screens/SignUpScreen";
 import LoginScreen from "./screens/LoginScreen";
 import MainMenuScreen from "./screens/MainMenuScreen";
 import FacilitiesMenuScreen from "./screens/FacilitiesMenuScreen";
@@ -10,6 +11,7 @@ import FacilitiesMenuScreen from "./screens/FacilitiesMenuScreen";
 
 // Define navigation parameter types for all screens
 export type RootStackParamList = {
+  SignUp: undefined;
   Login: undefined;
   MainMenu: { engineerName: string };
   FacilitiesMenu: { engineerName: string };
@@ -26,6 +28,7 @@ const App: React.FC = () => {
           headerShown: false, // Hide default header, since you have custom headers in your UI
         }}
       >
+        <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="MainMenu" component={MainMenuScreen} />
         <Stack.Screen name="FacilitiesMenu" component={FacilitiesMenuScreen} />
