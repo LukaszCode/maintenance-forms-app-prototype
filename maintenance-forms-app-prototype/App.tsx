@@ -5,7 +5,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 // Import screens
 import LoginScreen from "./screens/LoginScreen";
 import MainMenuScreen from "./screens/MainMenuScreen";
-// We'll add FacilitiesMenu soon
+import FacilitiesMenuScreen from "./screens/FacilitiesMenuScreen";
+// We'll add next screen imports here as we build them
 
 // Define navigation parameter types for all screens
 export type RootStackParamList = {
@@ -27,6 +28,7 @@ const App: React.FC = () => {
       >
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="MainMenu" component={MainMenuScreen} />
+        <Stack.Screen name="FacilitiesMenu" component={FacilitiesMenuScreen} />
         {/* We will add FacilitiesMenu screen after we build it */}
       </Stack.Navigator>
     </NavigationContainer>
