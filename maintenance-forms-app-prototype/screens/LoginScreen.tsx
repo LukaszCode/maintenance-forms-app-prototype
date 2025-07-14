@@ -12,6 +12,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 type RootStackParamList = {
   Login: undefined;
+  SignUp: undefined;
   MainMenu: { engineerName: string };
 };
 
@@ -72,7 +73,10 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           No account? Sign Up using the button below.
         </Text>
 
-        <TouchableOpacity style={styles.signupButton}>
+        <TouchableOpacity
+          style={styles.signupButton}
+          onPress={() => navigation.navigate("SignUp")}
+        >
           <Text style={styles.signupButtonText}>Sign Up</Text>
         </TouchableOpacity>
       </View>
@@ -125,18 +129,30 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 15,
   },
+  button: {
+    padding: 12,
+    borderRadius: 5,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  loginButton: {
+    backgroundColor: "#00b3b3",
+  },
+  loginButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
   signupText: {
     textAlign: "center",
     marginTop: 20,
   },
   signupButton: {
     backgroundColor: "#ccc",
-    padding: 10,
-    alignItems: "center",
-    marginTop: 10,
   },
   signupButtonText: {
     fontWeight: "bold",
+    fontSize: 16,
   },
   footer: {
     textAlign: "center",
