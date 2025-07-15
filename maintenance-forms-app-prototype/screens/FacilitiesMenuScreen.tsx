@@ -8,11 +8,13 @@ import {
   ScrollView,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { globalStyles } from "../styles/globalStyles";
 
 type RootStackParamList = {
   Login: undefined;
   MainMenu: { engineerName: string };
   FacilitiesMenu: { engineerName: string };
+  EmergencyLightForm: { engineerName: string };
 };
 
 type Props = NativeStackScreenProps<RootStackParamList, "FacilitiesMenu">;
@@ -34,153 +36,94 @@ const FacilitiesMenuScreen: React.FC<Props> = ({ navigation, route }) => {
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={globalStyles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={globalStyles.header}>
         <Image
           source={{ uri: "https://via.placeholder.com/75" }}
-          style={styles.logo}
+          style={globalStyles.logo}
         />
-        <Text style={styles.title}>Maintenance Forms App</Text>
-        <View style={styles.userSection}>
-          <Text style={styles.userName}>{engineerName}</Text>
+        <Text style={globalStyles.title}>Maintenance Forms App</Text>
+        <View style={globalStyles.userSection}>
+          <TouchableOpacity
+            style={[
+              globalStyles.button,
+              globalStyles.secondaryButton,
+              { padding: 6 },
+            ]}
+            onPress={() => navigation.navigate("Login")}
+          >
+            <Text style={{ fontSize: 12 }}>Sign Out</Text>
+          </TouchableOpacity>
+          <Text style={globalStyles.userName}>{engineerName}</Text>
           <Image
             source={{ uri: "https://via.placeholder.com/50" }}
-            style={styles.userIcon}
+            style={globalStyles.userIcon}
           />
         </View>
       </View>
 
       {/* Back Button */}
       <TouchableOpacity
-        style={styles.backButton}
+        style={[
+          globalStyles.button,
+          globalStyles.secondaryButton,
+          styles.backButton,
+        ]}
         onPress={() => navigation.goBack()}
       >
-        <Text style={styles.backButtonText}>Back</Text>
+        <Text style={globalStyles.secondaryButtonText}>Back</Text>
       </TouchableOpacity>
 
       {/* Card */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Facility Check</Text>
+      <View style={globalStyles.card}>
+        <Text style={globalStyles.cardTitle}>Facility Check</Text>
 
         <TouchableOpacity
-          style={[styles.addCheckButton]}
-          onPress={() => alert("Add New Check not implemented yet")}
+          style={[
+            globalStyles.button,
+            globalStyles.secondaryButton,
+            styles.addButton,
+          ]}
+          onPress={() => alert("Add New Check feature coming soon")}
         >
-          <Text style={styles.addCheckText}>Add New Check</Text>
+          <Text style={globalStyles.secondaryButtonText}>Add New Check</Text>
         </TouchableOpacity>
 
-        <ScrollView style={styles.checkList}>
+        <ScrollView style={{ width: "100%" }}>
           {facilityChecks.map((check, index) => (
             <TouchableOpacity
               key={index}
-              style={styles.checkButton}
+              style={[globalStyles.button, globalStyles.primaryButton]}
               onPress={() => {
                 if (check === "Emergency Lights Test") {
-                  alert("Navigate to Emergency Lights form soon!");
+                  navigation.navigate("EmergencyLightForm", { engineerName });
                 } else {
                   alert(`${check} form coming soon`);
                 }
               }}
             >
-              <Text style={styles.checkButtonText}>{check}</Text>
+              <Text style={globalStyles.primaryButtonText}>{check}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
 
       {/* Footer */}
-      <Text style={styles.footer}>All rights reserved.</Text>
+      <Text style={globalStyles.footer}>All rights reserved.</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#2a9d9d",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-  },
-  header: {
-    marginTop: 50,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  logo: {
-    width: 75,
-    height: 75,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  userSection: {
-    alignItems: "center",
-  },
-  userName: {
-    color: "#fff",
-    marginBottom: 5,
-  },
-  userIcon: {
-    width: 50,
-    height: 50,
-  },
   backButton: {
-    backgroundColor: "#ccc",
-    width: 80,
-    padding: 8,
-    alignItems: "center",
+    alignSelf: "flex-start",
     marginVertical: 10,
+    width: 80,
   },
-  backButtonText: {
-    fontWeight: "bold",
-  },
-  card: {
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 10,
-    borderColor: "#e6f2f2",
-    borderWidth: 1,
-    alignItems: "center",
-    maxHeight: 400,
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  addCheckButton: {
-    borderWidth: 1,
-    borderColor: "#333",
-    padding: 10,
+  addButton: {
     marginBottom: 15,
-    alignItems: "center",
-  },
-  addCheckText: {
-    fontWeight: "bold",
-  },
-  checkList: {
     width: "100%",
-  },
-  checkButton: {
-    backgroundColor: "#00b3b3",
-    padding: 15,
-    borderRadius: 5,
-    marginVertical: 5,
-    alignItems: "center",
-  },
-  checkButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  footer: {
-    textAlign: "center",
-    color: "#fff",
-    marginBottom: 10,
   },
 });
 
