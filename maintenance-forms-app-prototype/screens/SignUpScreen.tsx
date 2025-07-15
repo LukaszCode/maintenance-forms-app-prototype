@@ -4,10 +4,11 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   Image,
+  StyleSheet,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { globalStyles } from "../styles/globalStyles";
 
 type RootStackParamList = {
   Login: undefined;
@@ -32,25 +33,25 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={globalStyles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={globalStyles.header}>
         <Image
           source={{ uri: "https://via.placeholder.com/75" }}
-          style={styles.logo}
+          style={globalStyles.logo}
         />
-        <Text style={styles.title}>Maintenance Forms App</Text>
+        <Text style={globalStyles.title}>Maintenance Forms App</Text>
         <Image
           source={{ uri: "https://via.placeholder.com/50" }}
-          style={styles.userIcon}
+          style={globalStyles.userIcon}
         />
       </View>
 
       {/* Card */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Create account</Text>
+      <View style={globalStyles.card}>
+        <Text style={globalStyles.cardTitle}>Create account</Text>
 
-        {/* Input Fields */}
+        {/* Input Row */}
         <View style={styles.inputRow}>
           <View style={styles.inputContainer}>
             <Text>First Name</Text>
@@ -61,7 +62,6 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
               placeholder="First name"
             />
           </View>
-
           <View style={styles.inputContainer}>
             <Text>Surname</Text>
             <TextInput
@@ -94,17 +94,17 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
         {/* Action Buttons */}
         <View style={styles.actionRow}>
           <TouchableOpacity
-            style={[styles.button, styles.backButton]}
+            style={[globalStyles.button, globalStyles.secondaryButton]}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.backButtonText}>Back</Text>
+            <Text style={globalStyles.secondaryButtonText}>Back</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, styles.createButton]}
+            style={[globalStyles.button, globalStyles.primaryButton]}
             onPress={handleCreateAccount}
           >
-            <Text style={styles.createButtonText}>Create</Text>
+            <Text style={globalStyles.primaryButtonText}>Create</Text>
           </TouchableOpacity>
         </View>
 
@@ -113,56 +113,20 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
           Have an account? Log in using the button below.
         </Text>
         <TouchableOpacity
-          style={[styles.button, styles.loginButton]}
+          style={[globalStyles.button, globalStyles.secondaryButton]}
           onPress={() => navigation.navigate("Login")}
         >
-          <Text style={styles.loginButtonText}>Log in</Text>
+          <Text style={globalStyles.secondaryButtonText}>Log in</Text>
         </TouchableOpacity>
       </View>
 
       {/* Footer */}
-      <Text style={styles.footer}>All rights reserved.</Text>
+      <Text style={globalStyles.footer}>All rights reserved.</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#e6f2f2",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-  },
-  header: {
-    marginTop: 50,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  logo: {
-    width: 75,
-    height: 75,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  userIcon: {
-    width: 50,
-    height: 50,
-  },
-  card: {
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 10,
-    borderColor: "#66b2b2",
-    borderWidth: 1,
-  },
-  cardTitle: {
-    fontSize: 24,
-    textAlign: "center",
-    marginBottom: 20,
-  },
   inputRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -173,6 +137,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
+    borderColor: "#ccc",
     padding: 10,
     marginBottom: 15,
   },
@@ -181,40 +146,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 10,
   },
-  button: {
-    padding: 12,
-    borderRadius: 5,
-    minWidth: 100,
-    alignItems: "center",
-  },
-  backButton: {
-    backgroundColor: "#ccc",
-  },
-  createButton: {
-    backgroundColor: "#00b3b3",
-  },
-  backButtonText: {
-    fontWeight: "bold",
-  },
-  createButtonText: {
-    color: "white",
-    fontWeight: "bold",
-  },
   loginPrompt: {
     textAlign: "center",
     marginVertical: 15,
-  },
-  loginButton: {
-    backgroundColor: "#ccc",
-    alignSelf: "center",
-  },
-  loginButtonText: {
-    fontWeight: "bold",
-  },
-  footer: {
-    textAlign: "center",
-    marginBottom: 10,
-    color: "#666",
   },
 });
 

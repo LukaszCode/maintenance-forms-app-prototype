@@ -1,18 +1,13 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Button,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { globalStyles } from "../styles/globalStyles";
 
 type RootStackParamList = {
   Login: undefined;
   MainMenu: { engineerName: string };
   FacilitiesMenu: { engineerName: string };
+  MaintenanceChecks: { engineerName: string };
 };
 
 type Props = NativeStackScreenProps<RootStackParamList, "MainMenu">;
@@ -21,126 +16,88 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
   const { engineerName } = route.params;
 
   return (
-    <View style={styles.container}>
+    <View style={globalStyles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={globalStyles.header}>
         <Image
           source={{ uri: "https://via.placeholder.com/75" }}
-          style={styles.logo}
+          style={globalStyles.logo}
         />
-        <Text style={styles.title}>Maintenance Forms App</Text>
-        <View style={styles.userSection}>
-          <Text style={styles.userName}>{engineerName}</Text>
+        <Text style={globalStyles.title}>Maintenance Forms App</Text>
+        <View style={globalStyles.userSection}>
+          <TouchableOpacity
+            style={[
+              globalStyles.button,
+              globalStyles.secondaryButton,
+              { padding: 6 },
+            ]}
+            onPress={() => navigation.navigate("Login")}
+          >
+            <Text style={{ fontSize: 12 }}>Sign Out</Text>
+          </TouchableOpacity>
+          <Text style={globalStyles.userName}>{engineerName}</Text>
           <Image
             source={{ uri: "https://via.placeholder.com/50" }}
-            style={styles.userIcon}
+            style={globalStyles.userIcon}
           />
         </View>
       </View>
 
-      {/* Card with buttons */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Choose the test type</Text>
+      {/* Back Button */}
+      <TouchableOpacity
+        style={[
+          globalStyles.button,
+          globalStyles.secondaryButton,
+          styles.backButton,
+        ]}
+        onPress={() => navigation.goBack()}
+      >
+        <Text style={globalStyles.secondaryButtonText}>Back</Text>
+      </TouchableOpacity>
+
+      {/* Card */}
+      <View style={globalStyles.card}>
+        <Text style={globalStyles.cardTitle}>Choose the test type</Text>
 
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#00b3b3" }]}
+          style={[globalStyles.button, globalStyles.primaryButton]}
           onPress={() =>
             navigation.navigate("FacilitiesMenu", { engineerName })
           }
         >
-          <Text style={styles.buttonText}>Facility Checks</Text>
+          <Text style={globalStyles.primaryButtonText}>Facility Checks</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#66cccc" }]}
-          onPress={() => alert("Maintenance Routine Checks coming soon")}
+          style={[globalStyles.button, globalStyles.primaryButton]}
+          onPress={() =>
+            navigation.navigate("MaintenanceChecks", { engineerName })
+          }
         >
-          <Text style={styles.buttonText}>Maintenance Routine Checks</Text>
+          <Text style={globalStyles.primaryButtonText}>
+            Maintenance Routine Checks
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.button, styles.disabledButton]}
-          onPress={() => alert("Add Check Type not implemented yet")}
+          style={[globalStyles.button, globalStyles.secondaryButton]}
+          onPress={() => alert("Add Check Type feature coming soon")}
         >
-          <Text style={styles.disabledButtonText}>Add Check Type</Text>
+          <Text style={globalStyles.secondaryButtonText}>Add Check Type</Text>
         </TouchableOpacity>
       </View>
 
       {/* Footer */}
-      <Text style={styles.footer}>All rights reserved.</Text>
+      <Text style={globalStyles.footer}>All rights reserved.</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#2a9d9d",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-  },
-  header: {
-    marginTop: 50,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  logo: {
-    width: 75,
-    height: 75,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  userSection: {
-    alignItems: "center",
-  },
-  userName: {
-    color: "#fff",
-    marginBottom: 5,
-  },
-  userIcon: {
-    width: 50,
-    height: 50,
-  },
-  card: {
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 10,
-    borderColor: "#e6f2f2",
-    borderWidth: 1,
-    alignItems: "center",
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  button: {
-    width: "100%",
-    padding: 15,
-    borderRadius: 5,
+  backButton: {
+    alignSelf: "flex-start",
     marginVertical: 10,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  disabledButton: {
-    backgroundColor: "#ccc",
-  },
-  disabledButtonText: {
-    color: "#333",
-    fontSize: 16,
-  },
-  footer: {
-    textAlign: "center",
-    color: "#fff",
-    marginBottom: 10,
+    width: 80,
   },
 });
 
