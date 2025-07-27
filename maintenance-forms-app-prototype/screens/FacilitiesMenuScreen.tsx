@@ -3,18 +3,17 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  Image,
   ScrollView,
+  StyleSheet,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { globalStyles } from "../styles/globalStyles";
+import AppHeader from "../components/AppHeader";
 
 type RootStackParamList = {
   Login: undefined;
   MainMenu: { engineerName: string };
   FacilitiesMenu: { engineerName: string };
-  EmergencyLightForm: { engineerName: string };
 };
 
 type Props = NativeStackScreenProps<RootStackParamList, "FacilitiesMenu">;
@@ -35,33 +34,22 @@ const FacilitiesMenuScreen: React.FC<Props> = ({ navigation, route }) => {
     "Racking Inspection",
   ];
 
+  const handleCheckPress = (check: string) => {
+    if (check === "Emergency Lights Test") {
+      alert("Navigate to Emergency Lights Form");
+      // navigation.navigate("EmergencyLights", { engineerName });
+    } else {
+      alert(`${check} form is not implemented yet.`);
+    }
+  };
+
   return (
     <View style={globalStyles.container}>
-      {/* Header */}
-      <View style={globalStyles.header}>
-        <Image
-          source={{ uri: "https://via.placeholder.com/75" }}
-          style={globalStyles.logo}
-        />
-        <Text style={globalStyles.title}>Maintenance Forms App</Text>
-        <View style={globalStyles.userSection}>
-          <TouchableOpacity
-            style={[
-              globalStyles.button,
-              globalStyles.secondaryButton,
-              { padding: 6 },
-            ]}
-            onPress={() => navigation.navigate("Login")}
-          >
-            <Text style={{ fontSize: 12 }}>Sign Out</Text>
-          </TouchableOpacity>
-          <Text style={globalStyles.userName}>{engineerName}</Text>
-          <Image
-            source={{ uri: "https://via.placeholder.com/50" }}
-            style={globalStyles.userIcon}
-          />
-        </View>
-      </View>
+      {/* Shared Header */}
+      <AppHeader
+        engineerName={engineerName}
+        onSignOut={() => navigation.navigate("Login")}
+      />
 
       {/* Back Button */}
       <TouchableOpacity
@@ -75,33 +63,29 @@ const FacilitiesMenuScreen: React.FC<Props> = ({ navigation, route }) => {
         <Text style={globalStyles.secondaryButtonText}>Back</Text>
       </TouchableOpacity>
 
-      {/* Card */}
+      {/* Facility Check Card */}
       <View style={globalStyles.card}>
         <Text style={globalStyles.cardTitle}>Facility Check</Text>
 
+        {/* Add New Check Button */}
         <TouchableOpacity
           style={[
             globalStyles.button,
             globalStyles.secondaryButton,
             styles.addButton,
           ]}
-          onPress={() => alert("Add New Check feature coming soon")}
+          onPress={() => alert("Add New Check coming soon")}
         >
           <Text style={globalStyles.secondaryButtonText}>Add New Check</Text>
         </TouchableOpacity>
 
-        <ScrollView style={{ width: "100%" }}>
+        {/* Scrollable Facility Checks */}
+        <ScrollView style={styles.checkList}>
           {facilityChecks.map((check, index) => (
             <TouchableOpacity
               key={index}
               style={[globalStyles.button, globalStyles.primaryButton]}
-              onPress={() => {
-                if (check === "Emergency Lights Test") {
-                  navigation.navigate("EmergencyLightForm", { engineerName });
-                } else {
-                  alert(`${check} form coming soon`);
-                }
-              }}
+              onPress={() => handleCheckPress(check)}
             >
               <Text style={globalStyles.primaryButtonText}>{check}</Text>
             </TouchableOpacity>
@@ -122,7 +106,12 @@ const styles = StyleSheet.create({
     width: 80,
   },
   addButton: {
-    marginBottom: 15,
+    width: "50%",
+    alignSelf: "flex-start",
+    marginBottom: 10,
+  },
+  checkList: {
+    maxHeight: 200, // Ensures scroll is visible when there are many buttons
     width: "100%",
   },
 });

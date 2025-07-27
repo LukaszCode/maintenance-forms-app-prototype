@@ -1,28 +1,37 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform, StatusBar } from "react-native";
 
 export const globalStyles = StyleSheet.create({
+  safeContainer: {
+    flex: 1,
+    backgroundColor: "#2a9d9d",
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+  },
   container: {
     flex: 1,
-    backgroundColor: "#2a9d9d", // consistent teal background
+    backgroundColor: "#2a9d9d",
     paddingHorizontal: 20,
-    justifyContent: "space-between",
   },
   header: {
-    marginTop: 40,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
     backgroundColor: "#ffffff",
     padding: 10,
     borderBottomColor: "#ccc",
     borderBottomWidth: 1,
   },
-  logo: {
-    width: 75,
-    height: 75,
+  headerTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 5,
   },
-  title: {
-    fontSize: 18,
+  signOutButton: {
+    backgroundColor: "#ccc",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+  },
+  signOutButtonText: {
+    fontSize: 12,
+    color: "#333",
     fontWeight: "bold",
   },
   userSection: {
@@ -35,8 +44,14 @@ export const globalStyles = StyleSheet.create({
     fontWeight: "500",
   },
   userIcon: {
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  headerTitle: {
+    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "bold",
   },
   card: {
     backgroundColor: "#ffffff",
@@ -44,11 +59,12 @@ export const globalStyles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#66b2b2",
-    alignSelf: "center",
     width: "90%",
+    alignSelf: "center",
+    marginTop: 20,
   },
   cardTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 15,

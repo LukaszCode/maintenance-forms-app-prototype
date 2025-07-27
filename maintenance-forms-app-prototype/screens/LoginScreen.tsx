@@ -4,11 +4,11 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
   StyleSheet,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { globalStyles } from "../styles/globalStyles";
+import AppHeader from "../components/AppHeader";
 
 type RootStackParamList = {
   Login: undefined;
@@ -32,18 +32,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={globalStyles.container}>
-      {/* Header */}
-      <View style={globalStyles.header}>
-        <Image
-          source={{ uri: "https://via.placeholder.com/75" }}
-          style={globalStyles.logo}
-        />
-        <Text style={globalStyles.title}>Maintenance Forms App</Text>
-        <Image
-          source={{ uri: "https://via.placeholder.com/50" }}
-          style={globalStyles.userIcon}
-        />
-      </View>
+      {/* Shared Header */}
+      <AppHeader engineerName={"Guest"} onSignOut={() => {}} />
 
       {/* Card */}
       <View style={globalStyles.card}>
@@ -94,9 +84,9 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
+    borderColor: "#ccc",
     padding: 10,
     marginBottom: 15,
-    borderColor: "#ccc",
   },
   signupText: {
     textAlign: "center",

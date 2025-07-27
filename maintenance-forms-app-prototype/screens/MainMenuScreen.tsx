@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { globalStyles } from "../styles/globalStyles";
+import AppHeader from "../components/AppHeader";
 
 type RootStackParamList = {
   Login: undefined;
@@ -17,31 +18,11 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
 
   return (
     <View style={globalStyles.container}>
-      {/* Header */}
-      <View style={globalStyles.header}>
-        <Image
-          source={{ uri: "https://via.placeholder.com/75" }}
-          style={globalStyles.logo}
-        />
-        <Text style={globalStyles.title}>Maintenance Forms App</Text>
-        <View style={globalStyles.userSection}>
-          <TouchableOpacity
-            style={[
-              globalStyles.button,
-              globalStyles.secondaryButton,
-              { padding: 6 },
-            ]}
-            onPress={() => navigation.navigate("Login")}
-          >
-            <Text style={{ fontSize: 12 }}>Sign Out</Text>
-          </TouchableOpacity>
-          <Text style={globalStyles.userName}>{engineerName}</Text>
-          <Image
-            source={{ uri: "https://via.placeholder.com/50" }}
-            style={globalStyles.userIcon}
-          />
-        </View>
-      </View>
+      {/* Shared Header */}
+      <AppHeader
+        engineerName={engineerName}
+        onSignOut={() => navigation.navigate("Login")}
+      />
 
       {/* Back Button */}
       <TouchableOpacity
@@ -55,7 +36,7 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
         <Text style={globalStyles.secondaryButtonText}>Back</Text>
       </TouchableOpacity>
 
-      {/* Card */}
+      {/* Card with Test Types */}
       <View style={globalStyles.card}>
         <Text style={globalStyles.cardTitle}>Choose the test type</Text>
 
@@ -81,7 +62,7 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
 
         <TouchableOpacity
           style={[globalStyles.button, globalStyles.secondaryButton]}
-          onPress={() => alert("Add Check Type feature coming soon")}
+          onPress={() => alert("Add Check Type coming soon")}
         >
           <Text style={globalStyles.secondaryButtonText}>Add Check Type</Text>
         </TouchableOpacity>
