@@ -41,7 +41,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
         <Text>Username</Text>
         <TextInput
-          style={styles.input}
+          style={globalStyles.input}
           value={username}
           onChangeText={setUsername}
           placeholder="Enter username"
@@ -49,7 +49,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
         <Text>Password</Text>
         <TextInput
-          style={styles.input}
+          style={globalStyles.input}
           value={password}
           onChangeText={setPassword}
           placeholder="Enter password"
@@ -63,7 +63,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={globalStyles.primaryButtonText}>Log in</Text>
         </TouchableOpacity>
 
-        <Text style={styles.signupText}>
+        <Text style={globalStyles.signupText}>
           No account? Sign Up using the button below.
         </Text>
 
@@ -80,18 +80,5 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    marginBottom: 15,
-  },
-  signupText: {
-    textAlign: "center",
-    marginTop: 20,
-  },
-});
 
 export default LoginScreen;

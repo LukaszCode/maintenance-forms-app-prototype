@@ -77,6 +77,10 @@ export const globalStyles = StyleSheet.create({
     alignSelf: "flex-start",
     marginBottom: 10,
   },
+  signupText: {
+    textAlign: "center",
+    marginTop: 20,
+  },
   signOutButton: {
     backgroundColor: "#ccc",
     paddingVertical: 4,
