@@ -23,6 +23,60 @@ export const globalStyles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 5,
   },
+  inputRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  inputContainer: {
+    flex: 1,
+    marginRight: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    marginBottom: 15,
+  },
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  loginPrompt: {
+    textAlign: "center",
+    marginVertical: 15,
+  },
+  button: {
+    padding: 12,
+    borderRadius: 5,
+    alignItems: "center",
+    marginVertical: 5,
+  },
+  backButton: {
+    alignSelf: "flex-start",
+    marginVertical: 10,
+    width: 80,
+  },
+  primaryButton: {
+    backgroundColor: "#00b3b3",
+  },
+  primaryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  secondaryButton: {
+    backgroundColor: "#ccc",
+  },
+  secondaryButtonText: {
+    color: "#333",
+    fontWeight: "bold",
+  },
+  addButton: {
+    width: "50%",
+    alignSelf: "flex-start",
+    marginBottom: 10,
+  },
   signOutButton: {
     backgroundColor: "#ccc",
     paddingVertical: 4,
@@ -69,26 +123,9 @@ export const globalStyles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 15,
   },
-  button: {
-    padding: 12,
-    borderRadius: 5,
-    alignItems: "center",
-    marginVertical: 5,
-  },
-  primaryButton: {
-    backgroundColor: "#00b3b3",
-  },
-  primaryButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  secondaryButton: {
-    backgroundColor: "#ccc",
-  },
-  secondaryButtonText: {
-    color: "#333",
-    fontWeight: "bold",
+  checkList: {
+    maxHeight: 200, // Ensures scroll is visible when there are many buttons
+    width: "100%",
   },
   footer: {
     textAlign: "center",

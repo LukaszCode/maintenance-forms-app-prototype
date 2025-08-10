@@ -45,20 +45,20 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={globalStyles.cardTitle}>Create account</Text>
 
         {/* Input Row */}
-        <View style={styles.inputRow}>
-          <View style={styles.inputContainer}>
+        <View style={globalStyles.inputRow}>
+          <View style={globalStyles.inputContainer}>
             <Text>First Name</Text>
             <TextInput
-              style={styles.input}
+              style={globalStyles.input}
               value={firstName}
               onChangeText={setFirstName}
               placeholder="First name"
             />
           </View>
-          <View style={styles.inputContainer}>
+          <View style={globalStyles.inputContainer}>
             <Text>Surname</Text>
             <TextInput
-              style={styles.input}
+              style={globalStyles.input}
               value={surname}
               onChangeText={setSurname}
               placeholder="Surname"
@@ -68,7 +68,7 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
 
         <Text>Email</Text>
         <TextInput
-          style={styles.input}
+          style={globalStyles.input}
           value={email}
           onChangeText={setEmail}
           placeholder="email@company.co.uk"
@@ -77,7 +77,7 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
 
         <Text>Password</Text>
         <TextInput
-          style={styles.input}
+          style={globalStyles.input}
           value={password}
           onChangeText={setPassword}
           placeholder="Password"
@@ -85,7 +85,7 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
         />
 
         {/* Action Buttons */}
-        <View style={styles.actionRow}>
+        <View style={globalStyles.actionRow}>
           <TouchableOpacity
             style={[globalStyles.button, globalStyles.secondaryButton]}
             onPress={() => navigation.goBack()}
@@ -102,7 +102,7 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         {/* Login Option */}
-        <Text style={styles.loginPrompt}>
+        <Text style={globalStyles.loginPrompt}>
           Have an account? Log in using the button below.
         </Text>
         <TouchableOpacity
@@ -118,31 +118,5 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  inputRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  inputContainer: {
-    flex: 1,
-    marginRight: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    marginBottom: 15,
-  },
-  actionRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10,
-  },
-  loginPrompt: {
-    textAlign: "center",
-    marginVertical: 15,
-  },
-});
 
 export default SignUpScreen;

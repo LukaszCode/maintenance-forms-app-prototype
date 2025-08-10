@@ -29,7 +29,7 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
         style={[
           globalStyles.button,
           globalStyles.secondaryButton,
-          styles.backButton,
+          globalStyles.backButton,
         ]}
         onPress={() => navigation.goBack()}
       >
@@ -73,13 +73,5 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  backButton: {
-    alignSelf: "flex-start",
-    marginVertical: 10,
-    width: 80,
-  },
-});
 
 export default MainMenuScreen;

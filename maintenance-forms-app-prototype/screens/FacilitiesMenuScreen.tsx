@@ -21,6 +21,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "FacilitiesMenu">;
 const FacilitiesMenuScreen: React.FC<Props> = ({ navigation, route }) => {
   const { engineerName } = route.params;
 
+  // List of facility checks
   const facilityChecks = [
     "Air Conditioning Check",
     "BIO Waste Treatment Plant Check",
@@ -56,7 +57,7 @@ const FacilitiesMenuScreen: React.FC<Props> = ({ navigation, route }) => {
         style={[
           globalStyles.button,
           globalStyles.secondaryButton,
-          styles.backButton,
+          globalStyles.backButton,
         ]}
         onPress={() => navigation.goBack()}
       >
@@ -72,7 +73,7 @@ const FacilitiesMenuScreen: React.FC<Props> = ({ navigation, route }) => {
           style={[
             globalStyles.button,
             globalStyles.secondaryButton,
-            styles.addButton,
+            globalStyles.addButton,
           ]}
           onPress={() => alert("Add New Check coming soon")}
         >
@@ -80,7 +81,7 @@ const FacilitiesMenuScreen: React.FC<Props> = ({ navigation, route }) => {
         </TouchableOpacity>
 
         {/* Scrollable Facility Checks */}
-        <ScrollView style={styles.checkList}>
+        <ScrollView style={globalStyles.checkList}>
           {facilityChecks.map((check, index) => (
             <TouchableOpacity
               key={index}
@@ -98,22 +99,5 @@ const FacilitiesMenuScreen: React.FC<Props> = ({ navigation, route }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  backButton: {
-    alignSelf: "flex-start",
-    marginVertical: 10,
-    width: 80,
-  },
-  addButton: {
-    width: "50%",
-    alignSelf: "flex-start",
-    marginBottom: 10,
-  },
-  checkList: {
-    maxHeight: 200, // Ensures scroll is visible when there are many buttons
-    width: "100%",
-  },
-});
 
 export default FacilitiesMenuScreen;
