@@ -8,12 +8,8 @@ import {
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { globalStyles } from "../styles/globalStyles";
+import { RootStackParamList } from "../App";
 import AppHeader from "../components/AppHeader";
-
-type RootStackParamList = {
-  Login: undefined;
-  SignUp: undefined;
-};
 
 type Props = NativeStackScreenProps<RootStackParamList, "SignUp">;
 

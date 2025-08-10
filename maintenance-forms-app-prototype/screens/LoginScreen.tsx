@@ -1,20 +1,9 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { globalStyles } from "../styles/globalStyles";
+import { RootStackParamList } from "../App";
 import AppHeader from "../components/AppHeader";
-
-type RootStackParamList = {
-  Login: undefined;
-  SignUp: undefined;
-  MainMenu: { engineerName: string };
-};
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 

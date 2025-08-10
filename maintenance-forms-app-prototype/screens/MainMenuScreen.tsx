@@ -2,14 +2,8 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { globalStyles } from "../styles/globalStyles";
+import { RootStackParamList } from "../App";
 import AppHeader from "../components/AppHeader";
-
-type RootStackParamList = {
-  Login: undefined;
-  MainMenu: { engineerName: string };
-  FacilitiesMenu: { engineerName: string };
-  MaintenanceChecks: { engineerName: string };
-};
 
 type Props = NativeStackScreenProps<RootStackParamList, "MainMenu">;
 
@@ -52,7 +46,7 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
         <TouchableOpacity
           style={[globalStyles.button, globalStyles.primaryButton]}
           onPress={() =>
-            navigation.navigate("MaintenanceChecks", { engineerName })
+            navigation.navigate("MachineSafetyMenu", { engineerName })
           }
         >
           <Text style={globalStyles.primaryButtonText}>

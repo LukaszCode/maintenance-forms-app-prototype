@@ -7,7 +7,7 @@ import LoginScreen from "./screens/LoginScreen";
 import SignUpScreen from "./screens/SignUpScreen";
 import MainMenuScreen from "./screens/MainMenuScreen";
 import FacilitiesMenuScreen from "./screens/FacilitiesMenuScreen";
-// We will add MaintenanceChecksScreen & EmergencyLightsScreen later
+// We will add MachineSafetyMenuScreen & EmergencyLightsScreen later
 
 // Define navigation parameter types
 export type RootStackParamList = {
@@ -15,8 +15,7 @@ export type RootStackParamList = {
   SignUp: undefined;
   MainMenu: { engineerName: string };
   FacilitiesMenu: { engineerName: string };
-  MaintenanceChecks: { engineerName: string }; // future use
-  EmergencyLights: { engineerName: string }; // future use
+  MachineSafetyMenu: { engineerName: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
