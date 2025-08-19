@@ -22,8 +22,8 @@ export type RootStackParamList = {
   MainMenu: { engineerName: string };
   FacilitiesMenu: { engineerName: string };
   MachineSafetyMenu: { engineerName: string };
-  // EmergencyLights: { engineerName: string };
-  // MachineSafety: { engineerName: string };
+  EmergencyLights: { engineerName: string };
+  MachineSafety: { engineerName: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
