@@ -1,26 +1,31 @@
+// App.tsx
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 
-// Import all screens
+// Screens
 import LoginScreen from "./screens/LoginScreen";
 import SignUpScreen from "./screens/SignUpScreen";
 import MainMenuScreen from "./screens/MainMenuScreen";
 import FacilitiesMenuScreen from "./screens/FacilitiesMenuScreen";
-// We will add MachineSafetyMenuScreen & EmergencyLightsScreen later
+// import EmergencyLightsFormScreen from "./screens/EmergencyLightsFormScreen";
+// import MachineSafetyFormScreen from "./screens/MachineSafetyFormScreen";
 
-// Define navigation parameter types
 export type RootStackParamList = {
   Login: undefined;
   SignUp: undefined;
   MainMenu: { engineerName: string };
   FacilitiesMenu: { engineerName: string };
   MachineSafetyMenu: { engineerName: string };
+  // EmergencyLights: { engineerName: string };
+  // MachineSafety: { engineerName: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const App: React.FC = () => {
+export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -37,6 +42,4 @@ const App: React.FC = () => {
       </Stack.Navigator>
     </NavigationContainer>
   );
-};
-
-export default App;
+}
