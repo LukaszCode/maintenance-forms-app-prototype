@@ -1,3 +1,6 @@
+// AppHeader - displays the header for the app with the engineer's name and sign out button
+// This component is used across multiple screens to provide a consistent header layout.
+
 import React from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { globalStyles } from "../styles/globalStyles";

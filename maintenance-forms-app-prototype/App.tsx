@@ -1,4 +1,7 @@
 // App.tsx
+// This file serves as the main entry point for the application
+// It interacts with all other components and screens
+
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";

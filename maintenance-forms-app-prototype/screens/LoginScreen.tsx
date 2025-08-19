@@ -1,3 +1,6 @@
+// LoginScreen - contains UI for the login page
+// This screen allows users to log in with their username and password
+
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";

@@ -1,3 +1,6 @@
+// Sign Up Screen - allows users to create a new account
+// Provides user friendly interface for account creation
+
 import React, { useState } from "react";
 import {
   View,

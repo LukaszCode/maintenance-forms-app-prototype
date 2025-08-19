@@ -1,3 +1,5 @@
+// Main Menu Screen - serves as the main menu for accessing different maintenance formsin a category-based layout
+
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";

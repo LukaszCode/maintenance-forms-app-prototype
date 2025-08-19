@@ -1,3 +1,6 @@
+// Facilities Menu Screen - allows users to access various facility check forms
+// User interface is designed for easy navigation and quick access to forms via a set of buttons
+
 import React from "react";
 import {
   View,
