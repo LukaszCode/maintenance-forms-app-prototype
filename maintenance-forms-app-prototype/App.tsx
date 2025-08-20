@@ -13,6 +13,7 @@ import LoginScreen from "./screens/LoginScreen";
 import SignUpScreen from "./screens/SignUpScreen";
 import MainMenuScreen from "./screens/MainMenuScreen";
 import FacilitiesMenuScreen from "./screens/FacilitiesMenuScreen";
+import MachineSafetyMenuScreen from "./screens/MachineSafetyMenuScreen";
 // import EmergencyLightsFormScreen from "./screens/EmergencyLightsFormScreen";
 // import MachineSafetyFormScreen from "./screens/MachineSafetyFormScreen";
 
@@ -41,6 +42,10 @@ export default function App() {
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="MainMenu" component={MainMenuScreen} />
         <Stack.Screen name="FacilitiesMenu" component={FacilitiesMenuScreen} />
+        <Stack.Screen
+          name="MachineSafetyMenu"
+          component={MachineSafetyMenuScreen}
+        />
         {/* Add more screens as we build them */}
       </Stack.Navigator>
     </NavigationContainer>

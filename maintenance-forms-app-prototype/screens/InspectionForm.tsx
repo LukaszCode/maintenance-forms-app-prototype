@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   View,
   Text,
@@ -11,9 +12,7 @@ import {
 } from "react-native";
 import { globalStyles } from "../styles/globalStyles";
 
-export type PassFail = "pass" | "fail";
-
-export type SubcheckConfig = {
-  id: string;
-  label: string;
+const onSubmit = () => {
+  // Handle form submission
+  console.log("Form submitted");
 };
