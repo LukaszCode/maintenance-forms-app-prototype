@@ -9,11 +9,11 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
 // Screens
-import LoginScreen from "./screens/LoginScreen";
-import SignUpScreen from "./screens/SignUpScreen";
-import MainMenuScreen from "./screens/MainMenuScreen";
-import FacilitiesMenuScreen from "./screens/FacilitiesMenuScreen";
-import MachineSafetyMenuScreen from "./screens/MachineSafetyMenuScreen";
+import LoginScreen from "./user interface/screens/LoginScreen";
+import SignUpScreen from "./user interface/screens/SignUpScreen";
+import MainMenuScreen from "./user interface/screens/MainMenuScreen";
+import FacilitiesMenuScreen from "./user interface/screens/FacilitiesMenuScreen";
+import MachineSafetyMenuScreen from "./user interface/screens/MachineSafetyMenuScreen";
 // import EmergencyLightsFormScreen from "./screens/EmergencyLightsFormScreen";
 // import MachineSafetyFormScreen from "./screens/MachineSafetyFormScreen";
 
@@ -23,8 +23,9 @@ export type RootStackParamList = {
   MainMenu: { engineerName: string };
   FacilitiesMenu: { engineerName: string };
   MachineSafetyMenu: { engineerName: string };
-  EmergencyLights: { engineerName: string };
-  MachineSafety: { engineerName: string };
+  FacilitiesCheckForm: { engineerName: string };
+  EmergencyLightsForm: { engineerName: string };
+  MachineSafetyForm: { engineerName: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

@@ -1,30 +1,42 @@
-// Machine Menu Screen - provides access to machine safety forms
-// This screen allows users to navigate to various machine safety checks
+// Facilities Menu Screen - allows users to access various facility check forms
+// User interface is designed for easy navigation and quick access to forms via a set of buttons
 
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../App";
 import { globalStyles } from "../styles/globalStyles";
+import { RootStackParamList } from "../../App";
 import AppHeader from "../components/AppHeader";
 
-type Props = NativeStackScreenProps<RootStackParamList, "MachineSafetyMenu">;
+type Props = NativeStackScreenProps<RootStackParamList, "FacilitiesMenu">;
 
-const MachineSafetyMenuScreen: React.FC<Props> = ({ navigation, route }) => {
+const FacilitiesMenuScreen: React.FC<Props> = ({ navigation, route }) => {
   const { engineerName } = route.params;
 
-  // List of machine safety checks
-  const machineSafetyChecks = [
-    "Print Machine",
-    "Die-Cut Machine",
-    "Bespoke Finishing Machine",
-    "Finishing Machine",
+  // List of facility checks
+  const facilityChecks = [
+    "Air Conditioning Check",
+    "BIO Waste Treatment Plant Check",
+    "Emergency Lights Test",
+    "Fire Exits Inspection",
+    "Fire Extinguisher Inspection",
+    "Fire Test",
+    "Ladder Log",
+    "Legionella Check",
+    "Pest Control Check",
+    "Racking Inspection",
   ];
 
   const handleCheckPress = (check: string) => {
-    if (check === "Print Machine") {
-      alert("Navigate to Print Machine Form");
-      // navigation.navigate("PrintMachine", { engineerName });
+    if (check === "Emergency Lights Test") {
+      alert("Navigate to Emergency Lights Form");
+      // navigation.navigate("EmergencyLights", { engineerName });
     } else {
       alert(`${check} form is not implemented yet.`);
     }
@@ -32,13 +44,13 @@ const MachineSafetyMenuScreen: React.FC<Props> = ({ navigation, route }) => {
 
   return (
     <View style={globalStyles.container}>
-      {/* Shared header */}
+      {/* Shared Header */}
       <AppHeader
         engineerName={engineerName}
-        onSignOut={() => {
-          navigation.navigate("Login");
-        }}
+        onSignOut={() => navigation.navigate("Login")}
       />
+
+      {/* Back Button */}
       <TouchableOpacity
         style={[
           globalStyles.button,
@@ -49,10 +61,12 @@ const MachineSafetyMenuScreen: React.FC<Props> = ({ navigation, route }) => {
       >
         <Text style={globalStyles.secondaryButtonText}>Back</Text>
       </TouchableOpacity>
-      {/* Machine Safety Checks Card */}
-      <View style={globalStyles.card}>
-        <Text style={globalStyles.cardTitle}> Machine Safety Checks</Text>
 
+      {/* Facility Check Card */}
+      <View style={globalStyles.card}>
+        <Text style={globalStyles.cardTitle}>Facility Check</Text>
+
+        {/* Add New Check Button */}
         <TouchableOpacity
           style={[
             globalStyles.button,
@@ -64,9 +78,9 @@ const MachineSafetyMenuScreen: React.FC<Props> = ({ navigation, route }) => {
           <Text style={globalStyles.secondaryButtonText}>Add New Check</Text>
         </TouchableOpacity>
 
-        {/* Scrollable Machine Safety Checks */}
+        {/* Scrollable Facility Checks */}
         <ScrollView style={globalStyles.checkList}>
-          {machineSafetyChecks.map((check, index) => (
+          {facilityChecks.map((check, index) => (
             <TouchableOpacity
               key={index}
               style={[globalStyles.button, globalStyles.primaryButton]}
@@ -78,11 +92,10 @@ const MachineSafetyMenuScreen: React.FC<Props> = ({ navigation, route }) => {
         </ScrollView>
       </View>
 
-      <View>
-        <Text style={globalStyles.footer}> All rights reserved. </Text>
-      </View>
+      {/* Footer */}
+      <Text style={globalStyles.footer}>All rights reserved.</Text>
     </View>
   );
 };
 
-export default MachineSafetyMenuScreen;
+export default FacilitiesMenuScreen;
