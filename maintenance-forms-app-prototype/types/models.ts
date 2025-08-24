@@ -14,7 +14,7 @@
 */
 
 export type InspectionCategory = "Facility" | "Machine Safety";
-export type SubcheckStatus = "pass" | "fail" | "not applicable";
+export type SubcheckStatus = "pass" | "fail";
 export type ValueType = "string" | "number" | "boolean";
 
 export interface User {
