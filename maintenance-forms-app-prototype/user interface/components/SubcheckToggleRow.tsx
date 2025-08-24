@@ -1,3 +1,6 @@
+// SubcheckToggleRow.tsx
+// This component renders a row with a label and a toggle switch for pass/fail status.
+
 import React from "react";
 import { View, Text, Switch, StyleSheet } from "react-native";
 

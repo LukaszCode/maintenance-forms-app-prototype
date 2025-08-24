@@ -2,14 +2,14 @@ import { StyleSheet, Platform, StatusBar } from "react-native";
 
 export const globalStyles = StyleSheet.create({
   safeContainer: {
-    flex: 0.25,
+    flex: 1,
     backgroundColor: "#2a9d9d",
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   container: {
     flex: 1,
     backgroundColor: "#2a9d9d",
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
   },
   header: {
     backgroundColor: "#ffffff",
@@ -24,7 +24,7 @@ export const globalStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 5,
+    marginBottom: 10,
   },
   inputRow: {
     flexDirection: "row",

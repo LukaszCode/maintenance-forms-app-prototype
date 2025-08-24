@@ -23,9 +23,9 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
       {/* Back Button */}
       <TouchableOpacity
         style={[
-          globalStyles.button,
-          globalStyles.secondaryButton,
-          globalStyles.backButton,
+          globalStyles.button, // provides the same shape as other buttons
+          globalStyles.secondaryButton, //provides the button grey overlay
+          globalStyles.backButton, // provides the back button size
         ]}
         onPress={() => navigation.goBack()}
       >

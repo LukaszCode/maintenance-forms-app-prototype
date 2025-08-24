@@ -2,13 +2,7 @@
 // User interface is designed for easy navigation and quick access to forms via a set of buttons
 
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { globalStyles } from "../styles/globalStyles";
 import { RootStackParamList } from "../../App";
