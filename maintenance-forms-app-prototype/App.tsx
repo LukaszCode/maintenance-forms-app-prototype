@@ -14,8 +14,7 @@ import SignUpScreen from "./user interface/screens/SignUpScreen";
 import MainMenuScreen from "./user interface/screens/MainMenuScreen";
 import FacilitiesMenuScreen from "./user interface/screens/FacilitiesMenuScreen";
 import MachineSafetyMenuScreen from "./user interface/screens/MachineSafetyMenuScreen";
-// import EmergencyLightsFormScreen from "./screens/EmergencyLightsFormScreen";
-// import MachineSafetyFormScreen from "./screens/MachineSafetyFormScreen";
+import FacilitiesCheckFormScreen from "./user interface/screens/FacilitiesCheckForm";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -43,6 +42,10 @@ export default function App() {
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="MainMenu" component={MainMenuScreen} />
         <Stack.Screen name="FacilitiesMenu" component={FacilitiesMenuScreen} />
+        <Stack.Screen
+          name="FacilitiesCheckForm"
+          component={FacilitiesCheckFormScreen}
+        />
         <Stack.Screen
           name="MachineSafetyMenu"
           component={MachineSafetyMenuScreen}
