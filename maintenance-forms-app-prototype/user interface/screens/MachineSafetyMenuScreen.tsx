@@ -59,7 +59,9 @@ const MachineSafetyMenuScreen: React.FC<Props> = ({ navigation, route }) => {
             globalStyles.secondaryButton,
             globalStyles.addButton,
           ]}
-          onPress={() => alert("Add New Check coming soon")}
+          onPress={() =>
+            navigation.navigate("MachineSafetyCheckForm", { engineerName })
+          }
         >
           <Text style={globalStyles.secondaryButtonText}>Add New Check</Text>
         </TouchableOpacity>
