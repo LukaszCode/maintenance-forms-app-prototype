@@ -13,7 +13,8 @@ import SignUpScreen from "./user interface/screens/SignUpScreen";
 import MainMenuScreen from "./user interface/screens/MainMenuScreen";
 import FacilitiesMenuScreen from "./user interface/screens/FacilitiesMenuScreen";
 import MachineSafetyMenuScreen from "./user interface/screens/MachineSafetyMenuScreen";
-import FacilitiesCheckFormScreen from "./user interface/screens/FacilitiesCheckForm";
+import FacilitiesCheckForm from "./user interface/screens/FacilitiesCheckForm";
+import MachineSafetyCheckForm from "./user interface/screens/MachineSafetyCheckForm";
 import { globalStyles } from "./user interface/styles/globalStyles";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -24,8 +25,8 @@ export type RootStackParamList = {
   FacilitiesMenu: { engineerName: string };
   MachineSafetyMenu: { engineerName: string };
   FacilitiesCheckForm: { engineerName: string };
+  MachineSafetyCheckForm: { engineerName: string };
   EmergencyLightsForm: { engineerName: string };
-  MachineSafetyForm: { engineerName: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -48,12 +49,16 @@ export default function App() {
             component={FacilitiesMenuScreen}
           />
           <Stack.Screen
-            name="FacilitiesCheckForm"
-            component={FacilitiesCheckFormScreen}
-          />
-          <Stack.Screen
             name="MachineSafetyMenu"
             component={MachineSafetyMenuScreen}
+          />
+          <Stack.Screen
+            name="FacilitiesCheckForm"
+            component={FacilitiesCheckForm}
+          />
+          <Stack.Screen
+            name="MachineSafetyCheckForm"
+            component={MachineSafetyCheckForm}
           />
           {/* Add more screens as we build them */}
         </Stack.Navigator>

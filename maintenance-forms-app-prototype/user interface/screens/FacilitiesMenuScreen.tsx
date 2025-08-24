@@ -58,22 +58,24 @@ const FacilitiesMenuScreen: React.FC<Props> = ({ navigation, route }) => {
 
       {/* Facility Check Card */}
       <View style={globalStyles.card}>
-        <Text style={globalStyles.cardTitle}>Facility Check</Text>
+        <Text style={globalStyles.cardTitle}>Facility Checks</Text>
 
-        {/* Add New Check Button */}
+        {/* New Check Button */}
         <TouchableOpacity
           style={[
             globalStyles.button,
             globalStyles.secondaryButton,
             globalStyles.addButton,
           ]}
-          onPress={() => alert("Add New Check coming soon")}
+          onPress={() =>
+            navigation.navigate("FacilitiesCheckForm", { engineerName })
+          }
         >
-          <Text style={globalStyles.secondaryButtonText}>Add New Check</Text>
+          <Text style={globalStyles.secondaryButtonText}>New Check</Text>
         </TouchableOpacity>
 
         {/* Scrollable Facility Checks */}
-        <ScrollView style={globalStyles.checkList}>
+        <ScrollView style={globalStyles.scrollContainer}>
           {facilityChecks.map((check, index) => (
             <TouchableOpacity
               key={index}

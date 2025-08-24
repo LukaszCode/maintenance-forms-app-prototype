@@ -65,7 +65,7 @@ const MachineSafetyMenuScreen: React.FC<Props> = ({ navigation, route }) => {
         </TouchableOpacity>
 
         {/* Scrollable Machine Safety Checks */}
-        <ScrollView style={globalStyles.checkList}>
+        <ScrollView style={globalStyles.scrollContainer}>
           {machineSafetyChecks.map((check, index) => (
             <TouchableOpacity
               key={index}

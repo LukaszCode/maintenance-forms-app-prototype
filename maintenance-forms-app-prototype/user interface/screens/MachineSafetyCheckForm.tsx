@@ -1,3 +1,11 @@
+// Development in progress
+/*
+  This screen will contain the machine check form
+  The machine check form will allow engineers to perform checks on various machine components.
+  The form will include fields for entering machine details, inspection dates, and check results.
+  The form will closely match the structure of the facilities check form.
+*/
+
 // This screen contains the facilities check form
 
 import React, { useMemo, useState, useEffect } from "react";
@@ -15,7 +23,10 @@ import AppHeader from "../components/AppHeader";
 import { globalStyles } from "../styles/globalStyles";
 import SubcheckToggleRow from "../components/SubcheckToggleRow";
 
-type Props = NativeStackScreenProps<RootStackParamList, "FacilitiesCheckForm">;
+type Props = NativeStackScreenProps<
+  RootStackParamList,
+  "MachineSafetyCheckForm"
+>;
 type SubcheckStatus = "pass" | "fail";
 
 type SubcheckVM = {
@@ -25,7 +36,7 @@ type SubcheckVM = {
   status: SubcheckStatus;
 };
 
-const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
+const MachineSafetyCheckForm: React.FC<Props> = ({ navigation, route }) => {
   const { engineerName } = route.params;
 
   // Basic fields
@@ -75,7 +86,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
     // UI-only payload (names for now; later resolve to IDs + call API)
     const payload = {
       inspectionDate: dateStr,
-      inspectionCategory: "Facility" as const,
+      inspectionCategory: "Machine Safety" as const,
       itemType,
       itemName,
       siteName,
@@ -85,7 +96,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
       overall,
       comment: comment || null,
     };
-    console.log("Facilities payload", payload);
+    console.log("Machine safety payload", payload);
     Alert.alert("Saved", `Overall: ${overall.toUpperCase()}`);
     navigation.goBack();
   };
@@ -227,4 +238,4 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
-export default FacilitiesCheckForm;
+export default MachineSafetyCheckForm;

@@ -130,7 +130,7 @@ export const globalStyles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 15,
   },
-  checkList: {
+  scrollContainer: {
     maxHeight: 200, // Ensures scroll is visible when there are many buttons
     width: "100%",
   },

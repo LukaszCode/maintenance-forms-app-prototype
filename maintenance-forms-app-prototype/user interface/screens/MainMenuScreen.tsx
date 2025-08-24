@@ -34,7 +34,7 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
 
       {/* Card with Test Types */}
       <View style={globalStyles.card}>
-        <Text style={globalStyles.cardTitle}>Choose the test type</Text>
+        <Text style={globalStyles.cardTitle}>Choose the check category</Text>
 
         <TouchableOpacity
           style={[globalStyles.button, globalStyles.primaryButton]}
@@ -60,7 +60,9 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
           style={[globalStyles.button, globalStyles.secondaryButton]}
           onPress={() => alert("Add Check Type coming soon")}
         >
-          <Text style={globalStyles.secondaryButtonText}>Add Check Type</Text>
+          <Text style={globalStyles.secondaryButtonText}>
+            Add Check Category
+          </Text>
         </TouchableOpacity>
       </View>
 
