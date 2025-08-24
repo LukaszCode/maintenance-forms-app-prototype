@@ -134,6 +134,27 @@ export const globalStyles = StyleSheet.create({
     maxHeight: 200, // Ensures scroll is visible when there are many buttons
     width: "100%",
   },
+  formCol: {
+    flex: 1,
+  },
+  formRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  formPane: {
+    backgroundColor: "#f4f4f4",
+    borderWidth: 1,
+    borderColor: "#e2e2e2",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+  },
+  formPaneTitle: {
+    textAlign: "center",
+    fontWeight: "600",
+    marginBottom: 10,
+  },
   footer: {
     textAlign: "center",
     color: "#fff",
