@@ -25,7 +25,10 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={globalStyles.container}>
       {/* Shared Header */}
-      <AppHeader engineerName={"Guest"} onSignOut={() => {}} />
+      <AppHeader
+        engineerName={"Guest"}
+        onSignOut={() => navigation.navigate("Login")}
+      />
 
       {/* Card */}
       <View style={globalStyles.card}>

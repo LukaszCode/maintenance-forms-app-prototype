@@ -42,7 +42,7 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
             navigation.navigate("FacilitiesMenu", { engineerName })
           }
         >
-          <Text style={globalStyles.primaryButtonText}>Facility Checks</Text>
+          <Text style={globalStyles.primaryButtonText}>Facility Check</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -52,7 +52,7 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
           }
         >
           <Text style={globalStyles.primaryButtonText}>
-            Maintenance Routine Checks
+            Machine Safety Check
           </Text>
         </TouchableOpacity>
 

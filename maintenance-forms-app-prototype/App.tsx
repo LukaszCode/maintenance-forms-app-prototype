@@ -15,6 +15,7 @@ import MainMenuScreen from "./user interface/screens/MainMenuScreen";
 import FacilitiesMenuScreen from "./user interface/screens/FacilitiesMenuScreen";
 import MachineSafetyMenuScreen from "./user interface/screens/MachineSafetyMenuScreen";
 import FacilitiesCheckFormScreen from "./user interface/screens/FacilitiesCheckForm";
+import { globalStyles } from "./user interface/styles/globalStyles";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -35,7 +36,7 @@ export default function App() {
       <Stack.Navigator
         initialRouteName="Login"
         screenOptions={{
-          headerShown: false, // We are using custom headers
+          headerShown: false, // Custom headers are used
         }}
       >
         <Stack.Screen name="Login" component={LoginScreen} />
