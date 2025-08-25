@@ -9,7 +9,7 @@
   A subcheck is considered invalid if it has a status of "fail" and is missing a comment.
 */
 
-import { Subcheck } from "../dataTypes/models";
+import { Subcheck } from "../data-types/models";
 
 /*
   This function validates a single subcheck object.
