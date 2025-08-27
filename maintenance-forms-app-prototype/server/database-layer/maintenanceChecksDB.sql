@@ -69,9 +69,39 @@ CREATE TABLE inspection (
     overall_result TEXT CHECK (overall_result IN ('pass', 'fail')),
     started_at TEXT, 
     submitted_at TEXT,
-    FOREIGN KEY (item_id) REFERENCES item(id),
+    FOREIGN KEY (item_id) REFERENCES item(id) ON DELETE RESTRICT,
     FOREIGN KEY (site_id) REFERENCES site(id),
     FOREIGN KEY (zone_id) REFERENCES zone(id),
     FOREIGN KEY (inspector) REFERENCES user(id)
+);
+
+CREATE TABLE subcheck (
+    id INTEGER PRIMARY KEY,
+    inspection_id INTEGER NOT NULL,
+    item_type_id INTEGER,
+    item_id INTEGER,
+    label TEXT NOT NULL,
+    description TEXT,
+    value_type TEXT NOT NULL CHECK (value_type IN ('boolean', 'number', 'text')),
+    mandatory INTEGER NOT NULL CHECK (mandatory IN (0, 1)),
+    pass_criteria TEXT,
+    result TEXT CHECK (result IN ('pass', 'fail', 'na')),
+    reading_number REAL, 
+    reading_text TEXT, 
+
+    FOREIGN KEY (inspection_id) REFERENCES inspection(id) ON DELETE CASCADE,
+    FOREIGN KEY (item_type_id) REFERENCES item_type(id),
+    FOREIGN KEY (item_id) REFERENCES item(id)
+);
+
+CREATE TABLE attachment (
+  id INTEGER PRIMARY KEY,
+  subcheck_id INTEGER,
+  inspection_id INTEGER,
+  file_path TEXT NOT NULL,
+  caption TEXT,
+  timestamp TEXT NOT NULL,
+  FOREIGN KEY(subcheck_id)  REFERENCES subcheck(id)  ON DELETE CASCADE,
+  FOREIGN KEY(inspection_id) REFERENCES inspection(id) ON DELETE CASCADE
 );
 
