@@ -28,7 +28,7 @@ CREATE TABLE zone (
     UNIQUE (site_id, label),
     FOREIGN KEY (site_id) REFERENCES site (id)
 );
-
+-- Table to store item types e.g Die-Cut Machine or Emergency lights
 CREATE TABLE item_type (
     id INTEGER PRIMARY KEY,
     inspection_category TEXT NOT NULL CHECK (inspection_category IN ('Facility', 'Machine Safety')),
@@ -38,6 +38,7 @@ CREATE TABLE item_type (
 
 );
 
+-- Table to store item information e.g Bobst, or Twin-head emergency light
 CREATE TABLE item (
     id INTEGER PRIMARY KEY,
     item_type_id INTEGER NOT NULL,
@@ -48,6 +49,7 @@ CREATE TABLE item (
     FOREIGN KEY (zone_id) REFERENCES zone(id)
 );
 
+-- Table to store user information
 CREATE TABLE user (
     id INTEGER PRIMARY KEY,
     full_name TEXT NOT NULL,
@@ -57,6 +59,7 @@ CREATE TABLE user (
     role TEXT NOT NULL CHECK (role IN ('Engineer', 'Manager', 'Admin'))
 );
 
+-- Table to store inspection information
 CREATE TABLE inspection (
     id INTEGER PRIMARY KEY,
     date TEXT NOT NULL, 
@@ -75,6 +78,7 @@ CREATE TABLE inspection (
     FOREIGN KEY (inspector) REFERENCES user(id)
 );
 
+-- Table to store subcheck information
 CREATE TABLE subcheck (
     id INTEGER PRIMARY KEY,
     inspection_id INTEGER NOT NULL,
@@ -94,6 +98,7 @@ CREATE TABLE subcheck (
     FOREIGN KEY (item_id) REFERENCES item(id)
 );
 
+-- Attachments for subchecks and inspections e.g. photos, documents
 CREATE TABLE attachment (
   id INTEGER PRIMARY KEY,
   subcheck_id INTEGER,
@@ -105,3 +110,21 @@ CREATE TABLE attachment (
   FOREIGN KEY(inspection_id) REFERENCES inspection(id) ON DELETE CASCADE
 );
 
+-- Ensure attachment references at least one parent
+CREATE TRIGGER trg_attachment_has_ref
+BEFORE INSERT ON attachment
+FOR EACH ROW BEGIN
+  SELECT CASE WHEN NEW.subcheck_id IS NULL AND NEW.inspection_id IS NULL
+    THEN RAISE(ABORT,'Attachment must reference subcheck or inspection') END;
+END;
+
+-- Additional indexes that could be useful to improve query performance
+-- These indexes are based on common query patterns and foreign key relationships
+CREATE INDEX idx_zone_site         ON zone(site_id);
+CREATE INDEX idx_item_type         ON item(item_type_id);
+CREATE INDEX idx_item_zone         ON item(zone_id);
+CREATE INDEX idx_insp_item         ON inspection(item_id);
+CREATE INDEX idx_insp_date         ON inspection(date);
+CREATE INDEX idx_sub_insp          ON subcheck(inspection_id);
+CREATE INDEX idx_attach_sub        ON attachment(subcheck_id);
+CREATE INDEX idx_attach_insp       ON attachment(inspection_id);
