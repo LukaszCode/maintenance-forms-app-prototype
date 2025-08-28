@@ -23,16 +23,16 @@ CREATE TABLE IF NOT EXISTS sites (
     site_id INTEGER PRIMARY KEY,
     site_name TEXT NOT NULL,
     building_number TEXT, 
-    site_address TEXT,
+    site_address TEXT
 );
 
 CREATE TABLE IF NOT EXISTS zones (
     zone_id INTEGER PRIMARY KEY, 
     site_id INTEGER NOT NULL,
     zone_label TEXT NOT NULL,
-    description TEXT,
+    zone_description TEXT,
     UNIQUE (site_id, zone_label),
-    FOREIGN KEY (site_id) REFERENCES sites (site_id) ON DELETE CASCADE
+    FOREIGN KEY (site_id) REFERENCES sites(site_id) ON DELETE CASCADE
 );
 
 -- Table to store item types e.g Die-Cut Machine or Emergency lights
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS item_types (
     item_type_id INTEGER PRIMARY KEY,
     inspection_category TEXT NOT NULL CHECK (inspection_category IN ('Facility', 'Machine Safety')),
     item_type_label TEXT NOT NULL, 
-    description TEXT,
+    item_type_description TEXT,
     UNIQUE (inspection_category, item_type_label)
 
 );
@@ -52,8 +52,8 @@ CREATE TABLE IF NOT EXISTS items (
     zone_id INTEGER NOT NULL,
     item_name TEXT NOT NULL,
     UNIQUE (item_type_id, zone_id, item_name),
-    FOREIGN KEY (item_type_id) REFERENCES item_types(item_type_id),
-    FOREIGN KEY (zone_id) REFERENCES zones(zone_id)
+    FOREIGN KEY (item_type_id) REFERENCES item_types(item_type_id) ON DELETE RESTRICT,
+    FOREIGN KEY (zone_id) REFERENCES zones(zone_id) ON DELETE RESTRICT
 );
 
 -- Table to store user information
@@ -72,17 +72,13 @@ CREATE TABLE IF NOT EXISTS inspections (
     inspection_date TEXT NOT NULL, 
     category TEXT NOT NULL CHECK (category IN ('Facility', 'Machine Safety')),
     item_id INTEGER NOT NULL,
-    site_id INTEGER NOT NULL,
-    zone_id INTEGER NOT NULL,
     inspector_id INTEGER NOT NULL, 
     comment TEXT,
     overall_result TEXT CHECK (overall_result IN ('pass', 'fail', 'incomplete')),
     started_at TEXT, 
     submitted_at TEXT,
     FOREIGN KEY (item_id) REFERENCES items(item_id) ON DELETE RESTRICT,
-    FOREIGN KEY (site_id) REFERENCES sites(site_id),
-    FOREIGN KEY (zone_id) REFERENCES zones(zone_id),
-    FOREIGN KEY (inspector_id) REFERENCES users(user_id)
+    FOREIGN KEY (inspector_id) REFERENCES users(user_id) ON DELETE RESTRICT
 );
 
 -- Table to store subcheck templates - defines reusable subchecks for each item type
@@ -105,7 +101,7 @@ CREATE TABLE IF NOT EXISTS subcheck_results (
     sub_result_label TEXT NOT NULL,
     sub_result_description TEXT,
     value_type TEXT NOT NULL CHECK (value_type IN ('boolean', 'number', 'text')),
-    sub_result_mandatory INTEGER NOT NULL CHECK (mandatory IN (0, 1)),
+    sub_result_mandatory INTEGER NOT NULL CHECK (sub_result_mandatory IN (0, 1)),
     pass_criteria TEXT,
     result TEXT CHECK (result IN ('pass', 'fail', 'na')),
     reading_number REAL, 
@@ -115,7 +111,7 @@ CREATE TABLE IF NOT EXISTS subcheck_results (
 );
 
 -- Attachments for subchecks and inspections e.g. photos, documents
-CREATE TABLE attachments (
+CREATE TABLE IF NOT EXISTS attachments (
   attachment_id INTEGER PRIMARY KEY,
   subcheck_result_id INTEGER,
   inspection_id INTEGER,
@@ -143,7 +139,7 @@ CREATE INDEX IF NOT EXISTS idx_zones_site         ON zones(site_id);
 CREATE INDEX IF NOT EXISTS idx_items_type         ON items(item_type_id);
 CREATE INDEX IF NOT EXISTS idx_items_zone         ON items(zone_id);
 CREATE INDEX IF NOT EXISTS idx_inspections_item         ON inspections(item_id);
-CREATE INDEX IF NOT EXISTS idx_inspections_date         ON inspections(date);
-CREATE INDEX IF NOT EXISTS idx_sub_results_inspection         ON subcheck_results(inspection_id);
+CREATE INDEX IF NOT EXISTS idx_inspections_date         ON inspections(inspection_date);
+CREATE INDEX IF NOT EXISTS idx_subcheck_results_inspection         ON subcheck_results(inspection_id);
 CREATE INDEX IF NOT EXISTS idx_attachments_subcheck         ON attachments(subcheck_result_id);
 CREATE INDEX IF NOT EXISTS idx_attachments_inspection         ON attachments(inspection_id);
