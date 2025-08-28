@@ -8,14 +8,14 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 
 // Screens
-import LoginScreen from "./user interface/screens/LoginScreen";
-import SignUpScreen from "./user interface/screens/SignUpScreen";
-import MainMenuScreen from "./user interface/screens/MainMenuScreen";
-import FacilitiesMenuScreen from "./user interface/screens/FacilitiesMenuScreen";
-import MachineSafetyMenuScreen from "./user interface/screens/MachineSafetyMenuScreen";
-import FacilitiesCheckForm from "./user interface/screens/FacilitiesCheckForm";
-import MachineSafetyCheckForm from "./user interface/screens/MachineSafetyCheckForm";
-import { globalStyles } from "./user interface/styles/globalStyles";
+import LoginScreen from "./screens/LoginScreen";
+import SignUpScreen from "./screens/SignUpScreen";
+import MainMenuScreen from "./screens/MainMenuScreen";
+import FacilitiesMenuScreen from "./screens/FacilitiesMenuScreen";
+import MachineSafetyMenuScreen from "./screens/MachineSafetyMenuScreen";
+import FacilitiesCheckForm from "./screens/FacilitiesCheckForm";
+import MachineSafetyCheckForm from "./screens/MachineSafetyCheckForm";
+import { globalStyles } from "./styles/globalStyles";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export type RootStackParamList = {

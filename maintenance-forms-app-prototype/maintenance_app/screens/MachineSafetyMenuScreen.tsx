@@ -4,7 +4,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../App";
+import { RootStackParamList } from "../App";
 import { globalStyles } from "../styles/globalStyles";
 import AppHeader from "../components/AppHeader";
 

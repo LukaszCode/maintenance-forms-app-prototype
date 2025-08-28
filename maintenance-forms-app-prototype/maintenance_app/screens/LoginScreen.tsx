@@ -5,7 +5,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { globalStyles } from "../styles/globalStyles";
-import { RootStackParamList } from "../../App";
+import { RootStackParamList } from "../App";
 import AppHeader from "../components/AppHeader";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
