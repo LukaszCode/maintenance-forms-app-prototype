@@ -12,19 +12,19 @@
 
 import * as SQLite from "expo-sqlite";
 
-export async function openDatabase() {
+export async function openDB(): Promise<SQLite.SQLiteDatabase> {
   const db = await SQLite.openDatabaseAsync("maintenance_checks.db");
   await db.execAsync("PRAGMA foreign_keys=ON;");
-
   await migrate(db);
   return db;
 }
 
 async function migrate(db: SQLite.SQLiteDatabase) {
-  const [user_version] = await db.getFirstAsync("PRAGMA user_version;");
-  if (user_version === 0) {
-    await db.execAsync(schema);
-  } else {
-    await db.execAsync(`PRAGMA user_version = ${user_version};`);
+  // Check the user_version pragma to determine the current schema version
+  const [{ user_version }] = (await db.getFirstAsync<{ user_version: number }>(
+    "PRAGMA user_version;"
+  )) ?? [{ user_version: 0 }];
+  if (user_version < 1) {
+    await db.execAsync("PRAGMA user_version = 1;");
   }
 }
