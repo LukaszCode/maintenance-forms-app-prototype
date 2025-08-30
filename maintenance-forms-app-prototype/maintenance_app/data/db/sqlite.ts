@@ -12,7 +12,7 @@
 
 import * as SQLite from "expo-sqlite";
 
-export async function openDB(): Promise<SQLite.SQLiteDatabase> {
+export async function openDatabase(): Promise<SQLite.SQLiteDatabase> {
   const db = await SQLite.openDatabaseAsync("maintenance_checks.db");
   await db.execAsync("PRAGMA foreign_keys=ON;");
   await migrate(db);
