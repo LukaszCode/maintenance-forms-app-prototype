@@ -4,14 +4,14 @@
 import React from "react";
 import { View, Text, Switch, StyleSheet } from "react-native";
 
-type Props = {
+interface SubcheckToggleProps {
   label: string;
   value: "pass" | "fail";
   onToggle: () => void;
   mandatory?: boolean;
-};
+}
 
-const SubcheckToggleRow: React.FC<Props> = ({
+const SubcheckToggleRow: React.FC<SubcheckToggleProps> = ({
   label,
   value,
   onToggle,
