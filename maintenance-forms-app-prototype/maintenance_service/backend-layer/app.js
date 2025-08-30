@@ -9,5 +9,8 @@ const db = require("./db");
 
 const app = express();
 app.use(cors());
-
 app.use(express.json());
+
+// TODO: app.get("/api/inspection-templates", ...), app.post("/api/inspections", ..
+
+module.exports = app;

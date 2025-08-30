@@ -27,7 +27,7 @@ const FacilitiesMenuScreen: React.FC<Props> = ({ navigation, route }) => {
     "Racking Inspection",
   ];
 
-  const handleCheckPress = (check: string) => {
+  const openForm = (check: string) => {
     if (check === "Emergency Lights Test") {
       alert("Navigate to Emergency Lights Form");
       // navigation.navigate("EmergencyLights", { engineerName });
@@ -80,7 +80,7 @@ const FacilitiesMenuScreen: React.FC<Props> = ({ navigation, route }) => {
             <TouchableOpacity
               key={index}
               style={[globalStyles.button, globalStyles.primaryButton]}
-              onPress={() => handleCheckPress(check)}
+              onPress={() => openForm(check)}
             >
               <Text style={globalStyles.primaryButtonText}>{check}</Text>
             </TouchableOpacity>

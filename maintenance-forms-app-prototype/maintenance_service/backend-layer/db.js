@@ -4,7 +4,7 @@
 */
 
 const Database = require("better-sqlite3");
-const db = new Database("../database-layer/maintenanceChecksDB.sqlite");
+const db = new Database("./maintenance_service/maintenanceChecksDB.db");
 
 db.pragma("foreign_keys = ON");
 

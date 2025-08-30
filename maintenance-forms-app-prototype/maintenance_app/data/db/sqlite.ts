@@ -20,7 +20,5 @@ export async function openDatabase(): Promise<SQLite.SQLiteDatabase> {
 }
 
 async function migrate(db: SQLite.SQLiteDatabase) {
-  // Check the user_version pragma to determine the current schema version
-  
-  }
+  // TODO: check PRAGMA user_version and run CREATE TABLE / ALTERs
 }
