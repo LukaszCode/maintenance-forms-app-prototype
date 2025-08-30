@@ -16,7 +16,6 @@
             18/08/2025
 */
 
-
 PRAGMA foreign_keys=ON;
 
 CREATE TABLE IF NOT EXISTS sites (
