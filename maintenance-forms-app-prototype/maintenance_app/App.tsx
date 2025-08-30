@@ -26,7 +26,6 @@ export type RootStackParamList = {
   MachineSafetyMenu: { engineerName: string };
   FacilitiesCheckForm: { engineerName: string };
   MachineSafetyCheckForm: { engineerName: string };
-  EmergencyLightsForm: { engineerName: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
