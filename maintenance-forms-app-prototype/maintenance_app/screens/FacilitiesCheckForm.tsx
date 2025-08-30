@@ -29,7 +29,9 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
   const { engineerName } = route.params;
 
   // Basic fields
-  const [dateStr, setDateStr] = useState(new Date().toISOString().slice(0, 10));
+  const [dateString, setDateString] = useState(
+    new Date().toISOString().slice(0, 10)
+  );
   const [siteName, setSiteName] = useState("");
   const [zoneName, setZoneName] = useState("");
   const [itemType, setItemType] = useState("");
@@ -74,7 +76,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
 
     // UI-only payload (names for now; later resolve to IDs + call API)
     const payload = {
-      inspectionDate: dateStr,
+      inspectionDate: dateString,
       inspectionCategory: "Facility" as const,
       itemType,
       itemName,
@@ -117,8 +119,8 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
               <Text>Date (YYYY-MM-DD)</Text>
               <TextInput
                 style={globalStyles.input}
-                value={dateStr}
-                onChangeText={setDateStr}
+                value={dateString}
+                onChangeText={setDateString}
               />
             </View>
             <View style={globalStyles.formCol}>
