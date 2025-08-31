@@ -44,6 +44,6 @@ export class InspectionManager {
      * @returns {InspectionForm | undefined} - The requested inspection form, or undefined if not found.
      */
     getInspectionById(id: number): InspectionForm | undefined {
-        return this.inspections.find(form => form.id === id);
+        return this.inspections.find(form => form.inspectionId === id);
     }
 }
