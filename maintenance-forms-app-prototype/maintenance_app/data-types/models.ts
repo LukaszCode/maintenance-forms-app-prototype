@@ -66,10 +66,20 @@ export interface Subcheck {
   subcheckDescription: string;
   valueType: ValueType;
   passCriteria: string;
-  status: SubcheckStatus; // "pass" | "fail" | "not applicable"
+  status: SubcheckStatus; // "pass" | "fail"
 }
 
-// Result of an inspection (overall pass/fail)
+// Additional subcheck template as I want to reuse it across different inspections
+export interface SubcheckTemplate {
+  subcheckTemplateId: number;
+  itemType: string;
+  subcheckName: string;
+  subcheckDescription: string;
+  valueType: ValueType;
+  passCriteria: string;
+}
+
+// Result of an inspection // cached overall result based on subcheck results
 export interface Result {
   resultId: number;
   inspectionId: number; // Foreign Key to Inspection
