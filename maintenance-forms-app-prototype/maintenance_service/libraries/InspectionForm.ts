@@ -49,6 +49,28 @@ export class InspectionForm {
     this.engineerName = data.engineerName;
   }
 
-  
+  /** 
+   * Turn this inspection form into a JSON string
+   * @returns a JSON string representation of the inspection form.
+   */
+  stringify(): string {
+    return JSON.stringify(this)
+  }
 
+  /**
+   * Displays the inspection form details.
+   */
+  displayFormDetails(): void {
+    console.log(`Inspection Form Details:
+        ID: ${this.inspectionId}
+        Date: ${this.date}
+        Category: ${this.category}
+        Site ID: ${this.siteId}
+        Zone ID: ${this.zoneId}
+        Check Type: ${this.checkType}
+        Subchecks: ${JSON.stringify(this.subchecks)}
+        Comment: ${this.comment}
+        Engineer Name: ${this.engineerName}
+    `);
+  }
 }
