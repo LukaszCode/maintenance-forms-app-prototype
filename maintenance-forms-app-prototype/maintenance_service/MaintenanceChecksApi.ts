@@ -1,4 +1,13 @@
-import { json } from "stream/consumers";
+/**
+ * This class provides methods for interacting with the maintenance checks API.
+ * It includes methods for creating, retrieving, and updating inspection forms.
+ * It communicates with a RESTful backend service to perform these operations.
+ * @class MaintenanceChecksApi
+ * @param {string} baseUrl - The base URL of the API.
+ * @param {string} [token] - The authentication token for the API.
+ *
+ * author: Lukasz Brzozowski
+ */
 
 export class MaintenanceChecksApi {
   constructor(private baseUrl: string, private token?: string) {}
