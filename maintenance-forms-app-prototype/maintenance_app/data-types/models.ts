@@ -34,6 +34,7 @@ export interface Inspection {
   inspectedBy: number; // <-- Foreign Key to user
   siteId: number; // <-- Foreign Key to site
   zoneId: number; // <-- Foreign Key to zone
+  subchecks: Subcheck[]; // Array of subchecks for each inspection
   comment?: string | null;
 }
 
