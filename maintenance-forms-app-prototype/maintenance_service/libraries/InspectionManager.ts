@@ -1,4 +1,4 @@
-import { Database } from "sqlite3";
+import { Database } from "sqlite";
 import { openDatabase } from "../data-layer/db/sqlite";
 
 export class InspectionManager {

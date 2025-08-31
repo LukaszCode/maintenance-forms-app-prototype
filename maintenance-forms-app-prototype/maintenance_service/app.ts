@@ -1,5 +1,6 @@
 /*
-    This module sets up the Express application and middleware for the maintenance checks API.  
+    This module defines the API endpoints for managing maintenance inspections.
+    It uses Express.js to create a RESTful API that allows clients to create and retrieve inspection records.
     More details: https://expressjs.com/en/starter/installing.html
                     https://expressjs.com/en/guide/routing.html
                     TM352 - Block 2 - 
@@ -25,3 +26,18 @@ app.post("/inspections", (request, result) => {
   }
 });
 
+app.get("/inspections", (request, result) => {
+    const { from, to, siteId, engineerId  } = request.query;
+    const list = manager.findInspections({ from, to, siteId, engineerId });
+    result.send({ status: "success", data: list });
+});
+
+app.get("/inspections/:id", (request, result) => {
+    const one = manager.getInspectionById(+request.params.id);
+    if (!one) {
+        return result.status(404).send({ status: "error", message: "Inspection not found" });
+    }
+    result.send({ status: "success", data: one });
+});
+
+app.listen(3001, () => console.log("Maintenance API listening on :3001"));

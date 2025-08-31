@@ -18,6 +18,16 @@
 
 PRAGMA foreign_keys=ON;
 
+-- Table to store user information
+CREATE TABLE IF NOT EXISTS users (
+    user_id INTEGER PRIMARY KEY,
+    username TEXT NOT NULL UNIQUE,
+    full_name TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('Engineer', 'Manager', 'Admin')),
+    email TEXT NOT NULL,
+);
+
 CREATE TABLE IF NOT EXISTS sites (
     site_id INTEGER PRIMARY KEY,
     site_name TEXT NOT NULL,
@@ -27,11 +37,9 @@ CREATE TABLE IF NOT EXISTS sites (
 
 CREATE TABLE IF NOT EXISTS zones (
     zone_id INTEGER PRIMARY KEY, 
-    site_id INTEGER NOT NULL,
-    zone_label TEXT NOT NULL,
+    zone_name TEXT NOT NULL,
     zone_description TEXT,
-    UNIQUE (site_id, zone_label),
-    FOREIGN KEY (site_id) REFERENCES sites(site_id) ON DELETE CASCADE
+    site_id INTEGER NOT NULL REFERENCES sites(site_id) ON DELETE CASCADE
 );
 
 -- Table to store item types e.g Die-Cut Machine or Emergency lights
@@ -47,22 +55,10 @@ CREATE TABLE IF NOT EXISTS item_types (
 -- Table to store item information e.g Bobst, or Twin-head emergency light
 CREATE TABLE IF NOT EXISTS items (
     item_id INTEGER PRIMARY KEY,
-    item_type_id INTEGER NOT NULL,
-    zone_id INTEGER NOT NULL,
+    item_type TEXT NOT NULL,
     item_name TEXT NOT NULL,
-    UNIQUE (item_type_id, zone_id, item_name),
-    FOREIGN KEY (item_type_id) REFERENCES item_types(item_type_id) ON DELETE RESTRICT,
-    FOREIGN KEY (zone_id) REFERENCES zones(zone_id) ON DELETE RESTRICT
-);
-
--- Table to store user information
-CREATE TABLE IF NOT EXISTS users (
-    user_id INTEGER PRIMARY KEY,
-    full_name TEXT NOT NULL,
-    email TEXT UNIQUE,
-    username TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    role TEXT NOT NULL CHECK (role IN ('Engineer', 'Manager', 'Admin'))
+    description TEXT NOT NULL,
+    zone_id INTEGER NOT NULL REFERENCES zones(zone_id) ON DELETE CASCADE
 );
 
 -- Table to store inspection information
