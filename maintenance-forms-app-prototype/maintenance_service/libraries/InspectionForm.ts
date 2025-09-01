@@ -1,5 +1,5 @@
 
-import { Subcheck } from "../../maintenance_app/data-types/models";
+import type { Subcheck } from "../../maintenance_app/data-types/models.js";
 
 /**
  * Used to represent an inspection form. This class defines the structure of the inspection form data.

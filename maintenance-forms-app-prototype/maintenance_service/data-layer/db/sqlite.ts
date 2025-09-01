@@ -10,15 +10,18 @@
             14/08/2025
 */
 
-import * as SQLite from "expo-sqlite";
+import Database from "better-sqlite3";
+import path from "node:path";
 
-export async function openDatabase(): Promise<SQLite.SQLiteDatabase> {
-  const db = await SQLite.openDatabaseAsync("maintenance_checks.db");
-  await db.execAsync("PRAGMA foreign_keys=ON;");
-  await migrate(db);
-  return db;
-}
+const dbPath = path.join(process.cwd(), "maintenance_service", "data-layer", "db", "maintenance_checks.sqlite");
 
-async function migrate(db: SQLite.SQLiteDatabase) {
-  // TODO: check PRAGMA user_version and run CREATE TABLE / ALTERs
+let db;
+
+try {
+  db = new Database(dbPath);
+  db.pragma("foreign_keys = ON");
+
+} catch (error) {
+  console.error("Error connecting to the database:", error);
+  process.exit(1);
 }
