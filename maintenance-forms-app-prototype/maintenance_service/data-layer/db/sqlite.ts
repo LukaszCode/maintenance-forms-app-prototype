@@ -20,13 +20,5 @@ const dbPath = path.join(
   "maintenance_checks.sqlite"
 );
 
-let db;
-
-try {
-  db = new Database(dbPath);
-  db.pragma("foreign_keys = ON");
-
-} catch (error) {
-  console.error("Error connecting to the database:", error);
-  process.exit(1);
-}
+export const db: any = new Database(dbPath);
+db.pragma("foreign_keys = ON");
