@@ -54,7 +54,7 @@ export class InspectionForm {
 
   constructor(params: {
     inspectionId?: number;
-    inspectionDate: string;
+    inspectionDate: Date;
     inspectionCategory: InspectionCategory;
     itemId: number;
     siteId: number;
