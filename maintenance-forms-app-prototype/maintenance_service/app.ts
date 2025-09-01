@@ -24,7 +24,7 @@
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import { InspectionManager } from "./libraries/InspectionManager";
+import { InspectionManager } from "./libraries/InspectionManager.js";
 
 const app = express();
 app.use(cors());
