@@ -1,6 +1,3 @@
-
-import type { Subcheck } from "../../maintenance_app/data-types/models.js";
-
 /**
  * Used to represent an inspection form. This class defines the structure of the inspection form data.
  * It includes properties for the engineer ID, category, site ID, zone ID, check type, and subchecks.
@@ -21,14 +18,32 @@ import type { Subcheck } from "../../maintenance_app/data-types/models.js";
  * author: Lukasz Brzozowski
  */
 
+export type InspectionCategory = "Facility" | "Machine Safety";
+export type ValueType = "string" | "number" | "boolean";
+export type SubcheckStatus = "pass" | "fail" | "na";
+
+export interface SubcheckInput {
+    subcheckName: string;
+    subcheckDescription: string;
+    valueType: ValueType;
+    passCriteria: string;
+    status: SubcheckStatus;
+}
+
+export interface SubcheckRow extends SubcheckInput {
+    subcheck_id: number;
+    inspection_id: number;
+}
+
 export class InspectionForm {
-    inspectionId: number;
-    date: Date;
-    category: string;
+    inspectionId?: number;
+    inspectionDate: Date = new Date();
+    inspectionCategory: InspectionCategory;
+    itemId: number;
     siteId: number;
     zoneId: number;
     checkType: string;
-    subchecks: Subcheck[];
+    subchecks: SubcheckInput[];
     comment: string;
     engineerName: string;
 
@@ -37,40 +52,42 @@ export class InspectionForm {
    * @param {InspectionForm} data - The data to initialize the inspection form.
    */
 
-  constructor(data: InspectionForm) {
-    this.inspectionId = data.inspectionId;
-    this.date = data.date;
-    this.category = data.category;
-    this.siteId = data.siteId;
-    this.zoneId = data.zoneId;
-    this.checkType = data.checkType;
-    this.subchecks = data.subchecks;
-    this.comment = data.comment;
-    this.engineerName = data.engineerName;
+  constructor(params: {
+    inspectionId?: number;
+    inspectionDate: string;
+    inspectionCategory: InspectionCategory;
+    itemId: number;
+    siteId: number;
+    zoneId: number;
+    subchecks: SubcheckInput[];
+    comment?: string | null;
+    engineerName?: string;
+  }) {
+    Object.assign(this, params);
   }
 
-  /** 
-   * Turn this inspection form into a JSON string
-   * @returns a JSON string representation of the inspection form.
-   */
-  stringify(): string {
-    return JSON.stringify(this)
-  }
+  static fromDbRow(row: any, subchecks: SubcheckRow[], engineerName?: string) {
+    return new InspectionForm({
+      inspectionId: row.inspection_id,
+      inspectionDate: row.inspection_date,
+      inspectionCategory: row.inspection_category,
+      itemId: row.item_id,
+      siteId: row.site_id,
+      zoneId: row.zone_id,
+      subchecks: subchecks.map((s) => ({
+        subcheckName: s.subcheckName ?? s.subcheckName,
+        subcheckDescription: s.subcheckDescription ?? s.subcheckDescription,
+        valueType: (s.valueType ?? s.valueType) as ValueType,
+        passCriteria: s.passCriteria ?? s.passCriteria,
+        status: (s.status as SubcheckStatus) ?? "pass",
+      })),
+      comment: row.comment,
+      engineerName: row.engineerName,
+    });
+}
 
-  /**
-   * Displays the inspection form details.
-   */
-  displayFormDetails(): void {
-    console.log(`Inspection Form Details:
-        ID: ${this.inspectionId}
-        Date: ${this.date}
-        Category: ${this.category}
-        Site ID: ${this.siteId}
-        Zone ID: ${this.zoneId}
-        Check Type: ${this.checkType}
-        Subchecks: ${JSON.stringify(this.subchecks)}
-        Comment: ${this.comment}
-        Engineer Name: ${this.engineerName}
-    `);
+  // overall pass if all subchecks are pass or na
+  overall(): "pass" | "fail" {
+    return this.subchecks.every((s) => s.status === "pass" || s.status === "na") ? "pass" : "fail";
   }
 }

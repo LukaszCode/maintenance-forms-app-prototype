@@ -13,7 +13,12 @@
 import Database from "better-sqlite3";
 import path from "node:path";
 
-const dbPath = path.join(process.cwd(), "maintenance_service", "data-layer", "db", "maintenance_checks.sqlite");
+const dbPath = path.join(
+  process.cwd(), 
+  "maintenance_service", 
+  "data-layer", "db", 
+  "maintenance_checks.sqlite"
+);
 
 let db;
 
