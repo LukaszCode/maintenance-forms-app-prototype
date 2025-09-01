@@ -62,6 +62,46 @@ app.post("/inspections", (request, result) => {
 });
 
 /**
+ * Retrieve all sites.
+ * @param {Object} _request - The HTTP request object (not used).
+ * @param {Object} result - The HTTP response object.
+ * 
+ * @returns {Object} The HTTP response with the list of sites.
+ * 
+ */
+app.get("/sites", (_request, result) => {
+  const rows = db.prepare(`SELECT site_id AS id, site_name AS name FROM sites ORDER BY site_name`).all();
+  result.json({ status:"success", data: rows });
+});
+
+/**
+ * Create a new site.
+ * @param {Object} request - The HTTP request object.
+ * @param {Object} request.body - The request body containing the site data.
+ * @param {string} request.body.siteName - The name of the site to create.
+ * @param {Object} result - The HTTP response object.
+ * @returns {Object} The HTTP response with the created site data or an error message.
+ */
+
+app.post("/sites", (request, result) => {
+  const { siteName } = request.body;
+  if (!siteName?.trim()) return result.status(400).json({ status:"error", message:"siteName required" });
+  const info = db.prepare
+  (`
+    INSERT OR IGNORE INTO sites(site_name) VALUES (?)
+  `).run(siteName.trim());
+  const id = info.lastInsertRowid ?? db.prepare
+  (`
+    SELECT site_id 
+    FROM sites 
+    WHERE site_name=?
+  `).get(siteName.trim()).site_id;
+  result.json({ status:"success", data:{ id, name: siteName.trim() } });
+});
+
+
+
+/**
  * Retrieve a single inspection by its ID.
  *
  * @param {Object} request - The HTTP request object.
