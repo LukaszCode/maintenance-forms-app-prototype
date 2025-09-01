@@ -99,8 +99,6 @@ app.post("/sites", (request, result) => {
   result.json({ status:"success", data:{ id, name: siteName.trim() } });
 });
 
-
-
 /**
  * Retrieve a single inspection by its ID.
  *
