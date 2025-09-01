@@ -94,11 +94,11 @@ app.get("/inspections/:id", (request, result) => {
 app.get("/item-types", (request, result) => {
   const { category } = request.query;
   const list = db.prepare(`
-    SELECT it_type.item_type_id AS id, it_type.name
-    FROM item_types it_type
-    JOIN inspection_categories insp_cat ON insp_cat.category_id = it_type.category_id
+    SELECT insp_type.item_type_id AS id, insp_type.name
+    FROM item_types insp_type
+    JOIN inspection_categories insp_cat ON insp_cat.category_id = insp_type.category_id
     WHERE (? IS NULL OR insp_cat.name = ?)
-    ORDER BY it_type.name
+    ORDER BY insp_type.name
   `).all(category ?? null, category ?? null);
 
   result.json({ status: "success", data: list });
