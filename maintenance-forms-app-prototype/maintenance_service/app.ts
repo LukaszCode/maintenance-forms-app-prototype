@@ -126,3 +126,33 @@ app.get("/items", (request, result) => {
   result.json({ status: "success", data: list });
 });
 
+/**
+ * Retrieve subcheck templates for a given item type.
+ * This endpoint fetches subcheck templates associated with a specific item type.
+ * It is used to build the inspection subchecks dynamically based on the selected item type.
+ *
+ * @param {Object} request - The HTTP request object.
+ * @param {Object} request.query - The query parameters from the request URL.
+ * @param {string} request.query.itemTypeId - The ID of the item type.
+ * @param {Object} result - The HTTP response object.
+ * @returns {Object} The HTTP response with the list of subcheck templates or an error message.
+*/
+
+app.get("/subcheck-templates", (request, result) => {
+  const { itemTypeId } = request.query;
+  const list = db.prepare(`
+    SELECT subcheck_template_id AS id,
+           name,
+           description,
+           value_type   AS valueType,
+           pass_criteria AS passCriteria
+    FROM subcheck_templates
+    WHERE item_type_id = ?
+    ORDER BY subcheck_template_id
+  `).all(Number(itemTypeId));
+  result.json({ status: "success", data: list });
+});
+
+app.listen(3001, () => {
+  console.log("Server is running on http://localhost:3001");
+})
