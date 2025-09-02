@@ -64,14 +64,12 @@ CREATE TABLE IF NOT EXISTS items (
 -- Table to store inspection information
 CREATE TABLE IF NOT EXISTS inspections (
     inspection_id INTEGER PRIMARY KEY,
-    inspection_date TEXT NOT NULL, 
+    inspection_date DATE NOT NULL, 
     category TEXT NOT NULL CHECK (category IN ('Facility', 'Machine Safety')),
     item_id INTEGER NOT NULL,
     engineer_id INTEGER NOT NULL, 
     comment TEXT,
     overall_result TEXT CHECK (overall_result IN ('pass', 'fail', 'incomplete')),
-    started_at TEXT, 
-    submitted_at TEXT,
     FOREIGN KEY (item_id) REFERENCES items(item_id) ON DELETE RESTRICT,
     FOREIGN KEY (engineer_id) REFERENCES users(user_id) ON DELETE RESTRICT
 );
