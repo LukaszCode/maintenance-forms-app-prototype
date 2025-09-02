@@ -30,7 +30,12 @@ export class InspectionManager {
   createInspection(form: InspectionForm): InspectionForm {
     this.assertBasicForm(form);
 
-    // Allow either engineerId or engineerName
+    /**
+     * Resolve the engineer ID from the form data.
+     * This can be either the engineer's name (string) or their ID (number).
+     * @param {InspectionForm} form - The inspection form data.
+     * @returns {number} - The resolved engineer ID.
+     */
     const engineerId = this.resolveEngineerId(form);
 
     if (!Number.isInteger(engineerId)) {
@@ -40,7 +45,14 @@ export class InspectionManager {
     // Overall result is 'pass' only if every subcheck is pass or na
     const overall = this.computeOverall(form.subchecks);
 
-    // Transaction: insert parent + children
+    /**
+     * Run the database transaction for inserting the inspection and its subchecks.
+     * This ensures that all inserts are dynamic and can be rolled back if any fail.
+     * @param {InspectionForm} formParameter - The inspection form data.
+     * @returns {InspectionForm} - The saved inspection reloaded from the database.
+     * @throws {Error} - If any part of the transaction fails.
+     *
+     */
     const runTransaction = db.transaction((formParameter: InspectionForm) => {
       // 1) Insert inspection
       const info = db
@@ -81,7 +93,7 @@ export class InspectionManager {
         .get(itemTypeLabel) as { item_type_id: number } | undefined;
 
       // 3) Prepare subcheck insert
-      const insertResult = db.prepare(
+      const insertSubcheck = db.prepare(
         `INSERT INTO subcheck_results
             (inspection_id,
             sub_template_id,
@@ -120,7 +132,13 @@ export class InspectionManager {
             )
             .get(typeRow.item_type_id, subcheckParameter.subcheckName) as any;
         }
-
+        /**
+         * Determine the database value type for the subcheck.
+         * This is used to ensure the correct data type is stored in the database.
+         * @param {SubcheckInput} subcheckParameter - The subcheck input data.
+         * @returns {string} - The database value type.
+         *
+         */
         const dbValueType =
           subcheckTemplate?.value_type ??
           this.toDbValueType(subcheckParameter.valueType); // 'boolean'|'number'|'TEXT'
@@ -130,7 +148,7 @@ export class InspectionManager {
           subcheckTemplate?.pass_criteria ??
           null;
 
-        insertResult.run(
+        insertSubcheck.run(
           inspectionId,
           subcheckTemplate?.sub_template_id ?? null,
           subcheckParameter.subcheckName,
@@ -149,7 +167,13 @@ export class InspectionManager {
 
     const id = runTransaction(form);
 
-    // Return the saved row loaded from DB (so caller gets everything consistent)
+    /**
+     * Reload the saved inspection form after insert.
+     * This ensures that the caller gets the most up-to-date data.
+     * @param {number} id - The ID of the inspection to reload.
+     * @returns {InspectionForm | undefined} - The reloaded inspection form or undefined if not found.
+     *
+     */
     const saved = this.getInspectionById(id);
     if (!saved) throw new Error("Failed to reload inspection after insert.");
     return saved;
@@ -243,8 +267,14 @@ export class InspectionManager {
 
   // -----------------------------
   // Private helpers (small & clear)
+  // AI Assistant: Copilot
   // -----------------------------
 
+  /**
+   * Assert the basic structure of an inspection form.
+   * @param f - The inspection form to validate.
+   *
+   */
   private assertBasicForm(f: InspectionForm) {
     if (!f.inspectionDate)
       throw new Error("inspectionDate is required (ISO string).");
@@ -256,7 +286,10 @@ export class InspectionManager {
       throw new Error("At least one subcheck is required.");
     }
   }
-
+  /**
+   * Assert the basic structure of a subcheck.
+   * @param subcheckParameter - The subcheck to validate.
+   */
   private assertSubcheck(subcheckParameter: SubcheckInput) {
     if (
       !subcheckParameter.subcheckName ||
