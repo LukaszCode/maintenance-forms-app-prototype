@@ -19,6 +19,42 @@ export class MaintenanceChecksApi {
     };
   }
 
+  /**
+   * Retrieve all sites.
+   * @returns A promise that resolves to the list of sites.
+   */
+  sites() {
+    return fetch(`${this.baseUrl}/sites`).then((res) => res.json());
+  }
+
+  /**
+   * Retrieve all zones based on site ID.
+   * @param siteId - The ID of the site to filter zones.
+   * @returns A promise that resolves to the list of zones.
+   */
+  zones(siteId?: number) {
+    const query = siteId ? `?siteId=${siteId}` : "";
+    return fetch(`${this.baseUrl}/zones${query}`).then((res) => res.json());
+  }
+
+  /**
+   * Retrieve item types based on category.
+   * @param category - The category to filter item types.
+   * @returns A promise that resolves to the list of item types.
+   */
+  itemTypes(category?: string) {
+    const query = category ? `?category=${encodeURIComponent(category)}` : "";
+    return fetch(`${this.baseUrl}/item-types${query}`).then((res) =>
+      res.json()
+    );
+  }
+
+  /**
+   * User login.
+   * @param username - The username of the user.
+   * @param password - The password of the user.
+   * @returns A promise that resolves to the login response.
+   */
   async login(username: string, password: string) {
     const res = await fetch(`${this.baseUrl}/login`, {
       method: "POST",
