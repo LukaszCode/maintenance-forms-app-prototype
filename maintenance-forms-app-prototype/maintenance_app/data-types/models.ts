@@ -11,6 +11,11 @@
   Updated: 2025-07-28
   Version: 1.3
 
+  The file was used to define the data models for the inspection management system.
+  It provided foundational data structures for managing inspections, items, and related entities.
+  The models are designed to be extensible and adaptable to future requirements and follow classes
+  and attributes documentation. 
+
 */
 
 export type InspectionCategory = "Facility" | "Machine Safety";
