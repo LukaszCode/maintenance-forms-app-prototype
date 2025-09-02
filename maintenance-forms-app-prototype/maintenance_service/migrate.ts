@@ -85,4 +85,4 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_subchecks_insp     ON subcheck_results(inspection_id);
 `);
 
-console.log("Migration OK (Option A).");
+console.log("Migration OK.");
