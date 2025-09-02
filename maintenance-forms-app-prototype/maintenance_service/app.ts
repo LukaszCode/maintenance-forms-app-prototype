@@ -1,4 +1,3 @@
-
 /**
  * This module defines the API endpoints for managing maintenance inspections.
  * It uses Express.js to create a RESTful API that allows clients to create and retrieve inspection records.
@@ -6,7 +5,7 @@
  *               https://expressjs.com/en/guide/routing.html
  *               TM352 - Block 2 - Express.js and RESTful APIs
  *
-*/
+ */
 
 import express from "express";
 import cors from "cors";
@@ -17,16 +16,16 @@ import { db } from "./data-layer/db/sqlite.js";
 const app = express();
 
 // Global middleware
-app.use(cors());  // Allow the API to be accessed from other origins
+app.use(cors()); // Allow the API to be accessed from other origins
 app.use(bodyParser.json()); // Parse JSON request bodies into JavaScript objects
 
 // Create an instance of the InspectionManager
-const manager = new InspectionManager(); 
+const manager = new InspectionManager();
 
 /**
-* Create a new inspection record.
-* 
-* 
+ * Create a new inspection record.
+ *
+ *
  * @export
  * @param {string} inspectionId - The unique identifier for the inspection.
  * @param {Date} date - The date of the inspection.
@@ -38,18 +37,18 @@ const manager = new InspectionManager();
  * @param {string} comment - Any additional comments about the inspection.
  * @param {string} engineerName - The name of the engineer performing the inspection.
  * @returns {string} - A summary of the inspection details.
-*
-* @throws {Error} - If the inspection data is invalid.
-*   - If the inspection ID is missing or invalid.
-*   - If the date is not a valid date.
-*   - If the category is missing or invalid.
-*   - If the site ID is missing or invalid.
-*   - If the zone ID is missing or invalid.
-*   - If the check type is missing or invalid.
-*   - If the subchecks are missing or invalid.
-*   - If the comment is missing or invalid.
-*   - If the engineer name is missing or invalid.
-*/
+ *
+ * @throws {Error} - If the inspection data is invalid.
+ *   - If the inspection ID is missing or invalid.
+ *   - If the date is not a valid date.
+ *   - If the category is missing or invalid.
+ *   - If the site ID is missing or invalid.
+ *   - If the zone ID is missing or invalid.
+ *   - If the check type is missing or invalid.
+ *   - If the subchecks are missing or invalid.
+ *   - If the comment is missing or invalid.
+ *   - If the engineer name is missing or invalid.
+ */
 
 app.post("/inspections", (request, result) => {
   try {
@@ -71,36 +70,50 @@ app.post("/inspections", (request, result) => {
 
 app.post("/sites", (request, result) => {
   const { siteName } = request.body;
-  if (!siteName?.trim()) return result.status(400).json({ status:"error", message:"siteName required" });
-  const info = db.prepare
-  (`
+  if (!siteName?.trim())
+    return result
+      .status(400)
+      .json({ status: "error", message: "siteName required" });
+  const info = db
+    .prepare(
+      `
     INSERT OR IGNORE INTO sites(site_name) VALUES (?)
-  `).run(siteName.trim());
-  const id = info.lastInsertRowid ?? db.prepare
-  (`
+  `
+    )
+    .run(siteName.trim());
+  const id =
+    info.lastInsertRowid ??
+    db
+      .prepare(
+        `
     SELECT site_id 
     FROM sites 
     WHERE site_name=?
-  `).get(siteName.trim()).site_id;
-  result.json({ status:"success", data:{ id, name: siteName.trim() } });
+  `
+      )
+      .get(siteName.trim()).site_id;
+  result.json({ status: "success", data: { id, name: siteName.trim() } });
 });
 
 /**
  * Retrieve all sites.
  * @param {Object} _request - The HTTP request object (not used).
  * @param {Object} result - The HTTP response object.
- * 
+ *
  * @returns {Object} The HTTP response with the list of sites.
- * 
+ *
  */
 app.get("/sites", (_request, result) => {
-  const rows = db.prepare
-  (`
+  const rows = db
+    .prepare(
+      `
     SELECT site_id AS id, 
     site_name AS name FROM sites 
     ORDER BY site_name
-  `).all();
-  result.json({ status:"success", data: rows });
+  `
+    )
+    .all();
+  result.json({ status: "success", data: rows });
 });
 
 /**
@@ -108,21 +121,24 @@ app.get("/sites", (_request, result) => {
  * @param {Object} _request - The HTTP request object (not used).
  * @param {Object} result - The HTTP response object.
  * @returns {Object} The HTTP response with the list of zones.
- * 
+ *
  */
 
-app.get("/zones", (request,result)=> {
-  const siteId = Number(request.query.siteId)||null;
-  const rows = db.prepare
-  (`
+app.get("/zones", (request, result) => {
+  const siteId = Number(request.query.siteId) || null;
+  const rows = db
+    .prepare(
+      `
     SELECT zone_id AS id, 
     zone_name AS name, 
     zone_description AS description, 
     site_id FROM zones 
     WHERE (? IS NULL OR site_id=?) 
     ORDER BY zone_name
-  `).all(siteId, siteId);
-  result.json({ status:"success", data: rows });
+  `
+    )
+    .all(siteId, siteId);
+  result.json({ status: "success", data: rows });
 });
 
 /**
@@ -133,39 +149,51 @@ app.get("/zones", (request,result)=> {
  * @param {string} request.params.id - The ID of the inspection to retrieve.
  * @param {Object} result - The HTTP response object.
  * @returns {Object} The HTTP response with the inspection data or an error message.
- * 
+ *
  */
 
 app.get("/inspections/:id", (request, result) => {
-    const singleInspection = manager.getInspectionById(+request.params.id);
-    if (!singleInspection) {
-        return result.status(404).json({ status: "error", message: "Inspection not found" });
-    }
-    result.json({ status: "success", data: singleInspection });
+  const singleInspection = manager.getInspectionById(+request.params.id);
+  if (!singleInspection) {
+    return result
+      .status(404)
+      .json({ status: "error", message: "Inspection not found" });
+  }
+  result.json({ status: "success", data: singleInspection });
 });
 
 /**
-* Read item types by inspection category (Facilities or Machine Safety)
-* This endpoint dynamically retrieves item types based on the specified inspection category.
-*
-* @param {Object} request - The HTTP request object.
-* @param {Object} request.query - The query parameters from the request URL.
-* @param {string} request.query.category - The category of the inspection.
-* @param {Object} result - The HTTP response object.
-* @returns {Object} The HTTP response with the list of item types or an error message.
-*/
+ * Read item types by inspection category (Facilities or Machine Safety)
+ * This endpoint dynamically retrieves item types based on the specified inspection category.
+ *
+ * @param {Object} request - The HTTP request object.
+ * @param {Object} request.query - The query parameters from the request URL.
+ * @param {string} request.query.category - The category of the inspection.
+ * @param {Object} result - The HTTP response object.
+ * @returns {Object} The HTTP response with the list of item types or an error message.
+ */
 
 app.get("/item-types", (request, result) => {
-  const { category } = request.query;
-  const list = db.prepare(`
-    SELECT insp_type.item_type_id AS id, insp_type.name
-    FROM item_types insp_type
-    JOIN inspection_categories insp_cat ON insp_cat.category_id = insp_type.category_id
-    WHERE (? IS NULL OR insp_cat.name = ?)
-    ORDER BY insp_type.name
-  `).all(category ?? null, category ?? null);
+  const category =
+    typeof request.query.category === "string"
+      ? request.query.category.trim()
+      : null;
 
-  result.json({ status: "success", data: list });
+  const rows = db
+    .prepare(
+      `
+    SELECT item_type_id AS id,
+           item_type_label AS label,
+           inspection_category AS category,
+           item_type_description AS description
+    FROM item_types
+    WHERE (? IS NULL OR inspection_category = ?)
+    ORDER BY item_type_label
+  `
+    )
+    .all(category, category);
+
+  result.json({ status: "success", data: rows });
 });
 
 /**
@@ -180,14 +208,29 @@ app.get("/item-types", (request, result) => {
  */
 
 app.get("/items", (request, result) => {
-  const { itemTypeId } = request.query;
-  const list = db.prepare(`
-    SELECT item_id AS id, item_name AS name, description
+  const zoneId = request.query.zoneId ? Number(request.query.zoneId) : null;
+  const itemType =
+    typeof request.query.itemType === "string"
+      ? request.query.itemType.trim()
+      : null;
+
+  const rows = db
+    .prepare(
+      `
+    SELECT item_id AS id,
+           item_name AS name,
+           description,
+           zone_id,
+           item_type
     FROM items
-    WHERE (? IS NULL OR item_type_id = ?)
+    WHERE (? IS NULL OR zone_id = ?)
+      AND (? IS NULL OR item_type = ?)
     ORDER BY item_name
-  `).all(itemTypeId ?? null, itemTypeId ?? null);
-  result.json({ status: "success", data: list });
+  `
+    )
+    .all(zoneId, zoneId, itemType, itemType);
+
+  result.json({ status: "success", data: rows });
 });
 
 /**
@@ -200,23 +243,35 @@ app.get("/items", (request, result) => {
  * @param {string} request.query.itemTypeId - The ID of the item type.
  * @param {Object} result - The HTTP response object.
  * @returns {Object} The HTTP response with the list of subcheck templates or an error message.
-*/
+ */
 
-app.get("/subcheck-templates", (request, result) => {
-  const { itemTypeId } = request.query;
-  const list = db.prepare(`
-    SELECT subcheck_template_id AS id,
-           name,
-           description,
-           value_type   AS valueType,
-           pass_criteria AS passCriteria
+app.get("/subcheck-templates", (req, res) => {
+  const itemTypeId = Number(req.query.itemTypeId);
+  if (!Number.isFinite(itemTypeId)) {
+    return res
+      .status(400)
+      .json({ status: "error", message: "itemTypeId must be a number" });
+  }
+
+  const rows = db
+    .prepare(
+      `
+    SELECT sub_template_id          AS id,
+           sub_template_label       AS name,
+           sub_template_description AS description,
+           value_type               AS valueType,
+           pass_criteria            AS passCriteria,
+           sub_template_mandatory   AS mandatory
     FROM subcheck_templates
     WHERE item_type_id = ?
-    ORDER BY subcheck_template_id
-  `).all(Number(itemTypeId));
-  result.json({ status: "success", data: list });
+    ORDER BY sub_template_id
+  `
+    )
+    .all(itemTypeId);
+
+  res.json({ status: "success", data: rows });
 });
 
 app.listen(3001, () => {
   console.log("Server is running on http://localhost:3001");
-})
+});
