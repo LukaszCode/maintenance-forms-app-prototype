@@ -9,19 +9,22 @@ export const globalStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#2a9d9d",
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
   },
   header: {
     backgroundColor: "#ffffff",
-    padding: 10,
+    padding: 15,
     borderBottomColor: "#ccc",
     borderBottomWidth: 1,
+    borderRadius: 20,
+    width: "100%",
+    alignSelf: "center",
   },
   headerTopRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 5,
+    marginBottom: 10,
   },
   inputRow: {
     flexDirection: "row",
@@ -114,10 +117,10 @@ export const globalStyles = StyleSheet.create({
   card: {
     backgroundColor: "#ffffff",
     padding: 20,
-    borderRadius: 10,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: "#66b2b2",
-    width: "90%",
+    width: "100%",
     alignSelf: "center",
     marginTop: 20,
   },
@@ -127,9 +130,30 @@ export const globalStyles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 15,
   },
-  checkList: {
+  scrollContainer: {
     maxHeight: 200, // Ensures scroll is visible when there are many buttons
     width: "100%",
+  },
+  formCol: {
+    flex: 1,
+  },
+  formRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  formPane: {
+    backgroundColor: "#f4f4f4",
+    borderWidth: 1,
+    borderColor: "#e2e2e2",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+  },
+  formPaneTitle: {
+    textAlign: "center",
+    fontWeight: "600",
+    marginBottom: 10,
   },
   footer: {
     textAlign: "center",
