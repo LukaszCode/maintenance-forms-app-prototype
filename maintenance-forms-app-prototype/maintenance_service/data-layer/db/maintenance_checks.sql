@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS items (
 -- Table to store inspection information
 CREATE TABLE IF NOT EXISTS inspections (
     inspection_id INTEGER PRIMARY KEY,
-    inspection_date DATE NOT NULL, 
+    inspection_date TEXT NOT NULL, 
     category TEXT NOT NULL CHECK (category IN ('Facility', 'Machine Safety')),
     item_id INTEGER NOT NULL,
     engineer_id INTEGER NOT NULL, 
