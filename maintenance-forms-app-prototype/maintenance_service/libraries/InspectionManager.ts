@@ -5,11 +5,10 @@ import { InspectionForm, SubcheckInput, ValueType } from "./InspectionForm.js";
  * The DB backed inspection manager which is responsible for handling inspection forms.
  * @export
  * @class InspectionManager
- * @param inspections - The list of inspections to manage.
+ * @description Manages inspection forms and their associated data.
  *
  */
 export class InspectionManager {
-    inspections: InspectionForm[] = [];
 
     /**
      * Creates a new inspection form.
@@ -107,17 +106,14 @@ export class InspectionManager {
         return undefined;
     }
 
-    
-
     /**
      * Computes the overall result of the inspection based on subcheck results.
      * @param {SubcheckInput[]} subchecks - The array of subchecks.
      * @returns {string} - The overall result ("pass", "fail", "incomplete").
      */
-    private computeOverallResult(subchecks: SubcheckInput[]): string {
-        const results = subchecks.map(subcheck => subcheck.status);
-        if (results.includes("fail")) return "fail";
-        if (results.includes("incomplete")) return "incomplete";
-        return "pass";
+    private computeOverallResult(subchecks: SubcheckInput[]): "pass" | "fail" {
+        return subchecks.every(subcheck => subcheck.status === "pass" || subcheck.status === "na") ? "pass" : "fail";
     }
+
+    
 }
