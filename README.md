@@ -33,28 +33,7 @@ This prototype supports:
 
 ## Project Structure  
 
-maintenance-forms-app-prototype/
-│
-├── app/ # React Native frontend (UI + logic)
-│ ├── components/ # Reusable UI components
-│ ├── screens/ # App screens (login, inspection forms, review)
-│ ├── services/ # Frontend API calls
-│ ├── styles/ # Global styles
-│ └── App.tsx # Entry point
-│
-├── app_service/ # Backend (Express.js API)
-│ ├── routes/ # Route definitions (users, inspections, attachments)
-│ ├── models/ # Data models (SQLite/SQL Server schema)
-│ ├── controllers/ # Business logic
-│ └── server.ts # Backend entry point
-│
-├── data-layer/ # Database configuration + migrations
-│ └── migrate.ts
-│
-├── package.json # Dependencies
-├── tsconfig.json # TypeScript configuration
-└── README.md # Project documentation
-
+<img width="504" height="537" alt="image" src="https://github.com/user-attachments/assets/f47544d5-20ec-4427-905c-cd27b36c14a7" />
 
 ---
 
