@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS users (
     full_name TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('Engineer', 'Manager', 'Admin')),
-    email TEXT NOT NULL,
+    email TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS sites (
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS subcheck_templates (
     item_type_id INTEGER NOT NULL,
     sub_template_label TEXT NOT NULL,
     sub_template_description TEXT,
-    value_type TEXT NOT NULL CHECK (value_type IN ('boolean', 'number', 'text')),
+    value_type TEXT NOT NULL CHECK (value_type IN ('boolean', 'number', 'TEXT')),
     sub_template_mandatory INTEGER NOT NULL DEFAULT 1 CHECK (sub_template_mandatory IN (0, 1)),
     pass_criteria TEXT,
     FOREIGN KEY (item_type_id) REFERENCES item_types(item_type_id) ON DELETE CASCADE
@@ -93,12 +93,12 @@ CREATE TABLE IF NOT EXISTS subcheck_results (
     sub_template_id INTEGER,
     sub_result_label TEXT NOT NULL,
     sub_result_description TEXT,
-    value_type TEXT NOT NULL CHECK (value_type IN ('boolean', 'number', 'text')),
+    value_type TEXT NOT NULL CHECK (value_type IN ('boolean', 'number', 'TEXT')),
     sub_result_mandatory INTEGER NOT NULL CHECK (sub_result_mandatory IN (0, 1)),
     pass_criteria TEXT,
     result TEXT CHECK (result IN ('pass', 'fail', 'na')),
     reading_number REAL, 
-    reading_text TEXT, 
+    reading_TEXT TEXT, 
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE,
     FOREIGN KEY (sub_template_id) REFERENCES subcheck_templates(sub_template_id) ON DELETE SET NULL
 );
