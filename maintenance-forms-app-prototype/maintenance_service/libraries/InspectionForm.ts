@@ -4,7 +4,7 @@
  *
  * @class InspectionForm
  * @param {number} inspectionId - The ID of the inspection.
- * @param {Date} date - The date of the inspection.
+ * @param {string} date - The date of the inspection as a string.
  * @param {string} category - The category of the inspection.
  * @param {number} siteId - The ID of the site being inspected.
  * @param {number} zoneId - The ID of the zone within the site.
@@ -23,37 +23,32 @@ export type ValueType = "string" | "number" | "boolean";
 export type SubcheckStatus = "pass" | "fail" | "na";
 
 export interface SubcheckInput {
-    subcheckName: string;
-    subcheckDescription: string;
-    valueType: ValueType;
-    passCriteria: string;
-    status: SubcheckStatus;
+  subcheckName: string;
+  subcheckDescription: string;
+  valueType: ValueType;
+  passCriteria: string;
+  status: SubcheckStatus;
 }
 
 export interface SubcheckRow extends SubcheckInput {
-    subcheck_id: number;
-    inspection_id: number;
+  subcheck_id: number;
+  inspection_id: number;
 }
 
 export class InspectionForm {
   inspectionId?: number;
   engineerId?: number;
-  inspectionDate: Date = new Date();
-  inspectionCategory: InspectionCategory;
-  itemId: number;
-  subchecks: SubcheckInput[];
-  comment: string;
-  engineerName: string;
-
-  /**
-   * Creates an instance of the InspectionForm class.
-   * @param {InspectionForm} data - The data to initialize the inspection form.
-   */
+  inspectionDate!: string; // date in an ISO string format
+  inspectionCategory!: InspectionCategory;
+  itemId!: number;
+  subchecks!: SubcheckInput[];
+  comment?: string | null;
+  engineerName?: string;
 
   constructor(params: {
     inspectionId?: number;
     engineerId?: number;
-    inspectionDate: Date;
+    inspectionDate: string;
     inspectionCategory: InspectionCategory;
     itemId: number;
     subchecks: SubcheckInput[];
@@ -63,27 +58,9 @@ export class InspectionForm {
     Object.assign(this, params);
   }
 
-  static fromDbRow(row: any, subchecks: SubcheckRow[], engineerName?: string) {
-    return new InspectionForm({
-      inspectionId: row.inspection_id,
-      engineerId: row.engineer_id,
-      inspectionDate: row.inspection_date,
-      inspectionCategory: row.inspection_category,
-      itemId: row.item_id,
-      subchecks: subchecks.map((s) => ({
-        subcheckName: s.subcheckName ?? s.subcheckName,
-        subcheckDescription: s.subcheckDescription ?? s.subcheckDescription,
-        valueType: (s.valueType ?? s.valueType) as ValueType,
-        passCriteria: s.passCriteria ?? s.passCriteria,
-        status: (s.status as SubcheckStatus) ?? "pass",
-      })),
-      comment: row.comment,
-      engineerName: row.engineerName,
-    });
-}
-
-  // overall pass if all subchecks are pass or na
   overall(): "pass" | "fail" {
-    return this.subchecks.every((s) => s.status === "pass" || s.status === "na") ? "pass" : "fail";
+    return this.subchecks.every((s) => s.status === "pass" || s.status === "na")
+      ? "pass"
+      : "fail";
   }
 }

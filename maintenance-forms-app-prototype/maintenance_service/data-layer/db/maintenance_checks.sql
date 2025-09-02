@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS subcheck_results (
     pass_criteria TEXT,
     result TEXT CHECK (result IN ('pass', 'fail', 'na')),
     reading_number REAL, 
-    reading_TEXT TEXT, 
+    reading_text TEXT, 
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE,
     FOREIGN KEY (sub_template_id) REFERENCES subcheck_templates(sub_template_id) ON DELETE SET NULL
 );
