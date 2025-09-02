@@ -44,7 +44,7 @@ export class MaintenanceChecksApi {
    */
   itemTypes(category?: string) {
     const query = category ? `?category=${encodeURIComponent(category)}` : "";
-    return fetch(`${this.baseUrl}/item_types${query}`).then((res) =>
+    return fetch(`${this.baseUrl}/item-types${query}`).then((res) =>
       res.json()
     );
   }
