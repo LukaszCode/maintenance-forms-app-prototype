@@ -36,16 +36,14 @@ export interface SubcheckRow extends SubcheckInput {
 }
 
 export class InspectionForm {
-    inspectionId?: number;
-    inspectionDate: Date = new Date();
-    inspectionCategory: InspectionCategory;
-    itemId: number;
-    siteId: number;
-    zoneId: number;
-    checkType: string;
-    subchecks: SubcheckInput[];
-    comment: string;
-    engineerName: string;
+  inspectionId?: number;
+  engineerId?: number;
+  inspectionDate: Date = new Date();
+  inspectionCategory: InspectionCategory;
+  itemId: number;
+  subchecks: SubcheckInput[];
+  comment: string;
+  engineerName: string;
 
   /**
    * Creates an instance of the InspectionForm class.
@@ -54,11 +52,10 @@ export class InspectionForm {
 
   constructor(params: {
     inspectionId?: number;
+    engineerId?: number;
     inspectionDate: Date;
     inspectionCategory: InspectionCategory;
     itemId: number;
-    siteId: number;
-    zoneId: number;
     subchecks: SubcheckInput[];
     comment?: string | null;
     engineerName?: string;
@@ -69,11 +66,10 @@ export class InspectionForm {
   static fromDbRow(row: any, subchecks: SubcheckRow[], engineerName?: string) {
     return new InspectionForm({
       inspectionId: row.inspection_id,
+      engineerId: row.engineer_id,
       inspectionDate: row.inspection_date,
       inspectionCategory: row.inspection_category,
       itemId: row.item_id,
-      siteId: row.site_id,
-      zoneId: row.zone_id,
       subchecks: subchecks.map((s) => ({
         subcheckName: s.subcheckName ?? s.subcheckName,
         subcheckDescription: s.subcheckDescription ?? s.subcheckDescription,

@@ -67,13 +67,13 @@ CREATE TABLE IF NOT EXISTS inspections (
     inspection_date TEXT NOT NULL, 
     category TEXT NOT NULL CHECK (category IN ('Facility', 'Machine Safety')),
     item_id INTEGER NOT NULL,
-    inspector_id INTEGER NOT NULL, 
+    engineer_id INTEGER NOT NULL, 
     comment TEXT,
     overall_result TEXT CHECK (overall_result IN ('pass', 'fail', 'incomplete')),
     started_at TEXT, 
     submitted_at TEXT,
     FOREIGN KEY (item_id) REFERENCES items(item_id) ON DELETE RESTRICT,
-    FOREIGN KEY (inspector_id) REFERENCES users(user_id) ON DELETE RESTRICT
+    FOREIGN KEY (engineer_id) REFERENCES users(user_id) ON DELETE RESTRICT
 );
 
 -- Table to store subcheck templates - defines reusable subchecks for each item type
