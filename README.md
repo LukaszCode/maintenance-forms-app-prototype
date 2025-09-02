@@ -33,3 +33,98 @@ This prototype supports:
 
 ## Project Structure  
 
+maintenance-forms-app-prototype/
+│
+├── app/ # React Native frontend (UI + logic)
+│ ├── components/ # Reusable UI components
+│ ├── screens/ # App screens (login, inspection forms, review)
+│ ├── services/ # Frontend API calls
+│ ├── styles/ # Global styles
+│ └── App.tsx # Entry point
+│
+├── app_service/ # Backend (Express.js API)
+│ ├── routes/ # Route definitions (users, inspections, attachments)
+│ ├── models/ # Data models (SQLite/SQL Server schema)
+│ ├── controllers/ # Business logic
+│ └── server.ts # Backend entry point
+│
+├── data-layer/ # Database configuration + migrations
+│ └── migrate.ts
+│
+├── package.json # Dependencies
+├── tsconfig.json # TypeScript configuration
+└── README.md # Project documentation
+
+
+---
+
+## Installation  
+
+### Prerequisites  
+- Node.js (>= 18)  
+- npm or yarn  
+- Expo CLI (for running the React Native frontend)  
+- SQLite (for prototype testing)  
+- SQL Server (planned for production)  
+
+### Setup  
+
+1. Clone the repository:  
+   ```bash
+   git clone https://github.com/yourusername/maintenance-forms-app-prototype.git
+   cd maintenance-forms-app-prototype
+
+2. Install dependencies
+
+   npm install
+   
+4. Set up the database
+
+   cd data-layer
+   ts-node migrate.ts
+
+6. Run the backend service
+
+   cd app_service
+   npm run dev
+
+8. Start the frontend
+
+   cd app
+   npm start
+
+10. Scan the QR code with Expo Go or run in an emulator
+
+## Usage
+
+- Log in with your engineer account.
+- Select a site and zone.
+- Choose inspection type (Facility or Machine Safety).
+- Complete checklist items (boolean/numeric/status).
+- Add optional comments and attachments (attachments backend only for now).
+- Submit inspection → results saved to database.
+- Managers (role-based) can later review results.
+
+## Technology Stack
+- Frontend: React Native, TypeScript, Expo
+- Backend: Node.js, Express.js
+- Database: SQLite (prototype), SQL Server (target)
+- Testing: Jest (frontend), Supertest (backend API)
+
+## Future Enhancements
+
+- Photo attachments in frontend (camera/gallery integration).
+- Manager review dashboards.
+- PDF/Excel export for audits.
+- Offline mode with local caching and sync.
+- Notifications for failed critical checks.
+
+## Compliance Notes
+
+- GDPR: personal data is role-restricted and designed with storage limitation principles.
+- PUWER 1998: inspection templates align with regulatory requirements for safe equipment use.
+
+## License
+This project is developed as part of an academic submission (Open University TM470).
+Not intended for production use.
+    
