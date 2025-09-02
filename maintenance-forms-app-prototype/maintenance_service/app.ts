@@ -5,19 +5,7 @@
  * More details: https://expressjs.com/en/starter/installing.html
  *               https://expressjs.com/en/guide/routing.html
  *               TM352 - Block 2 - Express.js and RESTful APIs
- * 
- * @export
- * @param {string} inspectionId - The unique identifier for the inspection.
- * @param {Date} date - The date of the inspection.
- * @param {string} category - The category of the inspection.
- * @param {string} siteId - The ID of the site being inspected.
- * @param {string} zoneId - The ID of the zone being inspected.
- * @param {string} checkType - The type of check being performed.
- * @param {Array<string>} subchecks - The subchecks to be performed.
- * @param {string} comment - Any additional comments about the inspection.
- * @param {string} engineerName - The name of the engineer performing the inspection.
- * @returns {string} - A summary of the inspection details.
-* 
+ *
 */
 
 import express from "express";
@@ -37,8 +25,19 @@ const manager = new InspectionManager();
 
 /**
 * Create a new inspection record.
-* @param {Object} inspectionData - The data for the new inspection.
-* @returns {Inspection} - The created inspection object.
+* 
+* 
+ * @export
+ * @param {string} inspectionId - The unique identifier for the inspection.
+ * @param {Date} date - The date of the inspection.
+ * @param {string} category - The category of the inspection.
+ * @param {string} siteId - The ID of the site being inspected.
+ * @param {string} zoneId - The ID of the zone being inspected.
+ * @param {string} checkType - The type of check being performed.
+ * @param {Array<string>} subchecks - The subchecks to be performed.
+ * @param {string} comment - Any additional comments about the inspection.
+ * @param {string} engineerName - The name of the engineer performing the inspection.
+ * @returns {string} - A summary of the inspection details.
 *
 * @throws {Error} - If the inspection data is invalid.
 *   - If the inspection ID is missing or invalid.
@@ -59,19 +58,6 @@ app.post("/inspections", (request, result) => {
   } catch (error: any) {
     result.status(400).json({ status: "error", message: error.message });
   }
-});
-
-/**
- * Retrieve all sites.
- * @param {Object} _request - The HTTP request object (not used).
- * @param {Object} result - The HTTP response object.
- * 
- * @returns {Object} The HTTP response with the list of sites.
- * 
- */
-app.get("/sites", (_request, result) => {
-  const rows = db.prepare(`SELECT site_id AS id, site_name AS name FROM sites ORDER BY site_name`).all();
-  result.json({ status:"success", data: rows });
 });
 
 /**
@@ -97,6 +83,46 @@ app.post("/sites", (request, result) => {
     WHERE site_name=?
   `).get(siteName.trim()).site_id;
   result.json({ status:"success", data:{ id, name: siteName.trim() } });
+});
+
+/**
+ * Retrieve all sites.
+ * @param {Object} _request - The HTTP request object (not used).
+ * @param {Object} result - The HTTP response object.
+ * 
+ * @returns {Object} The HTTP response with the list of sites.
+ * 
+ */
+app.get("/sites", (_request, result) => {
+  const rows = db.prepare
+  (`
+    SELECT site_id AS id, 
+    site_name AS name FROM sites 
+    ORDER BY site_name
+  `).all();
+  result.json({ status:"success", data: rows });
+});
+
+/**
+ * Retrieve all zones.
+ * @param {Object} _request - The HTTP request object (not used).
+ * @param {Object} result - The HTTP response object.
+ * @returns {Object} The HTTP response with the list of zones.
+ * 
+ */
+
+app.get("/zones", (request,result)=> {
+  const siteId = Number(request.query.siteId)||null;
+  const rows = db.prepare
+  (`
+    SELECT zone_id AS id, 
+    zone_name AS name, 
+    zone_description AS description, 
+    site_id FROM zones 
+    WHERE (? IS NULL OR site_id=?) 
+    ORDER BY zone_name
+  `).all(siteId, siteId);
+  result.json({ status:"success", data: rows });
 });
 
 /**

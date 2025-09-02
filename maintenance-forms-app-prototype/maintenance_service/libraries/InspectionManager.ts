@@ -1,6 +1,5 @@
 import { Database } from "sqlite";
-import { openDatabase } from "../data-layer/db/sqlite";
-import { InspectionForm } from "./InspectionForm";
+import { InspectionForm } from "./InspectionForm.js";
 
 /**
  * The inspection manager is responsible for handling inspection forms.

@@ -11,14 +11,5 @@
 */
 
 import Database from "better-sqlite3";
-import path from "node:path";
-
-const dbPath = path.join(
-  process.cwd(), 
-  "maintenance_service", 
-  "data-layer", "db", 
-  "maintenance_checks.sqlite"
-);
-
-export const db: any = new Database(dbPath);
-db.pragma("foreign_keys = ON");
+export const db: any = new Database("maintenance_service/data-layer/db/maintenance_checks.sqlite");
+db.pragma("foreign_keys=ON");
