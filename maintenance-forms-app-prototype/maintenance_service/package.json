@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only app.ts",
+    "migrate": "ts-node ./maintenance_service/migrate.ts",
+    "dev": "ts-node-dev --respawn --transpile-only ./maintenance_service/app.ts",
     "build": "tsc",
-    "start": "node dist/app.js",
-    "migrate": "ts-node migrate.ts"
+    "start": "node dist/app.js"
   },
   "dependencies": {
     "better-sqlite3": "^9.4.0",
