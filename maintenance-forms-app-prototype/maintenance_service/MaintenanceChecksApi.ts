@@ -79,6 +79,19 @@ export class MaintenanceChecksApi {
   }
 
   /**
+   * Retrieve subcheck templates based on item type label.
+   * @param itemTypeLabel - The label of the item type to filter templates.
+   * @returns A promise that resolves to the list of subcheck templates.
+   */
+  templatesByLabel(itemTypeLabel: string) {
+    return fetch(
+      `${this.baseUrl}/subcheck-templates?label=${encodeURIComponent(
+        itemTypeLabel
+      )}`
+    ).then((res) => res.json());
+  }
+
+  /**
    * User login.
    * @param username - The username of the user.
    * @param password - The password of the user.
