@@ -54,21 +54,21 @@ This prototype supports:
    cd maintenance-forms-app-prototype
 
 2. Install dependencies
-
+   ```bash
    npm install
    
 4. Set up the database
-
+   ```bash
    cd data-layer
    ts-node migrate.ts
 
 6. Run the backend service
-
+   ```bash
    cd app_service
    npm run dev
 
 8. Start the frontend
-
+   ```bash
    cd app
    npm start
 
