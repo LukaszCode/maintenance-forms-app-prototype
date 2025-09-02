@@ -91,6 +91,29 @@ export class MaintenanceChecksApi {
     ).then((res) => res.json());
   }
 
+  // --- inspections ---
+  /**
+   * Create a new inspection.
+   * @param inspectionData - The data for the new inspection.
+   * @returns A promise that resolves to the created inspection.
+   */
+  createInspection(inspectionData: any) {
+    return fetch(`${this.baseUrl}/inspections`, {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify(inspectionData),
+    }).then((r) => r.json());
+  }
+
+  /**
+   * Retrieve an inspection by ID.
+   * @param id - The ID of the inspection to retrieve.
+   * @returns A promise that resolves to the inspection data.
+   */
+  getInspection(id: number) {
+    return fetch(`${this.baseUrl}/inspections/${id}`).then((r) => r.json());
+  }
+
   /**
    * User login.
    * @param username - The username of the user.
