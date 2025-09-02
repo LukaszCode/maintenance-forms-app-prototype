@@ -50,6 +50,35 @@ export class MaintenanceChecksApi {
   }
 
   /**
+   * Retrieve items based on zone ID and item type.
+   * @param zoneId - The ID of the zone to filter items.
+   * @param itemType - The type of the item to filter items.
+   * @returns A promise that resolves to the list of items.
+   */
+  items(zoneId?: number, itemType?: string) {
+    const params: string[] = [];
+    if (zoneId) {
+      params.push(`zoneId=${zoneId}`);
+    }
+    if (itemType) {
+      params.push(`itemType=${encodeURIComponent(itemType)}`);
+    }
+    const query = params.length > 0 ? `?${params.join("&")}` : "";
+    return fetch(`${this.baseUrl}/items${query}`).then((res) => res.json());
+  }
+
+  /**
+   * Retrieve subcheck templates based on item type ID.
+   * @param itemTypeId - The ID of the item type to filter templates.
+   * @returns A promise that resolves to the list of subcheck templates.
+   */
+  templatesByTypeId(itemTypeId: number) {
+    return fetch(
+      `${this.baseUrl}/subcheck-templates?itemTypeId=${itemTypeId}`
+    ).then((res) => res.json());
+  }
+
+  /**
    * User login.
    * @param username - The username of the user.
    * @param password - The password of the user.
