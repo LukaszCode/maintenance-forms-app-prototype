@@ -64,14 +64,14 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
   useEffect(() => {
     (async () => {
       try {
-        const siteRes = await api.sites();
-        setSites(siteRes.data ?? []);
+        const sitesRes = await api.sites();
+        setSites(sitesRes.data ?? []);
       } catch {
         setSites([]);
       }
       try {
         const typesRes = await api.itemTypes("Facility");
-        // API returns: id, label, category, description
+        // API returns: { id, label, category, description }
         setItemTypes(typesRes.data ?? []);
       } catch {
         setItemTypes([]);
@@ -81,8 +81,8 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
 
   /**
    * Load zones for the selected site.
-   * This will be called whenever the siteName changes.
-   * @param siteName - The name of the selected site.
+   * When the site changes, fetch the zones for that site.
+   * @param - The ID of the selected site.
    * @returns A promise that resolves to the list of zones for the selected site.
    */
   useEffect(() => {
@@ -98,6 +98,10 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
       } catch {
         setZones([]);
       }
+      // changing site resets downstream selections
+      setSelectedZoneId(null);
+      setItems([]);
+      setSelectedItemId(null);
     })();
   }, [selectedSiteId]);
 
@@ -109,14 +113,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
    * @returns A promise that resolves to the list of items for the selected zone and item type.
    */
   useEffect(() => {
-    // when zoneName changes, load items for that zone
-    const zone = zones.find(z => z.name === zoneName);
-    if (!zone || !itemType.trim()) {
-      setItems([]);
-      return;
-    }
-    api.items(zone.id).then((r) => setItems(r.data ?? [])).catch(() => setItems([]));
-  }, [zoneName, itemType, zones]);
+    if (!selectedItemTypeLabel)
 
 
   /**
