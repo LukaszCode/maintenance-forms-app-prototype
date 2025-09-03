@@ -38,5 +38,8 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": ["**/*.ts"]
+  "include": [
+    "**/*.ts",
+    "../maintenance_app/src/services/MaintenanceChecksApi.ts"
+  ]
 }
