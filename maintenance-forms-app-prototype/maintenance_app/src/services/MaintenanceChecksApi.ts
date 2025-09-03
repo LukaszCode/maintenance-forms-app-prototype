@@ -85,7 +85,7 @@ export class MaintenanceChecksApi {
    */
   templatesByLabel(itemTypeLabel: string) {
     return fetch(
-      `${this.baseUrl}/subcheck-templates?label=${encodeURIComponent(
+      `${this.baseUrl}/subcheck-templates/by-label?itemType=$ {encodeURIComponent(
         itemTypeLabel
       )}`
     ).then((res) => res.json());
