@@ -9,7 +9,7 @@
   A subcheck is considered invalid if it has a status of "fail" and is missing a comment.
 */
 
-import { Subcheck } from "../data-types/models";
+import { Subcheck } from "../../data-types/models";
 
 /*
   This function validates a single subcheck object.
@@ -38,12 +38,7 @@ export function validateSubcheck(subcheck: Subcheck): boolean {
   It returns "pass" if all subchecks are "pass", otherwise it returns "fail".
 */
 export function calculateOverallStatus(subchecks: Subcheck[]): "pass" | "fail" {
-  for (const subcheck of subchecks) {
-    if (subcheck.status === "fail") {
-      return "fail";
-    }
-  }
-  return "pass";
+  return subchecks.some((s) => s.status === "fail") ? "fail" : "pass";
 }
 
 /*
@@ -55,7 +50,7 @@ export function requireCommentIfFailed(
   comment?: string | null
 ): string[] {
   const errors: string[] = [];
-  if (overall === "fail" && !comment) {
+  if (overall === "fail" && !comment?.trim()) {
     errors.push("Comment is required when the inspection fails.");
   }
   return errors;
