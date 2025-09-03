@@ -132,35 +132,55 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
 
   /**
    * Load subcheck templates for the selected item type.
-   * This will be called whenever the itemType changes.
+   * When itemType changes, load subcheck templates for that item type (by id)
    * @param itemType - The type of the selected item.
    * @returns A promise that resolves to the list of subcheck templates for the selected item type.
    */
-  useEffect(() => {
-    if (!itemType.trim()) {
+    useEffect(() => {
+    if (!selectedItemTypeLabel) {
+      setSubchecks([]);
       return;
     }
-    api.templatesByLabel(itemType).then((response) => {
-      const rows = response.data ?? [];
-      if (rows.length === 0) {
-        return;
+    const type = itemTypes.find((t) => t.label === selectedItemTypeLabel);
+    if (!type) {
+      setSubchecks([]);
+      return;
+    }
+    (async () => {
+      try {
+        const subchecksRes = await api.templatesByTypeId(type.id);
+        const subcheckRows = subchecksRes.data ?? [];
+        setSubchecks(
+          subcheckRows.map((t: any, i: number) => ({
+            id: i + 1,
+            name: t.name,
+            subcheckDescription: t.description ?? "",
+            valueType: t.valueType === "TEXT" ? "string" : (t.valueType as "boolean" | "number" | "string"),
+            passCriteria: t.passCriteria ?? "",
+            mandatory: !!t.mandatory,
+            status: "pass",
+          }))
+        );
+      } catch {
+        setSubchecks([]);
       }
-      setSubchecks(rows.map((t: any, i: number) => ({
-        id: i + 1,
-        name: t.name,
-        subcheckDescription: t.description,
-        valueType: t.valueType,
-        passCriteria: t.passCriteria,
-        status: "pass",
-      })));
-    }).catch(() => {});
-  }, [itemType]);
-
+    })();
+  }, [selectedItemTypeLabel, itemTypes]);
+  
+  /**
+   * Get the overall status of the subchecks.
+   * This will be "pass" if all subchecks are "pass", otherwise "fail".
+   * 
+   */
   const overall: "pass" | "fail" = useMemo(
     () => (subchecks.every((s) => s.status === "pass") ? "pass" : "fail"),
     [subchecks]
   );
-
+  /**
+   * Toggle the status of a subcheck.
+   * @param id - The ID of the subcheck to toggle.
+   * @returns A promise that resolves when the toggle is complete.
+   */
   const toggle = (id: number) =>
     setSubchecks((prev) =>
       prev.map((s) =>
@@ -179,29 +199,16 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
       return;
     }
 
-    // UI-only payload (names for now; later resolve to IDs + call API)
-    const payload = {
-      inspectionDate: new Date(dateString).toISOString(),
-      inspectionCategory: "Facility" as const,
-      itemType,
-      itemName,
-      siteName,
-      zoneName,
-      inspectedByName: engineerName,
-      subchecks: subchecks.map((s) => ({
-        name: s.name,
-        subcheckDescription: s.subcheckDescription,
-        valueType: s.valueType,
-        passCriteria: s.passCriteria,
-        status: s.status,
-      })),
-      overall,
-      comment: comment || null,
-    };
-    console.log("Facilities payload", payload);
-    Alert.alert("Saved", `Overall: ${overall.toUpperCase()}`);
-    navigation.goBack();
-  };
+    const toggle = (id: number) =>
+    setSubchecks((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, status: s.status === "pass" ? "fail" : "pass" } : s))
+    );
+
+    const onSave = async () => {
+      try {
+
+      }
+    }
 
   return (
     <View style={globalStyles.container}>
