@@ -13,20 +13,9 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
 import AppHeader from "../components/AppHeader";
 import { globalStyles } from "../styles/globalStyles";
-import {
-  User,
-  Inspection,
-  Site,
-  Zone,
-  Item,
-  Subcheck,
-  SubcheckTemplate,
-  Result,
-  Reading,
-  Attachment,
-} from "../data-types/models";
 import SubcheckToggleRow from "../components/SubcheckToggleRow";
 import { api } from "../src/services/apiClient";
+import { validateAndBuildInspectionPayload, SubcheckUI } from "../business-logic/validation/formValidation";
 
 type Props = NativeStackScreenProps<RootStackParamList, "FacilitiesCheckForm">;
 type SubcheckStatus = "pass" | "fail";
