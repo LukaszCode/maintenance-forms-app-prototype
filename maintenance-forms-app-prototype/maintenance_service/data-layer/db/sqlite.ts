@@ -11,17 +11,24 @@
             18/08/2025: Added path handling for database file
 */
 
+// maintenance_service/data-layer/db/sqlite.ts
 import Database from "better-sqlite3";
 import { fileURLToPath } from "url";
 import path from "path";
+import type { Database as BetterSqlite3Database } from "better-sqlite3";
 
-// __dirname replacement for ESM
+/**
+ * ESM-safe __dirname
+ * It allows us to construct paths relative to the current module.
+ */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// This file (sqlite.ts) lives in /maintenance_service/data-layer/db
-// The DB file is in the same folder:
 const dbPath = path.join(__dirname, "maintenance_checks.sqlite");
 
-export const db = new Database(dbPath);
-db.pragma("foreign_keys=ON");
+// Export a nameable type alias
+export type SqliteDb = BetterSqlite3Database;
+
+// This cast keeps runtime correct while giving a nameable exported type
+export const db: SqliteDb = new (Database as any)(dbPath);
+

@@ -78,22 +78,21 @@ app.post("/sites", (request, result) => {
     .prepare(
       `
     INSERT OR IGNORE INTO sites(site_name) VALUES (?)
-  `
+    `
     )
     .run(siteName.trim());
-  const id =
-    info.lastInsertRowid ??
-    db
-      .prepare(
+    const id =
+      info.lastInsertRowid ??
+      (db.prepare(
         `
-    SELECT site_id 
-    FROM sites 
-    WHERE site_name=?
-  `
+        SELECT site_id 
+        FROM sites 
+        WHERE site_name=?
+        `
       )
-      .get(siteName.trim()).site_id;
-  result.json({ status: "success", data: { id, name: siteName.trim() } });
-});
+      .get(siteName.trim()) as { site_id: number }).site_id;
+    result.json({ status: "success", data: { id, name: siteName.trim() } });
+  });
 
 /**
  * Retrieve all sites.
