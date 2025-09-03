@@ -154,10 +154,10 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
           subcheckRows.map((t: any, i: number) => ({
             id: i + 1,
             name: t.name,
-            subcheckDescription: t.description ?? "",
+            subcheckDescription: t.meta.description ?? "",
             valueType: t.valueType === "TEXT" ? "string" : (t.valueType as "boolean" | "number" | "string"),
-            passCriteria: t.passCriteria ?? "",
-            mandatory: !!t.mandatory,
+            passCriteria: t.meta.passCriteria ?? "",
+            mandatory: !!t.meta.mandatory,
             status: "pass",
           }))
         );
@@ -191,38 +191,80 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
     );
 
   const onSave = async () => {
-    if (overall === "fail" && !comment.trim()) {
-      Alert.alert(
-        "Comment required",
-        "Please explain the failing checks before saving."
-      );
-      return;
-    }
-
-    const toggle = (id: number) =>
-    setSubchecks((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: s.status === "pass" ? "fail" : "pass" } : s))
-    );
-
-    const onSave = async () => {
-      try {
-
+    try {
+      // 1) basic dropdown checks
+      if (!selectedSiteId) {
+        Alert.alert("Site required", "Please select a site before saving.");
+        return;
       }
-    }
+      if (!selectedZoneId) {
+        Alert.alert("Zone required", "Please select a zone before saving.");
+        return;
+      }
+      if (!selectedItemTypeLabel) {
+        Alert.alert("Item Type required", "Please select an item type before saving.");
+        return;
+      }
+      if (!selectedItemId) {
+        Alert.alert("Item required", "Please select an item before saving.");
+        return;
+      }
+      // 2) FE validation of subchecks
+      const invalid = subchecks.filter((s) =>
+        !validateSubcheck({
+          subcheckId: 0,
+          inspectionId: 0,
+          subcheckName: s.name,
+          subcheckDescription: s.meta.description ?? "",
+          valueType: s.meta.valueType,
+          passCriteria: s.meta.passCriteria ?? "",
+          status: s.status,
+        } as any)
+      );
+      if (invalid.length > 0) {
+        return Alert.alert("Invalid subchecks", "Please complete all subcheck fields.");
+      }
+      const computedOverallStatus = calculateOverallStatus(
+        subchecks.map((s) => ({ status: s.status } as any))
+      );
+      const commentRequired = requireCommentIfFailed(computedOverallStatus, comment);
+      if (commentRequired.length > 0) {
+        return Alert.alert("Comment required", commentRequired.join("\n"));
+      }
+      // 3) Build EXACT backend payload
+      const payload = {
+        inspectionDate: new Date(dateString).toISOString(),
+        inspectionCategory: "Facility" as const,
+        itemId: selectedItemId,
+        engineerName, // backend resolves to users.full_name → engineer_id
+        comment: comment || undefined,
+        subchecks: subchecks.map((s) => ({
+          subcheckName: s.name,
+          subcheckDescription: s.meta.description ?? "",
+          valueType: s.meta.valueType,
+          passCriteria: s.meta.passCriteria ?? "",
+          status: s.status, // 'pass' | 'fail'
+        })),
+      };
 
-  return (
+      const res = await api.createInspection(payload);
+      if (res.status !== "success") {
+        throw new Error(res.message ?? "Save failed");
+      }
+
+      Alert.alert("Saved", "Inspection saved successfully.");
+      navigation.goBack();
+    } catch (e: any) {
+      Alert.alert("Error", e.message ?? "Could not save");
+    }
+  };
+
+    return (
     <View style={globalStyles.container}>
-      <AppHeader
-        engineerName={engineerName}
-        onSignOut={() => navigation.navigate("Login")}
-      />
+      <AppHeader engineerName={engineerName} onSignOut={() => navigation.navigate("Login")} />
 
       <TouchableOpacity
-        style={[
-          globalStyles.button,
-          globalStyles.secondaryButton,
-          globalStyles.backButton,
-        ]}
+        style={[globalStyles.button, globalStyles.secondaryButton, globalStyles.backButton]}
         onPress={() => navigation.goBack()}
       >
         <Text style={globalStyles.secondaryButtonText}>Back</Text>
@@ -232,92 +274,104 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
         <View style={globalStyles.card}>
           <Text style={globalStyles.cardTitle}>Inspection Check Form</Text>
 
+          {/* Date */}
           <View style={globalStyles.formRow}>
             <View style={globalStyles.formCol}>
               <Text>Date (YYYY-MM-DD)</Text>
-              <TextInput
-                style={globalStyles.input}
-                value={dateString}
-                onChangeText={setDateString}
-              />
-            </View>
-            <View style={globalStyles.formCol}>
-              <Text>Location</Text>
-              <TextInput
-                style={globalStyles.input}
-                value={siteName}
-                onChangeText={setSiteName}
-                placeholder="Select site…"
-              />
+              <TextInput style={globalStyles.input} value={dateString} onChangeText={setDateString} />
             </View>
           </View>
 
+          {/* Site */}
           <View style={globalStyles.formRow}>
             <View style={globalStyles.formCol}>
-              <Text>Zone</Text>
-              <TextInput
+              <Text>Site</Text>
+              <Picker
+                selectedValue={selectedSiteId}
+                onValueChange={(v) => setSelectedSiteId(v)}
                 style={globalStyles.input}
-                value={zoneName}
-                onChangeText={setZoneName}
-                placeholder="Select zone…"
-              />
+              >
+                <Picker.Item label="Select site…" value={null} />
+                {sites.map((s) => (
+                  <Picker.Item key={s.id} label={s.name} value={s.id} />
+                ))}
+              </Picker>
             </View>
+
+            {/* Zone */}
             <View style={globalStyles.formCol}>
-              <Text>Item Type</Text>
-              <TextInput
+              <Text>Zone</Text>
+              <Picker
+                selectedValue={selectedZoneId}
+                onValueChange={(v) => setSelectedZoneId(v)}
+                enabled={!!selectedSiteId}
                 style={globalStyles.input}
-                value={itemType}
-                onChangeText={setItemType}
-                placeholder="Select item type…"
-              />
+              >
+                <Picker.Item label="Select zone…" value={null} />
+                {zones.map((z) => (
+                  <Picker.Item key={z.id} label={z.name} value={z.id} />
+                ))}
+              </Picker>
             </View>
           </View>
 
-          <View style={{ marginBottom: 12 }}>
-            <Text>Item Name</Text>
-            <TextInput
-              style={globalStyles.input}
-              value={itemName}
-              onChangeText={setItemName}
-              placeholder="e.g. EL-01"
-            />
+          {/* Item Type */}
+          <View style={globalStyles.formRow}>
+            <View style={globalStyles.formCol}>
+              <Text>Item Type</Text>
+              <Picker
+                selectedValue={selectedItemTypeLabel}
+                onValueChange={(v) => setSelectedItemTypeLabel(v)}
+                style={globalStyles.input}
+              >
+                <Picker.Item label="Select item type…" value="" />
+                {itemTypes.map((t) => (
+                  <Picker.Item key={t.id} label={t.label} value={t.label} />
+                ))}
+              </Picker>
+            </View>
+
+            {/* Item */}
+            <View style={globalStyles.formCol}>
+              <Text>Item</Text>
+              <Picker
+                selectedValue={selectedItemId}
+                onValueChange={(v) => setSelectedItemId(v)}
+                enabled={!!selectedZoneId}
+                style={globalStyles.input}
+              >
+                <Picker.Item label="Select item…" value={null} />
+                {items.map((it) => (
+                  <Picker.Item key={it.id} label={it.name} value={it.id} />
+                ))}
+              </Picker>
+            </View>
           </View>
 
           {/* Subchecks */}
           <View style={globalStyles.formPane}>
-            <Text style={globalStyles.formPaneTitle}>
-              Choose completed safety tests
-            </Text>
+            <Text style={globalStyles.formPaneTitle}>Choose completed safety tests</Text>
             {subchecks.map((s) => (
               <SubcheckToggleRow
                 key={s.id}
                 name={s.name}
                 value={s.status}
                 onToggle={() => toggle(s.id)}
-                mandatory={s.mandatory}
+                infoText={s.meta.description}
+                mandatory={s.meta.mandatory}
+                requireInfoFirst={false}
               />
             ))}
           </View>
 
           {/* Overall + Comment */}
           <Text style={{ fontWeight: "700", marginBottom: 8 }}>
-            Overall:{" "}
-            <Text style={{ color: overall === "pass" ? "#2a9d9d" : "#c0392b" }}>
-              {overall.toUpperCase()}
-            </Text>
+            Overall: <Text style={{ color: overall === "pass" ? "#2a9d9d" : "#c0392b" }}>{overall.toUpperCase()}</Text>
           </Text>
 
-          <Text>
-            Comment{" "}
-            {overall === "fail" ? (
-              <Text style={{ color: "#b00020" }}>*</Text>
-            ) : null}
-          </Text>
+          <Text>Comment {overall === "fail" ? <Text style={{ color: "#b00020" }}>*</Text> : null}</Text>
           <TextInput
-            style={[
-              globalStyles.input,
-              { height: 120, textAlignVertical: "top" },
-            ]}
+            style={[globalStyles.input, { height: 120, textAlignVertical: "top" }]}
             value={comment}
             onChangeText={setComment}
             placeholder="Explain failing checks…"
@@ -326,16 +380,10 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
 
           {/* Actions */}
           <View style={[globalStyles.actionRow, { marginTop: 8 }]}>
-            <TouchableOpacity
-              style={[globalStyles.button, globalStyles.secondaryButton]}
-              onPress={() => navigation.goBack()}
-            >
+            <TouchableOpacity style={[globalStyles.button, globalStyles.secondaryButton]} onPress={() => navigation.goBack()}>
               <Text style={globalStyles.secondaryButtonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[globalStyles.button, globalStyles.primaryButton]}
-              onPress={onSave}
-            >
+            <TouchableOpacity style={[globalStyles.button, globalStyles.primaryButton]} onPress={onSave}>
               <Text style={globalStyles.primaryButtonText}>Save</Text>
             </TouchableOpacity>
           </View>

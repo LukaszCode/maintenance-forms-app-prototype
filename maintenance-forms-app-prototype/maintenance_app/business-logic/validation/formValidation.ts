@@ -13,7 +13,7 @@ export type SubcheckUI = {
     status: "pass" | "fail";
 
     meta: {       // This will be hidden but sent to backend
-        description: string | null;
+        description: string | undefined;
         valueType: "string" | "number" | "boolean";
         mandatory: boolean;
         passCriteria: string | null;
@@ -21,6 +21,7 @@ export type SubcheckUI = {
 };
 
 type BuildArgs = {
+    id: number;
     dateString: string; // ISO date string
     inspectionCategory: "Facility" | "Machine Safety";
     itemId: number;

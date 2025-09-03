@@ -24,7 +24,7 @@ interface SubcheckToggleProps {
   name: string;
   value: "pass" | "fail";
   onToggle: () => void;
-  infoText?: string;
+  infoText?: string | undefined;
   mandatory?: boolean;
   requireInfoFirst?: boolean;
 }
