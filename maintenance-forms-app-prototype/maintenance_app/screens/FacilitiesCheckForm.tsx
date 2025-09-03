@@ -10,35 +10,50 @@ import {
   Alert,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Picker } from "@react-native-picker/picker";
 import { RootStackParamList } from "../App";
 import AppHeader from "../components/AppHeader";
 import { globalStyles } from "../styles/globalStyles";
 import SubcheckToggleRow from "../components/SubcheckToggleRow";
 import { api } from "../src/services/apiClient";
 import { validateAndBuildInspectionPayload, SubcheckUI } from "../business-logic/validation/formValidation";
+import {
+  validateSubcheck,
+  calculateOverallStatus,
+  requireCommentIfFailed,
+} from "../business-logic/validation/subcheckValidation";
 
 type Props = NativeStackScreenProps<RootStackParamList, "FacilitiesCheckForm">;
-type SubcheckStatus = "pass" | "fail";
+
+type SiteOption = { id: number; name: string };
+type ZoneOption = { id: number; name: string };
+type ItemTypeOption = { id: number; label: string; category: string; description?: string };
+type ItemOption = { id: number; name: string; description?: string; zone_id: number; item_type: string };
 
 const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
   const { engineerName } = route.params;
 
   // Basic fields
-  const [dateString, setDateString] = useState(
-    new Date().toISOString().slice(0, 10)
-  );
-
-  // Basic fields
-  const [zoneName, setZoneName] = useState("");
+  const [dateString, setDateString] = useState(new Date().toISOString().slice(0, 10));
   const [siteName, setSiteName] = useState("");
-  const [comment, setComment] = useState("");
-  const [itemName, setItemName] = useState("");
+  const [zoneName, setZoneName] = useState("");
   const [itemType, setItemType] = useState("");
+  const [itemName, setItemName] = useState("");
+
+  const [comment, setComment] = useState("");
+
+  /**
+   * This is a placeholder for the item ID.
+   * For simplicity, here we just use names and a single hardcoded ID
+   */
+  const [itemId, setItemId] = useState<number | null>(null);
+
+
+  //Derived fields 
   const [sites, setSites] = useState<{ id: number; name: string }[]>([]);
   const [zones, setZones] = useState<{ id: number; name: string }[]>([]);
   const [items, setItems] = useState<{ id: number; name: string }[]>([]);
-  const [subchecks, setSubchecks] = useState<{ id: number; name: string; subcheckDescription: 
-    string; valueType: string; passCriteria: string; status: SubcheckStatus; }[]>([]);
+  const [subchecks, setSubchecks] = useState<{ id: number; name: string; subcheckDescription: string; valueType: string; passCriteria: string; status: "pass" | "fail"; }[]>([]);
 
   /**
    * Load all sites at mount.
@@ -105,7 +120,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
         subcheckDescription: t.description,
         valueType: t.valueType,
         passCriteria: t.passCriteria,
-        status: "pass" as SubcheckStatus,
+        status: "pass",
       })));
     }).catch(() => {});
   }, [itemType]);
@@ -238,7 +253,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
             {subchecks.map((s) => (
               <SubcheckToggleRow
                 key={s.id}
-                label={s.label}
+                name={s.name}
                 value={s.status}
                 onToggle={() => toggle(s.id)}
                 mandatory={s.mandatory}
