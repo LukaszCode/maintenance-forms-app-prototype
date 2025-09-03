@@ -51,10 +51,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
 
   useEffect(() => {
     // load all sites at mount
-    api
-      .sites()
-      .then((r) => setSites(r.data ?? []))
-      .catch(() => setSites([]));
+    api.sites().then((r) => setSites(r.data ?? [])).catch(() => setSites([]));
   }, []);
 
   useEffect(() => {
@@ -64,10 +61,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
       setZones([]);
       return;
     }
-    api
-      .zones(site.id)
-      .then((r) => setZones(r.data ?? []))
-      .catch(() => setZones([]));
+    api.zones(site.id).then((r) => setZones(r.data ?? [])).catch(() => setZones([]));
   }, [siteName, sites]);
 
   useEffect(() => {
