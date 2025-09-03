@@ -1,4 +1,3 @@
-import type { Subcheck as RuleSubcheck } from "../../data-types/models";
 import {
     validateSubcheck,
     calculateOverallStatus,
@@ -14,35 +13,87 @@ export type SubcheckUI = {
     status: "pass" | "fail";
 
     meta: {       // This will be hidden but sent to backend
-        description: string; 
+        description: string | null;
         valueType: "string" | "number" | "boolean";
         mandatory: boolean;
         passCriteria: string | null;
-        
     };
 };
 
-export type BuildParams = {
+type BuildArgs = {
     dateString: string; // ISO date string
-    category: "Facility" | "Machine Safety";
+    inspectionCategory: "Facility" | "Machine Safety";
+    itemId: number;
     engineerName: string;
-    siteName: string;
-    zoneName: string;
-    itemType: string;
-    itemName: string;
-    comment?: string;
-    subchecks: SubcheckUI[];
-    
-    // lookup data fetched from backend
-    sites: IdName[];
-    zones: IdName[];
-    items: ItemRow[];
+    comment?: string | null;
+    subchecksUi: SubcheckUI[];
 };
 
-type Ok<T> = { ok: true; data: T };
-type Err = { ok: false; errors: string[] };
-
 /**
- * Convert UI toggle row to subcheck rules
- * 
+ * Validates and builds the data payload for an inspection submission.
+ * @param args The arguments that will be used to send to the backend.
+ * @returns The validated and built inspection payload.
  */
+export function validateAndBuildInspectionPayload(args: BuildArgs) {
+    const { dateString, inspectionCategory, itemId, engineerName, comment, subchecksUi } = args;
+
+    if (!dateString.trim()) {
+        throw new Error("Date string is required.");
+    }
+    if (!engineerName.trim()) {
+        throw new Error("Engineer name is required.");
+    }
+    if (!Number.isInteger(itemId)) {
+        throw new Error("Item is not selected.");
+    }
+
+    // Map to domain-specific subcheck format
+    const domainSubchecks = subchecksUi.map(s => ({
+        subcheckName: s.name, 
+        subcheckDescription: s.meta.description ?? "",
+        valueType: s.meta.valueType === "string" ? "text" : (s.meta.valueType as "boolean"|"number"|"string"),
+        passCriteria: s.meta.passCriteria ?? "",
+        status: s.status,
+    }));
+    
+    //Frontend validation
+
+    /**
+     * Validate each subcheck
+     * This ensures that all required fields are filled out correctly.
+     * If any subcheck is invalid, an error is thrown.
+     * The specific validation rules are defined in the validateSubcheck function.
+     */
+    const invalidSubchecks = domainSubchecks.filter(sc => !validateSubcheck(sc as any));
+    if (invalidSubchecks.length > 0) {
+        throw new Error("Please complete all subcheck fields.");
+    }
+
+    /**
+     * Calculate overall status
+     * This aggregates the status of all subchecks to determine the overall inspection status.
+     * If any subcheck is marked as "fail", the overall status will be "fail".
+     * If all subchecks are marked as "pass", the overall status will be "pass".
+     * If there are mixed statuses, the overall status will be "failed".
+     */
+    const overallStatus = calculateOverallStatus(domainSubchecks as any);
+    const commentErrors = requireCommentIfFailed(overallStatus, comment);
+    if (commentErrors.length > 0) {
+        throw new Error(commentErrors.join("\n"));
+    }
+
+    /**
+     * Build the final payload
+     * This prepares the data to be sent to the backend by structuring it according to the API requirements.
+     */
+    const payload = {
+        inspectionDate: new Date(dateString).toISOString(),
+        inspectionCategory,
+        itemId,
+        engineerName,
+        comment: comment || null,
+        subchecks: domainSubchecks,
+    };
+
+    return payload;
+}
