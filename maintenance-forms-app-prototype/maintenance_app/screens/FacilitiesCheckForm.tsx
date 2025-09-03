@@ -35,12 +35,19 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
 
   // Basic fields
   const [dateString, setDateString] = useState(new Date().toISOString().slice(0, 10));
-  const [siteName, setSiteName] = useState("");
-  const [zoneName, setZoneName] = useState("");
-  const [itemType, setItemType] = useState("");
-  const [itemName, setItemName] = useState("");
-
   const [comment, setComment] = useState("");
+
+  //Dropdown data
+  const [sites, setSites] = useState<SiteOption[]>([]);
+  const [zones, setZones] = useState<ZoneOption[]>([]);
+  const [itemTypes, setItemTypes] = useState<ItemTypeOption[]>([]);
+  const [items, setItems] = useState<ItemOption[]>([]);
+
+  //Current selections (attach IDs/labels to query dropdowns)
+  const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
+  const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
+  const [selectedItemTypeLabel, setSelectedItemTypeLabel] = useState<string | null>(null);
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
 
   /**
    * This is a placeholder for the item ID.
@@ -48,21 +55,28 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
    */
   const [itemId, setItemId] = useState<number | null>(null);
 
-
-  //Derived fields 
-  const [sites, setSites] = useState<{ id: number; name: string }[]>([]);
-  const [zones, setZones] = useState<{ id: number; name: string }[]>([]);
-  const [items, setItems] = useState<{ id: number; name: string }[]>([]);
-  const [subchecks, setSubchecks] = useState<{ id: number; name: string; subcheckDescription: string; valueType: string; passCriteria: string; status: "pass" | "fail"; }[]>([]);
-
+  const [subchecks, setSubchecks] = useState<SubcheckUI[]>([]);
   /**
-   * Load all sites at mount.
-   * This will be called when the component is first rendered.
-    * @returns A promise that resolves to the list of sites.
+   * Load all sites, item types per category at mount.
+   * This will fetch the initial data needed for the form.
+   * @returns A promise that resolves to the list of sites.
    */
   useEffect(() => {
-    // load all sites at mount
-    api.sites().then((r) => setSites(r.data ?? [])).catch(() => setSites([]));
+    (async () => {
+      try {
+        const siteRes = await api.sites();
+        setSites(siteRes.data ?? []);
+      } catch {
+        setSites([]);
+      }
+      try {
+        const typesRes = await api.itemTypes("Facility");
+        // API returns: id, label, category, description
+        setItemTypes(typesRes.data ?? []);
+      } catch {
+        setItemTypes([]);
+      }
+    })();
   }, []);
 
   /**
@@ -72,14 +86,20 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
    * @returns A promise that resolves to the list of zones for the selected site.
    */
   useEffect(() => {
-    // when siteName changes, load zones for that site
-    const site = sites.find((s) => s.name === siteName);
-    if (!site) {
+    if (!selectedSiteId) {
       setZones([]);
+      setSelectedZoneId(null);
       return;
     }
-    api.zones(site.id).then((r) => setZones(r.data ?? [])).catch(() => setZones([]));
-  }, [siteName, sites]);
+    (async () => {
+      try {
+        const zonesRes = await api.zones(selectedSiteId);
+        setZones(zonesRes.data ?? []);
+      } catch {
+        setZones([]);
+      }
+    })();
+  }, [selectedSiteId]);
 
   /**
    * Load items for the selected zone and item type.
