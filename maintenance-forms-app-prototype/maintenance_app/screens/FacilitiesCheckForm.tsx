@@ -48,12 +48,25 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
   const [sites, setSites] = useState<{ id: number; name: string }[]>([]);
   const [zones, setZones] = useState<{ id: number; name: string }[]>([]);
   const [items, setItems] = useState<{ id: number; name: string }[]>([]);
+  const [subchecks, setSubchecks] = useState<{ id: number; name: string; subcheckDescription: 
+    string; valueType: string; passCriteria: string; status: SubcheckStatus; }[]>([]);
 
+  /**
+   * Load all sites at mount.
+   * This will be called when the component is first rendered.
+    * @returns A promise that resolves to the list of sites.
+   */
   useEffect(() => {
     // load all sites at mount
     api.sites().then((r) => setSites(r.data ?? [])).catch(() => setSites([]));
   }, []);
 
+  /**
+   * Load zones for the selected site.
+   * This will be called whenever the siteName changes.
+   * @param siteName - The name of the selected site.
+   * @returns A promise that resolves to the list of zones for the selected site.
+   */
   useEffect(() => {
     // when siteName changes, load zones for that site
     const site = sites.find((s) => s.name === siteName);
@@ -64,6 +77,13 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
     api.zones(site.id).then((r) => setZones(r.data ?? [])).catch(() => setZones([]));
   }, [siteName, sites]);
 
+  /**
+   * Load items for the selected zone and item type.
+   * This will be called whenever the zoneName or itemType changes.
+   * @param zoneName - The name of the selected zone.
+   * @param itemType - The type of the selected item.
+   * @returns A promise that resolves to the list of items for the selected zone and item type.
+   */
   useEffect(() => {
     // when zoneName changes, load items for that zone
     const zone = zones.find(z => z.name === zoneName);
@@ -74,18 +94,32 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
     api.items(zone.id).then((r) => setItems(r.data ?? [])).catch(() => setItems([]));
   }, [zoneName, itemType, zones]);
 
-  // Subchecks (MVP static; later load from DB)
-  const [subchecks, setSubchecks] = useState<SubcheckVM[]>(() => [
-    {
-      id: 1,
-      label: "Function test – all luminaires illuminate",
-      mandatory: true,
-      status: "pass",
-    },
-    { id: 2, label: "Recharge indicator working", status: "pass" },
-    { id: 3, label: "Labels/ID present and legible", status: "pass" },
-    { id: 4, label: "No visible damage or faults", status: "pass" },
-  ]);
+
+  /**
+   * Load subcheck templates for the selected item type.
+   * This will be called whenever the itemType changes.
+   * @param itemType - The type of the selected item.
+   * @returns A promise that resolves to the list of subcheck templates for the selected item type.
+   */
+  useEffect(() => {
+    if (!itemType.trim()) {
+      return;
+    }
+    api.templatesByLabel(itemType).then((response) => {
+      const rows = response.data ?? [];
+      if (rows.length === 0) {
+        return;
+      }
+      setSubchecks(rows.map((t: any, i: number) => ({
+        id: i + 1,
+        name: t.name,
+        subcheckDescription: t.description,
+        valueType: t.valueType,
+        passCriteria: t.passCriteria,
+        status: "pass" as SubcheckStatus,
+      })));
+    }).catch(() => {});
+  }, [itemType]);
 
   const overall: "pass" | "fail" = useMemo(
     () => (subchecks.every((s) => s.status === "pass") ? "pass" : "fail"),
