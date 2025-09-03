@@ -38,7 +38,7 @@ export function validateSubcheck(subcheck: Subcheck): boolean {
   It returns "pass" if all subchecks are "pass", otherwise it returns "fail".
 */
 export function calculateOverallStatus(subchecks: Subcheck[]): "pass" | "fail" {
-  return subchecks.some((s) => s.status === "fail") ? "fail" : "pass";
+  return subchecks.some(s => s.status === "fail") ? "fail" : "pass";
 }
 
 /*
