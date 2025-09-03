@@ -130,6 +130,44 @@ export const globalStyles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 15,
   },
+  subcheckToggleRow: {
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#ddd",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  subcheckToggleRowLabel: {
+    flex: 1,
+    paddingRight: 10,
+    fontWeight: "600",
+  },
+  subcheckToggleRowToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  subcheckToggleRowPill: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  subcheckToggleRowPass: {
+    color: "#2a9d9d",
+  },
+  subcheckToggleRowFail: {
+    color: "#c0392b",
+  },
+  subcheckToggleRowDim: {
+    color: "#999",
+  },
+  subcheckToggleRowMandatory: {
+    color: "#b00020",
+    marginLeft: 4,
+    fontWeight: "700",
+  },
+
   scrollContainer: {
     maxHeight: 200, // Ensures scroll is visible when there are many buttons
     width: "100%",

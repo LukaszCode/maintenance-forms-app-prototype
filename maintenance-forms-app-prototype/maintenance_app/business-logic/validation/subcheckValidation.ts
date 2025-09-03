@@ -21,7 +21,7 @@ import { Subcheck } from "../../data-types/models";
   
 */
 export function validateSubcheck(subcheck: Subcheck): boolean {
-  if (!subcheck.subcheckName || !subcheck.subcheckDescription) {
+  if (!subcheck.subcheckName?.trim()) {
     return false;
   }
   if (!["string", "number", "boolean"].includes(subcheck.valueType)) {
