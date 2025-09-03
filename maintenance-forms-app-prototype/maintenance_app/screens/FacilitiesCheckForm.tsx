@@ -129,14 +129,14 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
       setSelectedItemId(null);
     })();
   }, [selectedZoneId, selectedItemTypeLabel]);
-  
+
   /**
    * Load subcheck templates for the selected item type.
    * When itemType changes, load subcheck templates for that item type (by id)
    * @param itemType - The type of the selected item.
    * @returns A promise that resolves to the list of subcheck templates for the selected item type.
    */
-    useEffect(() => {
+   useEffect(() => {
     if (!selectedItemTypeLabel) {
       setSubchecks([]);
       return;
@@ -148,17 +148,17 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
     }
     (async () => {
       try {
-        const subchecksRes = await api.templatesByTypeId(type.id);
-        const subcheckRows = subchecksRes.data ?? [];
+        const res = await api.templatesByTypeId(type.id);
+        const rows = res.data ?? [];
         setSubchecks(
-          subcheckRows.map((t: any, i: number) => ({
+          rows.map((t: any, i: number) => ({
             id: i + 1,
             name: t.name,
-            subcheckDescription: t.meta.description ?? "",
+            subcheckDescription: t.description ?? "",
             valueType: t.valueType === "TEXT" ? "string" : (t.valueType as "boolean" | "number" | "string"),
-            passCriteria: t.meta.passCriteria ?? "",
-            mandatory: !!t.meta.mandatory,
-            status: t.status,
+            passCriteria: t.passCriteria ?? "",
+            mandatory: !!t.mandatory,
+            status: "pass",
           }))
         );
       } catch {
