@@ -107,14 +107,28 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
 
   /**
    * Load items for the selected zone and item type.
-   * This will be called whenever the zoneName or itemType changes.
-   * @param zoneName - The name of the selected zone.
+   * When zone or itemType changes, load items for that zone (+ optional itemType text filter).
+   * If no zone is selected, reset items and selected item.
+   * @param zoneId - The ID of the selected zone.
    * @param itemType - The type of the selected item.
    * @returns A promise that resolves to the list of items for the selected zone and item type.
    */
   useEffect(() => {
-    if (!selectedItemTypeLabel)
-
+    if (!selectedZoneId) {
+      setItems([]);
+      setSelectedItemId(null);
+      return;
+    }
+    (async () => {
+      try {
+        const itemsRes = await api.items(selectedZoneId, selectedItemTypeLabel || undefined);
+        setItems(itemsRes.data ?? []);
+      } catch {
+        setItems([]);
+      }
+      setSelectedItemId(null);
+    })();
+  }, [selectedZoneId, selectedItemTypeLabel]);
 
   /**
    * Load subcheck templates for the selected item type.
