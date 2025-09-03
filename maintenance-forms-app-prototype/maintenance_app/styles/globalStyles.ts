@@ -139,9 +139,11 @@ export const globalStyles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 12,
   },
-  subcheckToggleRowLabel: {
+  subcheckToggleRowLabelContainer: {
     flex: 1,
     paddingRight: 10,
+  },
+  subcheckToggleRowLabel: {
     fontWeight: "600",
   },
   subcheckToggleRowToggle: {
@@ -166,6 +168,17 @@ export const globalStyles = StyleSheet.create({
     color: "#b00020",
     marginLeft: 4,
     fontWeight: "700",
+  },
+  subcheckToggleRowInfoButton: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    textAlign: "center",
+    lineHeight: 22,
+    borderWidth: 1,
+    borderColor: "#999",
+    color: "#333",
+    marginRight: 4,
   },
 
   scrollContainer: {

@@ -55,10 +55,18 @@ const SubcheckToggleRow: React.FC<SubcheckToggleProps> = ({
 
   return (
     <View style={globalStyles.subcheckToggleRow}>
-      <Text style={globalStyles.subcheckToggleRowLabel}>
-        {name}
-        {mandatory ? <Text style={globalStyles.subcheckToggleRowMandatory}>*</Text> : null}
-      </Text>
+      <View style={globalStyles.subcheckToggleRowLabelContainer}>
+        <Text style={globalStyles.subcheckToggleRowLabel}>
+          {name}
+          {mandatory ? <Text style={globalStyles.subcheckToggleRowMandatory}>*</Text> : null}
+        </Text>
+      </View>
+
+      {!!infoText && (
+        <TouchableOpacity onPress={showInfo} accessibilityLabel="More info">
+          <Text style={globalStyles.subcheckToggleRowInfoButton}>i</Text>
+        </TouchableOpacity>
+      )}
       <View style={globalStyles.subcheckToggleRowToggle}>
         <Text style={[globalStyles.subcheckToggleRowPill, isPass ? globalStyles.subcheckToggleRowPass : globalStyles.subcheckToggleRowDim]}>
           Pass
