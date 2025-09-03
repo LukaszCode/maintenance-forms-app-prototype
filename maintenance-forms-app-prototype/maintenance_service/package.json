@@ -3,22 +3,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "migrate": "ts-node ./maintenance_service/migrate.ts",
-    "dev": "ts-node-dev --respawn --transpile-only ./maintenance_service/app.ts",
-    "build": "tsc",
+    "migrate": "ts-node ./migrate.ts",
+    "dev": "ts-node-dev --respawn --transpile-only ./app.ts",
+    "build": "tsc -p tsconfig.json",
     "start": "node dist/app.js"
   },
   "dependencies": {
     "better-sqlite3": "^9.4.0",
-    "body-parser": "^2.2.0",
+    "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-    "expo": "^53.0.20",
-    "expo-sqlite": "^15.2.14",
-    "express": "^5.1.0",
+    "express": "^4.18.2",
     "node": "^22.19.0",
-    "node-js": "^1.0.0",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7",
+    "sqlite": "^5.1.6",
     "zod": "^3.21.4"
   },
   "devDependencies": {
@@ -26,10 +22,7 @@
     "@types/body-parser": "^1.19.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
-    "@types/sqlite3": "^3.1.11",
-    "ts-node": "^10.9.1",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.4.0"
+    "ts-node": "^10.9.1"
   },
   "version": "1.0.0",
   "main": "index.js",

@@ -3,12 +3,12 @@
   "compilerOptions": {
     // Environment Settings
     // Reference https://aka.ms/tsconfig/module
-    "target": "ES2020",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "target": "es2020",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     // File Layout
-    "outDir": "dist",
-    "rootDir": ".",
+    "outDir": "./dist",
+    "rootDir": "./",
     "esModuleInterop": true,
     "types": [],
 
@@ -38,5 +38,5 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "**/*.sql"]
+  "include": ["**/*.ts", "**/*.tsx", "app.ts", "**/*.sql"]
 }
