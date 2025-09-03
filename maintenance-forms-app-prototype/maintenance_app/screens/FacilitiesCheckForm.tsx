@@ -129,7 +129,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
       setSelectedItemId(null);
     })();
   }, [selectedZoneId, selectedItemTypeLabel]);
-
+  
   /**
    * Load subcheck templates for the selected item type.
    * When itemType changes, load subcheck templates for that item type (by id)
