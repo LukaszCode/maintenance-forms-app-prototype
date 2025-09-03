@@ -46,7 +46,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
   //Current selections (attach IDs/labels to query dropdowns)
   const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
   const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
-  const [selectedItemTypeLabel, setSelectedItemTypeLabel] = useState<string | null>(null);
+  const [selectedItemTypeLabel, setSelectedItemTypeLabel] = useState<string>("");
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
 
   /**
@@ -158,7 +158,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
             valueType: t.valueType === "TEXT" ? "string" : (t.valueType as "boolean" | "number" | "string"),
             passCriteria: t.meta.passCriteria ?? "",
             mandatory: !!t.meta.mandatory,
-            status: "pass",
+            status: t.status,
           }))
         );
       } catch {
