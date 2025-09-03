@@ -16,7 +16,7 @@
  */
 
 import React from "react";
-import { View, Text, Switch, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, Text, Switch, TouchableOpacity, Alert } from "react-native";
 import { useState } from "react";
 import { globalStyles } from "@styles/globalStyles";
 
@@ -71,11 +71,10 @@ const SubcheckToggleRow: React.FC<SubcheckToggleProps> = ({
         <Text style={[globalStyles.subcheckToggleRowPill, isPass ? globalStyles.subcheckToggleRowPass : globalStyles.subcheckToggleRowDim]}>
           Pass
         </Text>
-        <Switch value={isPass} onValueChange={onToggle} />
+        <Switch value={isPass} onValueChange={handleToggle} />
         <Text style={[globalStyles.subcheckToggleRowPill, !isPass ? globalStyles.subcheckToggleRowFail : globalStyles.subcheckToggleRowDim]}>
           Fail
         </Text>
-        {mandatory && <Text style={globalStyles.subcheckToggleRowMandatory}>Mandatory</Text>}
       </View>
     </View>
   );

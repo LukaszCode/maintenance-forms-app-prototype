@@ -9,6 +9,7 @@
       "@assets/*": ["assets/*"],
       "@types/*": ["data-types/*"],
       "@logic/*": ["business-logic/*"]
+
     },
     "skipLibCheck": true
   },
