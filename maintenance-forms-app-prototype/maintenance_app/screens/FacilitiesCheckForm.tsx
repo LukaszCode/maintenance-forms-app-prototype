@@ -183,11 +183,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
    */
   const toggle = (id: number) =>
     setSubchecks((prev) =>
-      prev.map((s) =>
-        s.id === id
-          ? { ...s, status: s.status === "pass" ? "fail" : "pass" }
-          : s
-      )
+      prev.map((s) => (s.id === id ? { ...s, status: s.status === "pass" ? "fail" : "pass" } : s))
     );
 
   const onSave = async () => {
