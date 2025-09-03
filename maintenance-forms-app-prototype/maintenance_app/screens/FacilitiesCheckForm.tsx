@@ -14,6 +14,7 @@ import { RootStackParamList } from "../App";
 import AppHeader from "../components/AppHeader";
 import { globalStyles } from "../styles/globalStyles";
 import SubcheckToggleRow from "../components/SubcheckToggleRow";
+import { api } from "../src/services/apiClient";
 
 type Props = NativeStackScreenProps<RootStackParamList, "FacilitiesCheckForm">;
 type SubcheckStatus = "pass" | "fail";

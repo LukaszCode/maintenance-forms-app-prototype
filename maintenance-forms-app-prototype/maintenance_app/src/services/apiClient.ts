@@ -5,8 +5,6 @@
  */
 
 import { MaintenanceChecksApi } from "./MaintenanceChecksApi";
-import { BASE_URL } from "src/config/api";
+import { BASE_URL } from "../config/api";
 
-const apiClient = new MaintenanceChecksApi(BASE_URL);
-
-export default apiClient;
+export const api = new MaintenanceChecksApi(BASE_URL);
