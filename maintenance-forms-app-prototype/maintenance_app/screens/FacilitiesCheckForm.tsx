@@ -13,18 +13,23 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
 import AppHeader from "../components/AppHeader";
 import { globalStyles } from "../styles/globalStyles";
+import {
+  User,
+  Inspection,
+  Site,
+  Zone,
+  Item,
+  Subcheck,
+  SubcheckTemplate,
+  Result,
+  Reading,
+  Attachment,
+} from "../data-types/models";
 import SubcheckToggleRow from "../components/SubcheckToggleRow";
 import { api } from "../src/services/apiClient";
 
 type Props = NativeStackScreenProps<RootStackParamList, "FacilitiesCheckForm">;
 type SubcheckStatus = "pass" | "fail";
-
-type SubcheckVM = {
-  id: number;
-  label: string;
-  mandatory?: boolean;
-  status: SubcheckStatus;
-};
 
 const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
   const { engineerName } = route.params;
@@ -33,11 +38,47 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
   const [dateString, setDateString] = useState(
     new Date().toISOString().slice(0, 10)
   );
-  const [siteName, setSiteName] = useState("");
+
+  // Basic fields
   const [zoneName, setZoneName] = useState("");
-  const [itemType, setItemType] = useState("");
-  const [itemName, setItemName] = useState("");
+  const [siteName, setSiteName] = useState("");
   const [comment, setComment] = useState("");
+  const [itemName, setItemName] = useState("");
+  const [itemType, setItemType] = useState("");
+  const [sites, setSites] = useState<{ id: number; name: string }[]>([]);
+  const [zones, setZones] = useState<{ id: number; name: string }[]>([]);
+  const [items, setItems] = useState<{ id: number; name: string }[]>([]);
+
+  useEffect(() => {
+    // load all sites at mount
+    api
+      .sites()
+      .then((r) => setSites(r.data ?? []))
+      .catch(() => setSites([]));
+  }, []);
+
+  useEffect(() => {
+    // when siteName changes, load zones for that site
+    const site = sites.find((s) => s.name === siteName);
+    if (!site) {
+      setZones([]);
+      return;
+    }
+    api
+      .zones(site.id)
+      .then((r) => setZones(r.data ?? []))
+      .catch(() => setZones([]));
+  }, [siteName, sites]);
+
+  useEffect(() => {
+    // when zoneName changes, load items for that zone
+    const zone = zones.find(z => z.name === zoneName);
+    if (!zone || !itemType.trim()) {
+      setItems([]);
+      return;
+    }
+    api.items(zone.id).then((r) => setItems(r.data ?? [])).catch(() => setItems([]));
+  }, [zoneName, itemType, zones]);
 
   // Subchecks (MVP static; later load from DB)
   const [subchecks, setSubchecks] = useState<SubcheckVM[]>(() => [
@@ -66,7 +107,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
       )
     );
 
-  const onSave = () => {
+  const onSave = async () => {
     if (overall === "fail" && !comment.trim()) {
       Alert.alert(
         "Comment required",
@@ -77,14 +118,20 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
 
     // UI-only payload (names for now; later resolve to IDs + call API)
     const payload = {
-      inspectionDate: dateString,
+      inspectionDate: new Date(dateString).toISOString(),
       inspectionCategory: "Facility" as const,
       itemType,
       itemName,
       siteName,
       zoneName,
       inspectedByName: engineerName,
-      subchecks: subchecks.map((s) => ({ label: s.label, status: s.status })),
+      subchecks: subchecks.map((s) => ({
+        name: s.name,
+        subcheckDescription: s.subcheckDescription,
+        valueType: s.valueType,
+        passCriteria: s.passCriteria,
+        status: s.status,
+      })),
       overall,
       comment: comment || null,
     };
