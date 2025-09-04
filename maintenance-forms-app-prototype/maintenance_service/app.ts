@@ -329,19 +329,28 @@ app.get("/subcheck-templates", (request, response) => {
 });
 
 /**
- * Get subcheck templates by item type label.
- * This endpoint retrieves subcheck templates associated with a specific item type label.
- *
- * @param {Object} req - The HTTP request object.
- * @param {Object} res - The HTTP response object.
+ * Retrieve subcheck templates for a given item type label.
+ * This endpoint fetches subcheck templates associated with a specific item type label.
+ * It is used to build the inspection subchecks dynamically based on the selected item type.
+ * @param {Object} request - The HTTP request object.
+ * @param {Object} request.query - The query parameters from the request URL.
+ * @param {string} request.query.itemType - The label of the item type.
+ * @param {Object} response - The HTTP response object.
  * @returns {Object} The HTTP response with the list of subcheck templates or an error message.
  */
 app.get("/subcheck-templates/by-label", (request, response) => {
-  const label = typeof request.query.itemType === "string" ? request.query.itemType.trim() : "";
-  if (!label) return response.status(400).json({ status:"error", message:"itemType (label) is required" });
+  const itemTypeLabel = typeof request.query.itemType === "string" ? request.query.itemType.trim() : "";
+  if (!itemTypeLabel) {
+    return response.status(400).json({ status: "error", message: "itemType is required" });
+  }
 
-  const type = db.prepare(`SELECT item_type_id FROM item_types WHERE item_type_label = ?`).get(label) as { item_type_id: number } | undefined;
-  if (!type) return response.json({ status:"success", data: [] });
+  const typeRow = db.prepare(`
+    SELECT item_type_id FROM item_types WHERE item_type_label = ?
+  `).get(itemTypeLabel) as { item_type_id: number } | undefined;
+
+  if (!typeRow) {
+    return response.json({ status: "success", data: [] });
+  }
 
   const rows = db.prepare(`
     SELECT sub_template_id          AS id,
@@ -353,9 +362,9 @@ app.get("/subcheck-templates/by-label", (request, response) => {
     FROM subcheck_templates
     WHERE item_type_id = ?
     ORDER BY sub_template_id
-  `).all(type.item_type_id);
+  `).all(typeRow.item_type_id);
 
-  response.json({ status:"success", data: rows });
+  response.json({ status: "success", data: rows });
 });
 
 // Health check endpoint
