@@ -244,10 +244,10 @@ app.get("/items", (request, response) => {
  * @returns {Object} The HTTP response with the list of subcheck templates or an error message.
  */
 
-app.get("/subcheck-templates", (req, res) => {
-  const itemTypeId = Number(req.query.itemTypeId);
+app.get("/subcheck-templates", (request, response) => {
+  const itemTypeId = Number(request.query.itemTypeId);
   if (!Number.isFinite(itemTypeId)) {
-    return res
+    return response
       .status(400)
       .json({ status: "error", message: "itemTypeId must be a number" });
   }
@@ -268,7 +268,7 @@ app.get("/subcheck-templates", (req, res) => {
     )
     .all(itemTypeId);
 
-  res.json({ status: "success", data: rows });
+  response.json({ status: "success", data: rows });
 });
 
 /**
@@ -279,12 +279,12 @@ app.get("/subcheck-templates", (req, res) => {
  * @param {Object} res - The HTTP response object.
  * @returns {Object} The HTTP response with the list of subcheck templates or an error message.
  */
-app.get("/subcheck-templates/by-label", (req, res) => {
-  const label = typeof req.query.itemType === "string" ? req.query.itemType.trim() : "";
-  if (!label) return res.status(400).json({ status:"error", message:"itemType (label) is required" });
+app.get("/subcheck-templates/by-label", (request, response) => {
+  const label = typeof request.query.itemType === "string" ? request.query.itemType.trim() : "";
+  if (!label) return response.status(400).json({ status:"error", message:"itemType (label) is required" });
 
   const type = db.prepare(`SELECT item_type_id FROM item_types WHERE item_type_label = ?`).get(label) as { item_type_id: number } | undefined;
-  if (!type) return res.json({ status:"success", data: [] });
+  if (!type) return response.json({ status:"success", data: [] });
 
   const rows = db.prepare(`
     SELECT sub_template_id          AS id,
@@ -298,11 +298,11 @@ app.get("/subcheck-templates/by-label", (req, res) => {
     ORDER BY sub_template_id
   `).all(type.item_type_id);
 
-  res.json({ status:"success", data: rows });
+  response.json({ status:"success", data: rows });
 });
 
 // Health check endpoint
-app.get("/healthz", (_req, res) => res.json({ ok: true }));
+app.get("/healthz", (_request, response) => response.json({ ok: true }));
 
 // Start the server
 app.listen(3001, () => {
