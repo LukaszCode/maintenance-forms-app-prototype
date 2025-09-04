@@ -86,3 +86,42 @@ db.exec(`
 `);
 
 console.log("Migration OK.");
+
+db.exec(`
+  -- ---- SEED for prototype ----------------------------------------------
+  INSERT OR IGNORE INTO users(user_id, username, full_name, role, email)
+  VALUES
+    (1, 'demo', 'Demo Engineer', 'Engineer', 'demo@example.com');
+
+  INSERT OR IGNORE INTO sites(site_id, site_name, building_number, site_address)
+  VALUES
+    (1, 'Main Plant', 'B1', '1 Factory Rd'),
+    (2, 'Warehouse A', 'WHA', '2 Storage Ave');
+
+  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
+  VALUES
+    (1, 'Ground Floor', 'Production hall', 1),
+    (2, 'First Floor', 'Offices', 1),
+    (3, 'Aisle 1', 'Left racks', 2);
+
+  INSERT OR IGNORE INTO item_types(item_type_id, inspection_category, item_type_label, item_type_description)
+  VALUES
+    (1, 'Facility', 'Emergency Lighting', 'Monthly EL test'),
+    (2, 'Machine Safety', 'Die-Cut Machine', 'Guards/Interlocks');
+
+  -- Option A: items.item_type is the label text
+  INSERT OR IGNORE INTO items(item_id, item_type, item_name, description, zone_id)
+  VALUES
+    (1, 'Emergency Lighting', 'EL-01', 'Twin head unit', 1),
+    (2, 'Emergency Lighting', 'EL-02', 'Corridor light', 2),
+    (3, 'Die-Cut Machine', 'Bobst DC-01', 'Main die-cutter', 1);
+
+  INSERT OR IGNORE INTO subcheck_templates(sub_template_id, item_type_id, sub_template_label, sub_template_description, value_type, sub_template_mandatory, pass_criteria)
+  VALUES
+    (1, 1, 'Function test – all luminaires illuminate', 'Should come on during test', 'boolean', 1, 'true'),
+    (2, 1, 'Recharge indicator working', 'LED indicates charging', 'boolean', 0, 'true'),
+    (3, 1, 'Labels/ID present and legible', 'Asset labels visible', 'boolean', 0, 'true'),
+    (4, 1, 'No visible damage or faults', 'Casing, lens, wiring OK', 'boolean', 1, 'true');
+`);
+console.log("Migration OK (with seed).");
+
