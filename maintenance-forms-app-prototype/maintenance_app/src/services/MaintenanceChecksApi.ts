@@ -124,7 +124,13 @@ export class MaintenanceChecksApi {
    * @returns A promise that resolves to the created item.
    */
 
-  
+  createItem(zoneId: number, itemType: string, itemName: string, itemDescription?: string) {
+    return fetch(`${this.baseUrl}/items`, {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify({ zoneId, itemType, itemName, itemDescription }),
+    }).then(r => r.json());
+  }
 
   // --- inspections ---
   /**
