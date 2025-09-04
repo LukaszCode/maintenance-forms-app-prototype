@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS items (
     item_id INTEGER PRIMARY KEY,
     item_type TEXT NOT NULL,
     item_name TEXT NOT NULL,
-    description TEXT NOT NULL,
+    item_description TEXT NOT NULL,
     zone_id INTEGER NOT NULL REFERENCES zones(zone_id) ON DELETE CASCADE
 );
 

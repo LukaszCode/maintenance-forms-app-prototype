@@ -87,7 +87,7 @@ app.post("/sites", (request, response) => {
         WHERE site_name=?
         `)
       .get(siteName.trim()) as { site_id: number }).site_id;
-    response.json({ status: "success", data: { id, name: siteName.trim() } });
+    response.json({ status: "success", data: { id, site_name: siteName.trim() } });
   });
 
 /**
@@ -119,7 +119,46 @@ app.post("/zones", (request, response) => {
       WHERE site_id=? 
       AND zone_name=?
     `).get(siteId, zoneName.trim()) as { id: number } | undefined)?.id;
-    response.json({ status: "success", data: { id, name: zoneName.trim(), siteId }});
+    response.json({ status: "success", data: { id, zone_name: zoneName.trim(), siteId }});
+});
+
+/**
+ * Create a new item.
+ * @param {Object} request - The HTTP request object.
+ * @param {Object} request.body - The request body containing the item data.
+ * @param {string} request.body.zoneId - The ID of the zone to associate the item with.
+ * @param {string} request.body.itemType - The type of the item to create.
+ * @param {string} request.body.itemName - The name of the item to create.
+ * @param {string} request.body.itemDescription - The description of the item to create.
+ * @param {Object} response - The HTTP response object.
+ * @returns {Object} The HTTP response with the created item data or an error message.
+ */
+
+app.post("/items", (request, response) => {
+  const { zoneId, itemType, itemName, itemDescription } = request.body ?? {};
+  if (!Number.isInteger(zoneId)) {
+    return response.status(400).json({ status: "error", message: "Zone ID is required and must be a number" });
+  }
+  if (!itemType?.trim()) {
+    return response.status(400).json({ status: "error", message: "itemType is required" });
+  }
+  if (!itemName?.trim()) {
+    return response.status(400).json({ status: "error", message: "itemName is required" });
+  }
+
+  const info = db.prepare(`
+    INSERT OR IGNORE INTO items(item_type, item_name, item_description, zone_id)
+    VALUES (?, ?, ?, ?)
+  `).run(itemType.trim(), itemName.trim(), itemDescription ?? null, zoneId);
+  const id = info.lastInsertRowid ?? (db.prepare(`
+      SELECT item_id
+      AS id
+      FROM items
+      WHERE zone_id=?
+      AND item_type=?
+      AND item_name=?
+    `).get(zoneId, itemName.trim(), itemType.trim(), itemName.trim()) as { id: number } | undefined)?.id;
+    response.json({ status: "success", data: { id, item_name: itemName.trim(), zone_id: zoneId, item_type: itemType.trim() }});
 });
 
 /**
