@@ -193,6 +193,23 @@ export const globalStyles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 10,
   },
+  inlineRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  subcheckRow: {
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e2e2e2",
+    paddingBottom: 10,
+  },
+  removeLink: {
+    color: "#c0392b",
+    textDecorationLine: "underline",
+    marginTop: 5,
+    fontSize: 12,
+  },
   formPane: {
     backgroundColor: "#f4f4f4",
     borderWidth: 1,

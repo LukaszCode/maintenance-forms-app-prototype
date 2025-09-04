@@ -36,6 +36,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
   const [itemTypeLabel, setItemTypeLabel] = useState("Emergency Lighting");
   const [itemName, setItemName] = useState("");
   const [comment, setComment] = useState("");
+  const [newCheckName, setNewCheckName] = useState("");
 
 
   //Dropdown data
@@ -91,29 +92,83 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
 
   /**
    * Load subcheck templates for the selected item type.
-   * When itemType changes, load subcheck templates for that item type (by id)
+   *  When itemTypeLabel changes, find its id then load templates for that type.
+   * If no itemTypeLabel is selected, reset subchecks.
+   * @param itemTypeId - The ID of the selected item type.
    * @param itemType - The type of the selected item.
    * @returns A promise that resolves to the list of subcheck templates for the selected item type.
    */
   useEffect(() => {
-    if(!itemTypeLabel.trim()) { setSubchecks([]);
+    if(!itemTypeLabel) { setSubchecks([]);
       return;
     }
-    api.templatesByLabel(itemTypeLabel).then(r => {
-      const subcheckRows = r.data ?? [];
-      setSubchecks(subcheckRows.map((t: any, i: number): SubcheckUI => ({
-        id: i + 1,
-        name: t.name,
-        status: "pass",
-        meta: {
-          description: t.description ?? "",
-          valueType: (t.valueType === "TEXT" ? "string" : t.valueType === "string" ? "number" : "boolean"),
-          mandatory: !!t.mandatory,
-          passCriteria: t.passCriteria ?? null,
-        },
-      })));
-    }).catch(() => setSubchecks([]));
-  }, [itemTypeLabel]);
+    const type = itemTypes.find(t => t.label === itemTypeLabel);
+    if (!type) {
+      setSubchecks([]); 
+      return;
+    }
+    (async () => {
+    try {
+      const { data = [] } = await api.templatesByTypeId(type.id);
+      setSubchecks(
+        data.map((t: any, i: number) => ({
+          id: i + 1,
+          name: t.name,
+          status: "pass" as const,
+          meta: {
+            description: t.description ?? "",
+            valueType: t.valueType === "TEXT" ? "string" : (t.valueType as "boolean"|"number"|"string"),
+            mandatory: !!t.mandatory,
+            passCriteria: t.passCriteria ?? null,
+          },
+        }))
+      );
+    } catch {
+      setSubchecks([]);
+    }
+  })();
+}, [itemTypeLabel, itemTypes]);
+
+/**
+ * Add a new subcheck to the list.
+ * This will add a new subcheck with the given name to the list of subchecks.
+ * It will prevent adding duplicates (case-insensitive).
+ * @param name - The name of the new subcheck to add.
+ * @returns void
+ */
+const addSubcheck = () => {
+  const name = newCheckName.trim();
+  if (!name) {
+    return Alert.alert("Missing name", "Enter a subcheck name.");
+  }
+  // prevent duplicates (case-insensitive)
+  if (subchecks.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+    return Alert.alert("Duplicate", "That subcheck already exists.");
+  }
+  setSubchecks(prev => [
+    ...prev,
+    {
+      id: prev.length ? Math.max(...prev.map(p => p.id)) + 1 : 1,
+      name,
+      status: "pass",
+      meta: {
+        description: "",
+        valueType: "boolean",
+        mandatory: false,
+        passCriteria: null,
+      },
+    },
+  ]);
+  setNewCheckName("");
+};
+
+  /**
+   * Remove a subcheck from the list.
+   * @param id - The ID of the subcheck to remove.
+   * @returns void
+   */
+  const removeSubcheck = (id: number) =>
+    setSubchecks(prev => prev.filter(s => s.id !== id));
 
   /**
    * Toggle the status of a subcheck.
@@ -277,16 +332,37 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
           {/* Subchecks */}
           <View style={globalStyles.formPane}>
             <Text style={globalStyles.formPaneTitle}>Subchecks</Text>
-            {subchecks.map((s) => (
-              <SubcheckToggleRow
-                key={s.id}
-                name={s.name}
-                value={s.status}
-                onToggle={() => toggle(s.id)}
-                infoText={s.meta.description}
-                mandatory={s.meta.mandatory}
-                requireInfoFirst={false}
+
+          {/* Add-new line (name only) */}
+            <View style={globalStyles.inlineRow}>
+              <TextInput
+                style={[globalStyles.input, { flex: 1 }]}
+                value={newCheckName}
+                onChangeText={setNewCheckName}
+                placeholder="Add a new subcheck name…"
+                onSubmitEditing={addSubcheck}
+                returnKeyType="done"
               />
+              <TouchableOpacity style={[globalStyles.button, globalStyles.secondaryButton]} onPress={addSubcheck}>
+                <Text style={globalStyles.secondaryButtonText}>Add</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Existing subchecks */}
+            {subchecks.map((s) => (
+              <View key={s.id} style={globalStyles.subcheckRow}>
+                <SubcheckToggleRow
+                  name={s.name}
+                  value={s.status}
+                  onToggle={() => toggle(s.id)}
+                  infoText={s.meta.description}
+                  mandatory={s.meta.mandatory}
+                  requireInfoFirst={false}
+                />
+                <TouchableOpacity onPress={() => removeSubcheck(s.id)} accessibilityLabel="Remove subcheck">
+                  <Text style={globalStyles.removeLink}>Remove</Text>
+                </TouchableOpacity>
+              </View>
             ))}
           </View>
 
