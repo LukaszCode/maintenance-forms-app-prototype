@@ -17,19 +17,14 @@ import { fileURLToPath } from "url";
 import path from "path";
 import type { Database as BetterSqlite3Database } from "better-sqlite3";
 
-/**
- * ESM-safe __dirname
- * It allows us to construct paths relative to the current module.
- */
+// ESM-safe __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// DB file sits next to this file
 const dbPath = path.join(__dirname, "maintenance_checks.sqlite");
 
-// Export a nameable type alias
 export type SqliteDb = BetterSqlite3Database;
-
-// This cast keeps runtime correct while giving a nameable exported type
 export const db: SqliteDb = new (Database as any)(dbPath);
 db.pragma("foreign_keys = ON");
 
