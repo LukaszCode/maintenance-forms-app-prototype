@@ -89,53 +89,33 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
     if (!zone || !itemTypeLabel.trim()) { setItems([]); return; }
     api.items(zone.id, itemTypeLabel).then(r => setItems(r.data ?? [])).catch(() => setItems([]));
   }, [zoneName, itemTypeLabel, zones]);
-  
+
   /**
    * Load subcheck templates for the selected item type.
    * When itemType changes, load subcheck templates for that item type (by id)
    * @param itemType - The type of the selected item.
    * @returns A promise that resolves to the list of subcheck templates for the selected item type.
    */
-   useEffect(() => {
-    if (!selectedItemTypeLabel) {
-      setSubchecks([]);
+  useEffect(() => {
+    if(!itemTypeLabel.trim()) { setSubchecks([]);
       return;
     }
-    const type = itemTypes.find((t) => t.label === selectedItemTypeLabel);
-    if (!type) {
-      setSubchecks([]);
-      return;
-    }
-    (async () => {
-      try {
-        const res = await api.templatesByTypeId(type.id);
-        const rows = res.data ?? [];
-        setSubchecks(
-          rows.map((t: any, i: number) => ({
-            id: i + 1,
-            name: t.name,
-            subcheckDescription: t.description ?? "",
-            valueType: t.valueType === "TEXT" ? "string" : (t.valueType as "boolean" | "number" | "string"),
-            passCriteria: t.passCriteria ?? "",
-            mandatory: !!t.mandatory,
-            status: "pass",
-          }))
-        );
-      } catch {
-        setSubchecks([]);
-      }
-    })();
-  }, [selectedItemTypeLabel, itemTypes]);
-  
-  /**
-   * Get the overall status of the subchecks.
-   * This will be "pass" if all subchecks are "pass", otherwise "fail".
-   * 
-   */
-  const overall: "pass" | "fail" = useMemo(
-    () => (subchecks.every((s) => s.status === "pass") ? "pass" : "fail"),
-    [subchecks]
-  );
+    api.templatesByLabel(itemTypeLabel).then(r => {
+      const subcheckRows = r.data ?? [];
+      setSubchecks(subcheckRows.map((t: any, i: number): SubcheckUI => ({
+        id: i + 1,
+        name: t.name,
+        status: "pass",
+        meta: {
+          description: t.description ?? "",
+          valueType: (t.valueType === "TEXT" ? "string" : t.valueType === "string" ? "number" : "boolean"),
+          mandatory: !!t.mandatory,
+          passCriteria: t.passCriteria ?? null,
+        },
+      })));
+    }).catch(() => setSubchecks([]));
+  }, [itemTypeLabel]);
+
   /**
    * Toggle the status of a subcheck.
    * @param id - The ID of the subcheck to toggle.
@@ -146,74 +126,34 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
       prev.map((s) => (s.id === id ? { ...s, status: s.status === "pass" ? "fail" : "pass" } : s))
     );
 
+  /**
+   * Get the overall status of the subchecks.
+   * This will be "pass" if all subchecks are "pass", otherwise "fail".
+   * 
+   */
+  const overall: "pass" | "fail" = useMemo(
+    () => (subchecks.every((s) => s.status === "pass") ? "pass" : "fail"),
+    [subchecks]
+  );
+  
+
+
   const onSave = async () => {
     try {
-      // 1) basic dropdown checks
-      if (!selectedSiteId) {
-        Alert.alert("Site required", "Please select a site before saving.");
-        return;
-      }
-      if (!selectedZoneId) {
-        Alert.alert("Zone required", "Please select a zone before saving.");
-        return;
-      }
-      if (!selectedItemTypeLabel) {
-        Alert.alert("Item Type required", "Please select an item type before saving.");
-        return;
-      }
-      if (!selectedItemId) {
-        Alert.alert("Item required", "Please select an item before saving.");
-        return;
-      }
-      // 2) FE validation of subchecks
-      const invalid = subchecks.filter((s) =>
-        !validateSubcheck({
-          subcheckId: 0,
-          inspectionId: 0,
-          subcheckName: s.name,
-          subcheckDescription: s.meta.description ?? "",
-          valueType: s.meta.valueType,
-          passCriteria: s.meta.passCriteria ?? "",
-          status: s.status,
-        } as any)
-      );
-      if (invalid.length > 0) {
-        return Alert.alert("Invalid subchecks", "Please complete all subcheck fields.");
-      }
-      const computedOverallStatus = calculateOverallStatus(
-        subchecks.map((s) => ({ status: s.status } as any))
-      );
-      const commentRequired = requireCommentIfFailed(computedOverallStatus, comment);
-      if (commentRequired.length > 0) {
-        return Alert.alert("Comment required", commentRequired.join("\n"));
-      }
-      // 3) Build EXACT backend payload
-      const payload = {
-        inspectionDate: new Date(dateString).toISOString(),
-        inspectionCategory: "Facility" as const,
-        itemId: selectedItemId,
-        engineerName, // backend resolves to users.full_name → engineer_id
-        comment: comment || undefined,
-        subchecks: subchecks.map((s) => ({
-          subcheckName: s.name,
-          subcheckDescription: s.meta.description ?? "",
-          valueType: s.meta.valueType,
-          passCriteria: s.meta.passCriteria ?? "",
-          status: s.status, // 'pass' | 'fail'
-        })),
-      };
-
-      const res = await api.createInspection(payload);
-      if (res.status !== "success") {
-        throw new Error(res.message ?? "Save failed");
-      }
-
-      Alert.alert("Saved", "Inspection saved successfully.");
-      navigation.goBack();
-    } catch (e: any) {
-      Alert.alert("Error", e.message ?? "Could not save");
-    }
-  };
+      const { payload } = validateAndBuildFormPayload({
+        dateString,
+        engineerName,
+        category: "Facility",
+        siteName,
+        zoneName,
+        itemType: itemTypeLabel,
+        itemName,
+        comment,
+        sites,
+        zones,
+        items,
+        subchecksUi: subchecks,
+      });
 
     return (
     <View style={globalStyles.container}>
