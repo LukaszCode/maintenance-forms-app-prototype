@@ -50,12 +50,12 @@ const manager = new InspectionManager();
  *   - If the engineer name is missing or invalid.
  */
 
-app.post("/inspections", (request, result) => {
+app.post("/inspections", (request, response) => {
   try {
     const saved = manager.createInspection(request.body);
-    result.json({ status: "success", data: saved });
+    response.json({ status: "success", data: saved });
   } catch (error: any) {
-    result.status(400).json({ status: "error", message: error.message });
+    response.status(400).json({ status: "error", message: error.message });
   }
 });
 
@@ -64,14 +64,14 @@ app.post("/inspections", (request, result) => {
  * @param {Object} request - The HTTP request object.
  * @param {Object} request.body - The request body containing the site data.
  * @param {string} request.body.siteName - The name of the site to create.
- * @param {Object} result - The HTTP response object.
+ * @param {Object} response - The HTTP response object.
  * @returns {Object} The HTTP response with the created site data or an error message.
  */
 
-app.post("/sites", (request, result) => {
+app.post("/sites", (request, response) => {
   const { siteName } = request.body;
   if (!siteName?.trim())
-    return result
+    return response
       .status(400)
       .json({ status: "error", message: "siteName required" });
   const info = db
@@ -91,18 +91,18 @@ app.post("/sites", (request, result) => {
         `
       )
       .get(siteName.trim()) as { site_id: number }).site_id;
-    result.json({ status: "success", data: { id, name: siteName.trim() } });
+    response.json({ status: "success", data: { id, name: siteName.trim() } });
   });
 
 /**
  * Retrieve all sites.
  * @param {Object} _request - The HTTP request object (not used).
- * @param {Object} result - The HTTP response object.
+ * @param {Object} response - The HTTP response object.
  *
  * @returns {Object} The HTTP response with the list of sites.
  *
  */
-app.get("/sites", (_request, result) => {
+app.get("/sites", (_request, response) => {
   const rows = db
     .prepare(
       `
@@ -112,18 +112,18 @@ app.get("/sites", (_request, result) => {
   `
     )
     .all();
-  result.json({ status: "success", data: rows });
+  response.json({ status: "success", data: rows });
 });
 
 /**
  * Retrieve all zones.
  * @param {Object} _request - The HTTP request object (not used).
- * @param {Object} result - The HTTP response object.
+ * @param {Object} response - The HTTP response object.
  * @returns {Object} The HTTP response with the list of zones.
  *
  */
 
-app.get("/zones", (request, result) => {
+app.get("/zones", (request, response) => {
   const siteId = Number(request.query.siteId) || null;
   const rows = db
     .prepare(
@@ -137,7 +137,7 @@ app.get("/zones", (request, result) => {
   `
     )
     .all(siteId, siteId);
-  result.json({ status: "success", data: rows });
+  response.json({ status: "success", data: rows });
 });
 
 /**
@@ -146,19 +146,19 @@ app.get("/zones", (request, result) => {
  * @param {Object} request - The HTTP request object.
  * @param {Object} request.params - The parameters from the request URL.
  * @param {string} request.params.id - The ID of the inspection to retrieve.
- * @param {Object} result - The HTTP response object.
+ * @param {Object} response - The HTTP response object.
  * @returns {Object} The HTTP response with the inspection data or an error message.
  *
  */
 
-app.get("/inspections/:id", (request, result) => {
+app.get("/inspections/:id", (request, response) => {
   const singleInspection = manager.getInspectionById(+request.params.id);
   if (!singleInspection) {
-    return result
+    return response
       .status(404)
       .json({ status: "error", message: "Inspection not found" });
   }
-  result.json({ status: "success", data: singleInspection });
+  response.json({ status: "success", data: singleInspection });
 });
 
 /**
@@ -168,11 +168,11 @@ app.get("/inspections/:id", (request, result) => {
  * @param {Object} request - The HTTP request object.
  * @param {Object} request.query - The query parameters from the request URL.
  * @param {string} request.query.category - The category of the inspection.
- * @param {Object} result - The HTTP response object.
+ * @param {Object} response - The HTTP response object.
  * @returns {Object} The HTTP response with the list of item types or an error message.
  */
 
-app.get("/item-types", (request, result) => {
+app.get("/item-types", (request, response) => {
   const category =
     typeof request.query.category === "string"
       ? request.query.category.trim()
@@ -192,7 +192,7 @@ app.get("/item-types", (request, result) => {
     )
     .all(category, category);
 
-  result.json({ status: "success", data: rows });
+  response.json({ status: "success", data: rows });
 });
 
 /**
@@ -202,11 +202,11 @@ app.get("/item-types", (request, result) => {
  * @param {Object} request - The HTTP request object.
  * @param {Object} request.query - The query parameters from the request URL.
  * @param {string} request.query.itemTypeId - The ID of the item type.
- * @param {Object} result - The HTTP response object.
+ * @param {Object} response - The HTTP response object.
  * @returns {Object} The HTTP response with the list of items or an error message.
  */
 
-app.get("/items", (request, result) => {
+app.get("/items", (request, response) => {
   const zoneId = request.query.zoneId ? Number(request.query.zoneId) : null;
   const itemType =
     typeof request.query.itemType === "string"
@@ -229,7 +229,7 @@ app.get("/items", (request, result) => {
     )
     .all(zoneId, zoneId, itemType, itemType);
 
-  result.json({ status: "success", data: rows });
+  response.json({ status: "success", data: rows });
 });
 
 /**
@@ -240,7 +240,7 @@ app.get("/items", (request, result) => {
  * @param {Object} request - The HTTP request object.
  * @param {Object} request.query - The query parameters from the request URL.
  * @param {string} request.query.itemTypeId - The ID of the item type.
- * @param {Object} result - The HTTP response object.
+ * @param {Object} response - The HTTP response object.
  * @returns {Object} The HTTP response with the list of subcheck templates or an error message.
  */
 
