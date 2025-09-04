@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "description": "Backend for Maintenance Forms Prototype",
   "scripts": {
-    "migrate": "ts-node ./migrate.ts",
+    "migrate": "ts-node ./migrate.ts && ts-node ./seed.ts",
     "dev": "ts-node-dev --respawn --transpile-only ./app.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/app.js"
