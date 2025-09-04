@@ -111,14 +111,15 @@ app.post("/zones", (request, response) => {
   const info = db.prepare(`
     INSERT OR IGNORE INTO zones(zone_name, zone_description, site_id)
     VALUES (?, ?, ?)
-  `).run(zoneName.trim(), zoneDescription?.trim() ?? null, siteId);
+  `).run(zoneName.trim(), zoneDescription ?? null, siteId);
   const id = info.lastInsertRowid ?? (db.prepare(`
       SELECT zone_id
       AS id
       FROM zones
-      WHERE zone_name=? AND site_id=?
-    `).get(zoneName.trim(), siteId) as { zone_id: number }).zone_id;
-  response.json({ status: "success", data: { id, name: zoneName.trim(), description: zoneDescription?.trim(), siteId } });
+      WHERE site_id=? 
+      AND zone_name=?
+    `).get(siteId, zoneName.trim()) as { id: number } | undefined)?.id;
+    response.json({ status: "success", data: { id, name: zoneName.trim(), siteId }});
 });
 
 /**
