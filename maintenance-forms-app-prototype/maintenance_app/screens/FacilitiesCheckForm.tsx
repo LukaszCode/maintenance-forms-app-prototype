@@ -238,20 +238,24 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
             </View>
           </View>
 
-          {/* Item Type */}
+          {/* Item Type (type or select) */}
           <View style={globalStyles.formRow}>
             <View style={globalStyles.formCol}>
               <Text>Item Type</Text>
-              <Picker
-                selectedValue={}
-                onValueChange={(v) => setSelectedItemTypeLabel(v)}
+              <TextInput
                 style={globalStyles.input}
-              >
-                <Picker.Item label="Select item type…" value="" />
-                {itemTypes.map((t) => (
-                  <Picker.Item key={t.id} label={t.label} value={t.label} />
+                value={itemTypeLabel}
+                onChangeText={setItemTypeLabel}
+                placeholder="Type or select…"
+              />
+              {itemTypes
+                .filter(t => (t.label ?? "").toLowerCase().includes(itemTypeLabel.toLowerCase()))
+                .slice(0,5)
+                .map(t => (
+                  <TouchableOpacity key={t.id} onPress={() => setItemTypeLabel(t.label)}>
+                    <Text>{t.label}</Text>
+                  </TouchableOpacity>
                 ))}
-              </Picker>
             </View>
 
             {/* Item */}
