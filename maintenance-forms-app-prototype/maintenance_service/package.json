@@ -5,10 +5,10 @@
   "version": "1.0.0",
   "description": "Backend for Maintenance Forms Prototype",
   "scripts": {
-    "migrate": "ts-node ./migrate.ts && ts-node ./seed.ts",
-    "dev": "ts-node-dev --respawn --transpile-only ./app.ts",
+    "migrate": "ts-node --esm ./migrate.js",
+    "dev": "ts-node-dev --respawn --transpile-only --esm ./app.js",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/app.js"
+    "start": "ts-node --esm ./app.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.2.0",
@@ -19,6 +19,7 @@
     "zod": "3.25.6"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/body-parser": "1.19.5",
     "@types/cors": "2.8.17",
     "@types/express": "4.17.21",
