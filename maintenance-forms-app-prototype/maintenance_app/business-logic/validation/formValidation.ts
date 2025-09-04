@@ -1,3 +1,27 @@
+/**
+ * This file contains business logic related to form validation
+ * It provides functions to validate the entire inspection form,
+ * including site, zone, item, and subchecks.
+ * It ensures that all required fields are filled out correctly
+ * and that the data is structured properly for backend submission.
+ * 
+ * It leverages subcheckValidation.ts for validating individual subchecks
+ * and calculating overall status.
+ * The main function validateAndBuildInspectionPayload takes the form data
+ * and returns a validated payload ready for submission to the backend API.
+ * It throws errors with descriptive messages if any validation fails.
+ * This helps maintain data integrity and provides feedback to users
+ * to correct any issues before submission.
+ * 
+ * Author: Lukasz Brzozowski
+ * Created: 21/07/2025
+ * Edited: 22/07/2025
+ *         26/07/2025
+ *         30/07/2025
+ *         02/08/2025
+ *         14/08/2025
+ */
+
 import {
     validateSubcheck,
     calculateOverallStatus,
