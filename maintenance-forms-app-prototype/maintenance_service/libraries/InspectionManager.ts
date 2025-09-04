@@ -308,23 +308,27 @@ export class InspectionManager {
   }
 
   /** Resolve engineer id either from form.engineerId or by engineerName lookup. */
-  private resolveEngineerId(formParameter: InspectionForm): number | undefined {
-    if (Number.isInteger((formParameter as any).engineerId))
-      return (formParameter as any).engineerId as number;
-    if (formParameter.engineerName && formParameter.engineerName.trim()) {
-      const userIDs = db
-        .prepare(
-          `SELECT user_id 
-          FROM users 
-          WHERE full_name = ?`
-        )
-        .get(formParameter.engineerName.trim()) as
-        | { user_id: number }
-        | undefined;
-      return userIDs?.user_id;
+  private resolveEngineerId(form: InspectionForm): number | undefined {
+    if (Number.isInteger((form as any).engineerId)) {
+      return (form as any).engineerId as number;
+    }
+    if (form.engineerName && form.engineerName.trim()) {
+      const name = form.engineerName.trim();
+      const found = db.prepare(`SELECT user_id FROM users WHERE full_name=?`).get(name) as { user_id: number } | undefined;
+      if (found) {
+        return found.user_id;
+      }
+      
+      // Prototype convenience: auto-create if missing
+      const info = db.prepare(`
+        INSERT INTO users(username, full_name, role, email)
+        VALUES(?,?, 'Engineer', ?)
+      `).run(name.toLowerCase().replace(/\s+/g,'_'), name, `${name.toLowerCase().replace(/\s+/g,'.')}@example.com`);
+      return Number(info.lastInsertRowid);
     }
     return undefined;
   }
+
 
   /** 'pass' if all subchecks are 'pass' or 'na', otherwise 'fail'. */
   private computeOverall(subs: SubcheckInput[]): "pass" | "fail" {
