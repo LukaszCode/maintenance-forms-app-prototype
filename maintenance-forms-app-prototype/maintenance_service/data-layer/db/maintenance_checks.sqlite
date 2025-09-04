@@ -136,3 +136,4 @@ CREATE INDEX IF NOT EXISTS idx_inspections_date         ON inspections(inspectio
 CREATE INDEX IF NOT EXISTS idx_subcheck_results_inspection         ON subcheck_results(inspection_id);
 CREATE INDEX IF NOT EXISTS idx_attachments_subcheck         ON attachments(subcheck_result_id);
 CREATE INDEX IF NOT EXISTS idx_attachments_inspection         ON attachments(inspection_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_sub_template_type_label  ON subcheck_templates(item_type_id, sub_template_label);

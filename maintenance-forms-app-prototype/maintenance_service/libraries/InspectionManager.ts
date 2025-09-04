@@ -124,12 +124,11 @@ export class InspectionManager {
 
         if (typeRow) {
           subcheckTemplate = db
-            .prepare(
-              `SELECT sub_template_id, value_type, sub_template_mandatory, pass_criteria
+            .prepare(`
+              SELECT sub_template_id, value_type, sub_template_mandatory, pass_criteria
                FROM subcheck_templates
                WHERE item_type_id = ? 
-               AND sub_template_label = ?`
-            )
+               AND sub_template_label = ?`)
             .get(typeRow.item_type_id, subcheckParameter.subcheckName) as any;
         }
         /**
@@ -141,12 +140,34 @@ export class InspectionManager {
          */
         const dbValueType =
           subcheckTemplate?.value_type ??
-          this.toDbValueType(subcheckParameter.valueType); // 'boolean'|'number'|'TEXT'
+          this.toDbValueType(subcheckParameter.valueType); // 'boolean'|'number'|'string'
         const mandatory = subcheckTemplate?.sub_template_mandatory ?? 1; // default to mandatory
         const passCriteria =
           subcheckParameter.passCriteria ??
           subcheckTemplate?.pass_criteria ??
           null;
+
+          //NEW: If there is no template yet 
+          if(typeRow && !subcheckTemplate) {
+            const info = db.prepare(`
+              INSERT INTO subcheck_templates
+              (item_type_id, sub_template_label, sub_template_description, value_type, sub_template_mandatory, pass_criteria)
+              VALUES (?,?,?,?,?,?)`)
+            .run(
+              typeRow.item_type_id,
+              subcheckParameter.subcheckName,
+              subcheckParameter.subcheckDescription ?? "",
+              dbValueType,
+              mandatory,
+              passCriteria
+            );
+            subcheckTemplate = {
+              sub_template_id: Number(info.lastInsertRowid),
+              value_type: dbValueType,
+              sub_template_mandatory: mandatory,
+              pass_criteria: passCriteria
+            };
+          }
 
         insertSubcheck.run(
           inspectionId,
@@ -329,7 +350,6 @@ export class InspectionManager {
     return undefined;
   }
 
-
   /** 'pass' if all subchecks are 'pass' or 'na', otherwise 'fail'. */
   private computeOverall(subs: SubcheckInput[]): "pass" | "fail" {
     return subs.every(
@@ -339,6 +359,7 @@ export class InspectionManager {
       : "fail";
     // (You can add 'incomplete' later if you support partial saves.)
   }
+
 
   /** Map TypeScript value types to the DB CHECK set ('TEXT' vs 'string'). */
   private toDbValueType(value: ValueType): "boolean" | "number" | "TEXT" {
