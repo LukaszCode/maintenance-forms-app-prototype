@@ -23,7 +23,7 @@ import { validateAndBuildFormPayload, SubcheckUI } from "../business-logic/valid
 type Props = NativeStackScreenProps<RootStackParamList, "FacilitiesCheckForm">;
 
 type Named = { id: number; name: string };
-type ItemName = { id: number; label: string; category: string; description?: string };
+type ItemType = { id:number; label:string; category:string; description?:string };
 type ItemRow = { id: number; name: string; description?: string; zone_id: number; item_type: string };
 
 const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
@@ -53,7 +53,6 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
    */
   const [itemId, setItemId] = useState<number | null>(null);
 
-  const [subchecks, setSubchecks] = useState<SubcheckUI[]>([]);
   /**
    * Load all sites, item types per category at mount.
    * This will fetch the initial data needed for the form.
@@ -277,7 +276,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
 
           {/* Subchecks */}
           <View style={globalStyles.formPane}>
-            <Text style={globalStyles.formPaneTitle}>Choose completed safety tests</Text>
+            <Text style={globalStyles.formPaneTitle}>Subchecks</Text>
             {subchecks.map((s) => (
               <SubcheckToggleRow
                 key={s.id}
