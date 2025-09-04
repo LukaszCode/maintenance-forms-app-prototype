@@ -144,7 +144,6 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
    * @returns A promise that resolves when the save is complete.
    */
 
-
   const onSave = async () => {
     try {
       const { payload } = validateAndBuildFormPayload({
@@ -162,7 +161,18 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
         subchecksUi: subchecks,
       });
 
-    return (
+      const res = await api.createInspection(payload);
+      if (res.status !== "success") {
+        throw new Error(res.message ?? "Failed to save inspection.");
+      }
+      Alert.alert("Success", "Inspection saved successfully.");
+      navigation.goBack();
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Failed to save inspection.");
+    }
+  };
+
+  return (
     <View style={globalStyles.container}>
       <AppHeader engineerName={engineerName} onSignOut={() => navigation.navigate("Login")} />
 
