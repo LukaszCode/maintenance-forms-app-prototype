@@ -16,38 +16,36 @@ import AppHeader from "../components/AppHeader";
 import { globalStyles } from "../styles/globalStyles";
 import SubcheckToggleRow from "../components/SubcheckToggleRow";
 import { api } from "../src/services/apiClient";
-import { validateAndBuildInspectionPayload, SubcheckUI } from "../business-logic/validation/formValidation";
-import {
-  validateSubcheck,
-  calculateOverallStatus,
-  requireCommentIfFailed,
-} from "../business-logic/validation/subcheckValidation";
+import { validateAndBuildFormPayload, SubcheckUI } from "../business-logic/validation/formValidation";
+
+
 
 type Props = NativeStackScreenProps<RootStackParamList, "FacilitiesCheckForm">;
 
-type SiteOption = { id: number; name: string };
-type ZoneOption = { id: number; name: string };
-type ItemTypeOption = { id: number; label: string; category: string; description?: string };
-type ItemOption = { id: number; name: string; description?: string; zone_id: number; item_type: string };
+type Named = { id: number; name: string };
+type ItemName = { id: number; label: string; category: string; description?: string };
+type ItemRow = { id: number; name: string; description?: string; zone_id: number; item_type: string };
 
 const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
   const { engineerName } = route.params;
 
   // Basic fields
-  const [dateString, setDateString] = useState(new Date().toISOString().slice(0, 10));
+  const [dateString, setDateString] = useState(new Date().toISOString().slice(0,10));
+  const [siteName, setSiteName] = useState("");
+  const [zoneName, setZoneName] = useState("");
+  const [itemTypeLabel, setItemTypeLabel] = useState("Emergency Lighting");
+  const [itemName, setItemName] = useState("");
   const [comment, setComment] = useState("");
 
-  //Dropdown data
-  const [sites, setSites] = useState<SiteOption[]>([]);
-  const [zones, setZones] = useState<ZoneOption[]>([]);
-  const [itemTypes, setItemTypes] = useState<ItemTypeOption[]>([]);
-  const [items, setItems] = useState<ItemOption[]>([]);
 
-  //Current selections (attach IDs/labels to query dropdowns)
-  const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
-  const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
-  const [selectedItemTypeLabel, setSelectedItemTypeLabel] = useState<string>("");
-  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  //Dropdown data
+  const [sites, setSites] = useState<Named[]>([]);
+  const [zones, setZones] = useState<Named[]>([]);
+  const [itemTypes, setItemTypes] = useState<ItemType[]>([]);
+  const [items, setItems] = useState<ItemRow[]>([]);
+  const [subchecks, setSubchecks] = useState<SubcheckUI[]>([]);
+
+ 
 
   /**
    * This is a placeholder for the item ID.
@@ -62,21 +60,8 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
    * @returns A promise that resolves to the list of sites.
    */
   useEffect(() => {
-    (async () => {
-      try {
-        const sitesRes = await api.sites();
-        setSites(sitesRes.data ?? []);
-      } catch {
-        setSites([]);
-      }
-      try {
-        const typesRes = await api.itemTypes("Facility");
-        // API returns: { id, label, category, description }
-        setItemTypes(typesRes.data ?? []);
-      } catch {
-        setItemTypes([]);
-      }
-    })();
+    api.sites().then(r => setSites(r.data ?? [])).catch(() => setSites([]));
+    api.itemTypes("Facility").then(r => setItemTypes(r.data ?? [])).catch(() => setItemTypes([]));
   }, []);
 
   /**
@@ -86,24 +71,10 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
    * @returns A promise that resolves to the list of zones for the selected site.
    */
   useEffect(() => {
-    if (!selectedSiteId) {
-      setZones([]);
-      setSelectedZoneId(null);
-      return;
-    }
-    (async () => {
-      try {
-        const zonesRes = await api.zones(selectedSiteId);
-        setZones(zonesRes.data ?? []);
-      } catch {
-        setZones([]);
-      }
-      // changing site resets downstream selections
-      setSelectedZoneId(null);
-      setItems([]);
-      setSelectedItemId(null);
-    })();
-  }, [selectedSiteId]);
+    const site = sites.find(s => s.name === siteName);
+    if (!site) { setZones([]); return; }
+    api.zones(site.id).then(r => setZones(r.data ?? [])).catch(() => setZones([]));
+  }, [siteName, sites]);
 
   /**
    * Load items for the selected zone and item type.
@@ -114,22 +85,11 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
    * @returns A promise that resolves to the list of items for the selected zone and item type.
    */
   useEffect(() => {
-    if (!selectedZoneId) {
-      setItems([]);
-      setSelectedItemId(null);
-      return;
-    }
-    (async () => {
-      try {
-        const itemsRes = await api.items(selectedZoneId, selectedItemTypeLabel || undefined);
-        setItems(itemsRes.data ?? []);
-      } catch {
-        setItems([]);
-      }
-      setSelectedItemId(null);
-    })();
-  }, [selectedZoneId, selectedItemTypeLabel]);
-
+    const zone = zones.find(z => z.name === zoneName);
+    if (!zone || !itemTypeLabel.trim()) { setItems([]); return; }
+    api.items(zone.id, itemTypeLabel).then(r => setItems(r.data ?? [])).catch(() => setItems([]));
+  }, [zoneName, itemTypeLabel, zones]);
+  
   /**
    * Load subcheck templates for the selected item type.
    * When itemType changes, load subcheck templates for that item type (by id)

@@ -53,7 +53,7 @@ export type SubcheckUI = {
  * @param args The arguments that will be used to send to the backend.
  * @returns The validated and built inspection payload.
  */
-export function validateAndBuildInspectionPayload(args: {
+export function validateAndBuildFormPayload(args: {
     dateString: string;
     engineerName: string;
     category: "Facility" | "Machine Safety";
