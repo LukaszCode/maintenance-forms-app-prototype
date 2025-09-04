@@ -129,13 +129,20 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
   /**
    * Get the overall status of the subchecks.
    * This will be "pass" if all subchecks are "pass", otherwise "fail".
-   * 
+   * @param subchecks - The list of subchecks to evaluate.
+   * @returns The overall status of the subchecks.
    */
   const overall: "pass" | "fail" = useMemo(
     () => (subchecks.every((s) => s.status === "pass") ? "pass" : "fail"),
     [subchecks]
   );
   
+  /** Save the form.
+   * This will validate the form and submit it to the backend.
+   * On success, navigate back. On failure, show an alert.
+   * @param navigation - The navigation object.
+   * @returns A promise that resolves when the save is complete.
+   */
 
 
   const onSave = async () => {
