@@ -224,17 +224,17 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
             {/* Zone */}
             <View style={globalStyles.formCol}>
               <Text>Zone</Text>
-              <Picker
-                selectedValue={selectedZoneId}
-                onValueChange={(v) => setSelectedZoneId(v)}
-                enabled={!!selectedSiteId}
+              <TextInput
                 style={globalStyles.input}
-              >
-                <Picker.Item label="Select zone…" value={null} />
-                {zones.map((z) => (
-                  <Picker.Item key={z.id} label={z.name} value={z.id} />
-                ))}
-              </Picker>
+                value={zoneName}
+                onChangeText={setZoneName}
+                placeholder="Type or select…"
+              />
+              {suggestions(zoneName, zones).map(z => (
+                <TouchableOpacity key={z.id} onPress={() => setZoneName(z.name)}>
+                  <Text>{z.name}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
 
@@ -243,7 +243,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
             <View style={globalStyles.formCol}>
               <Text>Item Type</Text>
               <Picker
-                selectedValue={selectedItemTypeLabel}
+                selectedValue={}
                 onValueChange={(v) => setSelectedItemTypeLabel(v)}
                 style={globalStyles.input}
               >
