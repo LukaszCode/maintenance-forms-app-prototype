@@ -75,24 +75,51 @@ app.post("/sites", (request, response) => {
       .status(400)
       .json({ status: "error", message: "siteName required" });
   const info = db
-    .prepare(
-      `
+    .prepare(`
     INSERT OR IGNORE INTO sites(site_name) VALUES (?)
-    `
-    )
+    `)
     .run(siteName.trim());
     const id =
       info.lastInsertRowid ??
-      (db.prepare(
-        `
+      (db.prepare(`
         SELECT site_id 
         FROM sites 
         WHERE site_name=?
-        `
-      )
+        `)
       .get(siteName.trim()) as { site_id: number }).site_id;
     response.json({ status: "success", data: { id, name: siteName.trim() } });
   });
+
+/**
+ * Create a new zone.
+ * @param {Object} request - The HTTP request object.
+ * @param {Object} request.body - The request body containing the zone data.
+ * @param {string} request.body.zoneName - The name of the zone to create.
+ * @param {string} request.body.zoneDescription - The description of the zone to create.
+ * @param {string} request.body.siteId - The ID of the site to associate the zone with.
+ * @param {Object} response - The HTTP response object.
+ * @returns {Object} The HTTP response with the created zone data or an error message.
+ */
+app.post("/zones", (request, response) => {
+  const { siteId, zoneName, zoneDescription } = request.body ?? {};
+  if (!Number.isInteger(siteId)) {
+    return response.status(400).json({ status: "error", message: "Site ID is required and must be a number" });
+  }
+  if (!zoneName?.trim()) {
+    return response.status(400).json({ status: "error", message: "zoneName is required" });
+  }
+  const info = db.prepare(`
+    INSERT OR IGNORE INTO zones(zone_name, zone_description, site_id)
+    VALUES (?, ?, ?)
+  `).run(zoneName.trim(), zoneDescription?.trim() ?? null, siteId);
+  const id = info.lastInsertRowid ?? (db.prepare(`
+      SELECT zone_id
+      AS id
+      FROM zones
+      WHERE zone_name=? AND site_id=?
+    `).get(zoneName.trim(), siteId) as { zone_id: number }).zone_id;
+  response.json({ status: "success", data: { id, name: zoneName.trim(), description: zoneDescription?.trim(), siteId } });
+});
 
 /**
  * Retrieve all sites.
@@ -104,13 +131,11 @@ app.post("/sites", (request, response) => {
  */
 app.get("/sites", (_request, response) => {
   const rows = db
-    .prepare(
-      `
+    .prepare(`
     SELECT site_id AS id, 
     site_name AS name FROM sites 
     ORDER BY site_name
-  `
-    )
+  `)
     .all();
   response.json({ status: "success", data: rows });
 });
@@ -126,16 +151,14 @@ app.get("/sites", (_request, response) => {
 app.get("/zones", (request, response) => {
   const siteId = Number(request.query.siteId) || null;
   const rows = db
-    .prepare(
-      `
+    .prepare(`
     SELECT zone_id AS id, 
     zone_name AS name, 
     zone_description AS description, 
     site_id FROM zones 
     WHERE (? IS NULL OR site_id=?) 
     ORDER BY zone_name
-  `
-    )
+  `)
     .all(siteId, siteId);
   response.json({ status: "success", data: rows });
 });
@@ -179,8 +202,7 @@ app.get("/item-types", (request, response) => {
       : null;
 
   const rows = db
-    .prepare(
-      `
+    .prepare(`
     SELECT item_type_id AS id,
            item_type_label AS label,
            inspection_category AS category,
@@ -188,8 +210,7 @@ app.get("/item-types", (request, response) => {
     FROM item_types
     WHERE (? IS NULL OR inspection_category = ?)
     ORDER BY item_type_label
-  `
-    )
+  `)
     .all(category, category);
 
   response.json({ status: "success", data: rows });
@@ -214,8 +235,7 @@ app.get("/items", (request, response) => {
       : null;
 
   const rows = db
-    .prepare(
-      `
+    .prepare(`
     SELECT item_id AS id,
            item_name AS name,
            description,
@@ -225,8 +245,7 @@ app.get("/items", (request, response) => {
     WHERE (? IS NULL OR zone_id = ?)
       AND (? IS NULL OR item_type = ?)
     ORDER BY item_name
-  `
-    )
+  `)
     .all(zoneId, zoneId, itemType, itemType);
 
   response.json({ status: "success", data: rows });
@@ -253,8 +272,7 @@ app.get("/subcheck-templates", (request, response) => {
   }
 
   const rows = db
-    .prepare(
-      `
+    .prepare(`
     SELECT sub_template_id          AS id,
            sub_template_label       AS name,
            sub_template_description AS description,
@@ -264,8 +282,7 @@ app.get("/subcheck-templates", (request, response) => {
     FROM subcheck_templates
     WHERE item_type_id = ?
     ORDER BY sub_template_id
-  `
-    )
+  `)
     .all(itemTypeId);
 
   response.json({ status: "success", data: rows });
