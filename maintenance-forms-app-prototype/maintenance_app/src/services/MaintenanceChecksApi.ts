@@ -98,6 +98,33 @@ export class MaintenanceChecksApi {
         body:JSON.stringify({ siteName })
     }).then(r => r.json());
   }
+  
+  /**
+   * Create a new zone.
+   * @param zoneName - Name of the new zone to create.
+   * @param zoneDescription - Optional description of the new zone.
+   * @param siteId - ID of the site to which the zone belongs.
+   * @returns A promise that resolves to the created zone.
+   */
+
+  createZone (siteId: number, zoneName: string, zoneDescription?: string) {
+    return fetch(`${this.baseUrl}/zones`, {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify({ siteId, zoneName, zoneDescription}),
+    }).then(r => r.json());
+  }
+
+  /**
+   * Create a new item.
+   * @param zoneId - ID of the zone to which the item belongs.
+   * @param itemType - Type of the item.
+   * @param itemName - Name of the new item to create.
+   * @param itemDescription - Optional description of the new item.
+   * @returns A promise that resolves to the created item.
+   */
+
+  
 
   // --- inspections ---
   /**
