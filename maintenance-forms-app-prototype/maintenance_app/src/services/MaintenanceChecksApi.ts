@@ -24,18 +24,19 @@ export class MaintenanceChecksApi {
    * @returns A promise that resolves to the list of sites.
    */
   sites() {
-    return fetch(`${this.baseUrl}/sites`).then((res) => res.json());
-  }
-
+     return fetch(`${this.baseUrl}/sites`).then(r => r.json()); 
+    }
+  
   /**
    * Retrieve all zones based on site ID.
    * @param siteId - The ID of the site to filter zones.
    * @returns A promise that resolves to the list of zones.
    */
   zones(siteId?: number) {
-    const query = siteId ? `?siteId=${siteId}` : "";
-    return fetch(`${this.baseUrl}/zones${query}`).then((res) => res.json());
+    const q = siteId ? `?siteId=${siteId}` : "";
+    return fetch(`${this.baseUrl}/zones${q}`).then(r => r.json());
   }
+
 
   /**
    * Retrieve item types based on category.
@@ -43,10 +44,8 @@ export class MaintenanceChecksApi {
    * @returns A promise that resolves to the list of item types.
    */
   itemTypes(category?: string) {
-    const query = category ? `?category=${encodeURIComponent(category)}` : "";
-    return fetch(`${this.baseUrl}/item-types${query}`).then((res) =>
-      res.json()
-    );
+    const q = category ? `?category=${encodeURIComponent(category)}` : "";
+    return fetch(`${this.baseUrl}/item-types${q}`).then(r => r.json());
   }
 
   /**
@@ -56,15 +55,15 @@ export class MaintenanceChecksApi {
    * @returns A promise that resolves to the list of items.
    */
   items(zoneId?: number, itemType?: string) {
-    const params: string[] = [];
+    const qs:string[] = [];
     if (zoneId) {
-      params.push(`zoneId=${zoneId}`);
+      qs.push(`zoneId=${zoneId}`);
     }
     if (itemType) {
-      params.push(`itemType=${encodeURIComponent(itemType)}`);
+      qs.push(`itemType=${encodeURIComponent(itemType)}`);
     }
-    const query = params.length > 0 ? `?${params.join("&")}` : "";
-    return fetch(`${this.baseUrl}/items${query}`).then((res) => res.json());
+    const q = qs.length ? `?${qs.join("&")}` : "";
+    return fetch(`${this.baseUrl}/items${q}`).then(r => r.json());
   }
 
   /**
@@ -72,10 +71,9 @@ export class MaintenanceChecksApi {
    * @param itemTypeId - The ID of the item type to filter templates.
    * @returns A promise that resolves to the list of subcheck templates.
    */
-  templatesByTypeId(itemTypeId: number) {
-    return fetch(
-      `${this.baseUrl}/subcheck-templates?itemTypeId=${itemTypeId}`
-    ).then((res) => res.json());
+  templatesByTypeId(itemTypeId:number) {
+    return fetch(`${this.baseUrl}/subcheck-templates?itemTypeId=${itemTypeId}`)
+    .then(r => r.json());
   }
 
   /**
@@ -83,10 +81,22 @@ export class MaintenanceChecksApi {
    * @param itemTypeLabel - The label of the item type to filter templates.
    * @returns A promise that resolves to the list of subcheck templates.
    */
-  templatesByLabel(itemTypeLabel: string) {
-    return fetch(
-      `${this.baseUrl}/subcheck-templates/by-label?itemType=${encodeURIComponent(itemTypeLabel)}`
-    ).then((res) => res.json());
+  templatesByLabel(itemTypeLabel:string) {
+    return fetch(`${this.baseUrl}/subcheck-templates/by-label?itemType=${encodeURIComponent(itemTypeLabel)}`)
+    .then(r => r.json());
+  }
+
+  /**
+   * Create a new site.
+   * @param siteName - Name of the new site to create.
+   * @returns A promise that resolves to the created site.
+   */
+  createSite(siteName:string) {
+    return fetch(`${this.baseUrl}/sites`, {
+        method:"POST",
+        headers:this.headers(),
+        body:JSON.stringify({ siteName })
+    }).then(r => r.json());
   }
 
   // --- inspections ---
@@ -95,12 +105,12 @@ export class MaintenanceChecksApi {
    * @param inspectionData - The data for the new inspection.
    * @returns A promise that resolves to the created inspection.
    */
-  createInspection(inspectionData: any) {
+  createInspection(inspectionData:any) {
     return fetch(`${this.baseUrl}/inspections`, {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify(inspectionData),
-    }).then((r) => r.json());
+    }).then(r => r.json());
   }
 
   /**
@@ -108,8 +118,9 @@ export class MaintenanceChecksApi {
    * @param id - The ID of the inspection to retrieve.
    * @returns A promise that resolves to the inspection data.
    */
-  getInspection(id: number) {
-    return fetch(`${this.baseUrl}/inspections/${id}`).then((r) => r.json());
+  getInspection(id:number) {
+    return fetch(`${this.baseUrl}/inspections/${id}`)
+    .then(r => r.json());
   }
 
   /**
