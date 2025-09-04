@@ -1,7 +1,7 @@
 import {
-    validateSubcheck,
-    calculateOverallStatus,
-    requireCommentIfFailed
+  validateSubcheck,
+  calculateOverallStatus,
+  requireCommentIfFailed,
 } from "./subcheckValidation";
 
 type IdName = { id: number; name: string };
