@@ -136,6 +136,15 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
     () => (subchecks.every((s) => s.status === "pass") ? "pass" : "fail"),
     [subchecks]
   );
+
+  /**
+   * Get suggestions for a given query and list.
+   * @param q - The search query.
+   * @param list - The list of items to search.
+   * @returns A list of matching items.
+   */
+  const suggestions = (q: string, list: Named[]) =>
+    q.trim().length ? list.filter((s) => s.name.toLowerCase().includes(q.toLowerCase())).slice(0,5) : [];
   
   /** Save the form.
    * This will validate the form and submit it to the backend.
@@ -185,7 +194,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
 
       <ScrollView contentContainerStyle={{ paddingVertical: 10 }}>
         <View style={globalStyles.card}>
-          <Text style={globalStyles.cardTitle}>Inspection Check Form</Text>
+          <Text style={globalStyles.cardTitle}>Facility Inspection</Text>
 
           {/* Date */}
           <View style={globalStyles.formRow}>
@@ -195,20 +204,21 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
             </View>
           </View>
 
-          {/* Site */}
+          {/* Site (type or select) */}
           <View style={globalStyles.formRow}>
             <View style={globalStyles.formCol}>
               <Text>Site</Text>
-              <Picker
-                selectedValue={selectedSiteId}
-                onValueChange={(v) => setSelectedSiteId(v)}
+              <TextInput
                 style={globalStyles.input}
-              >
-                <Picker.Item label="Select site…" value={null} />
-                {sites.map((s) => (
-                  <Picker.Item key={s.id} label={s.name} value={s.id} />
-                ))}
-              </Picker>
+                value={siteName}
+                onChangeText={setSiteName}
+                placeholder="Type or select…"
+              />
+              {suggestions(siteName, sites).map(s => (
+                <TouchableOpacity key={s.id} onPress={() => setSiteName(s.name)}>
+                  <Text>{s.name}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
 
             {/* Zone */}
