@@ -244,9 +244,16 @@ app.post("/items/ensure", (req, res) => {
   const itemName = String(req.body.itemName || "").trim();
   const description = (req.body.description ?? "") as string;
 
-  if (!Number.isFinite(zoneId)) return res.status(400).json({ status: "error", message: "zoneId required" });
-  if (!itemType) return res.status(400).json({ status: "error", message: "itemType required" });
-  if (!itemName) return res.status(400).json({ status: "error", message: "itemName required" });
+  if (!Number.isFinite(zoneId))
+    {
+      return res.status(400).json({ status: "error", message: "zoneId required" });
+    }
+  if (!itemType) {
+    return res.status(400).json({ status: "error", message: "itemType required" });
+  }
+  if (!itemName) {
+    return res.status(400).json({ status: "error", message: "itemName required" });
+  }
 
   const exists = db
     .prepare(`SELECT item_id AS id FROM items WHERE zone_id=? AND item_type=? AND item_name=?`)
@@ -262,8 +269,9 @@ app.post("/items/ensure", (req, res) => {
     status: "success",
     data: { id: Number(info.lastInsertRowid), name: itemName, zoneId, itemType },
   });
+});
 
-  
+
 /**
  * Read subcheck templates by item_type label (since FE uses label)
  * This endpoint retrieves subcheck templates associated with a specific item type label.
@@ -516,3 +524,4 @@ app.get("/healthz", (_request, response) => response.json({ ok: true }));
 app.listen(3001, () => {
   console.log("Server is running on http://localhost:3001");
 });
+
