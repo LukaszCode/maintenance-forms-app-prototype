@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS sites (
 
 CREATE TABLE IF NOT EXISTS zones (
     zone_id INTEGER PRIMARY KEY, 
-    zone_name TEXT NOT NULL,
+    zone_label TEXT NOT NULL,
     zone_description TEXT,
     site_id INTEGER NOT NULL REFERENCES sites(site_id) ON DELETE CASCADE
 );

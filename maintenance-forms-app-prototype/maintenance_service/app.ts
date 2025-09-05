@@ -173,16 +173,18 @@ app.post("/items", (request, response) => {
  * @returns {Object} The HTTP response with the ensured site data or an error message.
  */
 
-app.post("/sites/ensure", (req, res) => {
-  const name = String(req.body.siteName || "").trim();
-  if (!name) return res.status(400).json({ status: "error", message: "siteName required" });
+app.post("/sites/ensure", (request, response) => {
+  const siteName = String(request.body.siteName || "").trim();
+  if (!siteName) {
+    return response.status(400).json({ status: "error", message: "siteName required" });
+  }
 
-  const info = db.prepare(`INSERT OR IGNORE INTO sites(site_name) VALUES (?)`).run(name);
+  const info = db.prepare(`INSERT OR IGNORE INTO sites(site_name) VALUES (?)`).run(siteName);
   const id =
     Number(info.lastInsertRowid) ||
-    (db.prepare(`SELECT site_id AS id FROM sites WHERE site_name=?`).get(name) as any)?.id;
+    (db.prepare(`SELECT site_id AS id FROM sites WHERE site_name=?`).get(siteName) as any)?.id;
 
-  res.json({ status: "success", data: { id, name } });
+  response.json({ status: "success", data: { id, siteName } });
 });
 
 
@@ -194,32 +196,32 @@ app.post("/sites/ensure", (req, res) => {
  * @param {Object} request - The HTTP request object.
  * @param {Object} request.body - The request body containing the zone data.
  * @param {string} request.body.siteId - The ID of the site to associate the zone with.
- * @param {string} request.body.zoneName - The name of the zone to ensure.
+ * @param {string} request.body.zoneLabel - The label of the zone to ensure.
  * @param {string} request.body.zoneDescription - The description of the zone to create (optional).
  * @param {Object} response - The HTTP response object.
  * @returns {Object} The HTTP response with the ensured zone data or an error message.
  */
 
-app.post("/zones/ensure", (req, res) => {
-  const siteId = Number(req.body.siteId);
-  const name = String(req.body.zoneName || "").trim();
-  const description = (req.body.zoneDescription ?? "") as string;
+app.post("/zones/ensure", (request, response) => {
+  const siteId = Number(request.body.siteId);
+  const zoneLabel = String(request.body.zoneLabel || "").trim();
+  const description = (request.body.zoneDescription ?? "") as string;
 
-  if (!Number.isFinite(siteId)) return res.status(400).json({ status: "error", message: "siteId required" });
-  if (!name) return res.status(400).json({ status: "error", message: "zoneName required" });
+  if (!Number.isFinite(siteId)) return response.status(400).json({ status: "error", message: "siteId required" });
+  if (!zoneLabel) return response.status(400).json({ status: "error", message: "zoneLabel required" });
 
-  // ensure unique per (site, name)
+  // ensure unique zone per (site, label)
   const exists = db
-    .prepare(`SELECT zone_id AS id FROM zones WHERE site_id=? AND zone_name=?`)
-    .get(siteId, name) as { id: number } | undefined;
+    .prepare(`SELECT zone_id AS id FROM zones WHERE site_id=? AND zone_label=?`)
+    .get(siteId, zoneLabel) as { id: number } | undefined;
 
-  if (exists) return res.json({ status: "success", data: { id: exists.id, name, siteId } });
+  if (exists) return response.json({ status: "success", data: { id: exists.id, zoneLabel, siteId } });
 
   const info = db
     .prepare(`INSERT INTO zones(zone_name, zone_description, site_id) VALUES (?,?,?)`)
-    .run(name, description, siteId);
+    .run(zoneLabel, description, siteId);
 
-  res.json({ status: "success", data: { id: Number(info.lastInsertRowid), name, siteId } });
+  response.json({ status: "success", data: { id: Number(info.lastInsertRowid), zoneLabel, siteId } });
 });
 
 
@@ -238,34 +240,33 @@ app.post("/zones/ensure", (req, res) => {
  * @returns {Object} The HTTP response with the ensured item data or an error message.
  */
 
-app.post("/items/ensure", (req, res) => {
-  const zoneId = Number(req.body.zoneId);
-  const itemType = String(req.body.itemType || "").trim();  // TEXT label (Option A)
-  const itemName = String(req.body.itemName || "").trim();
-  const description = (req.body.description ?? "") as string;
+app.post("/items/ensure", (request, response) => {
+  const zoneId = Number(request.body.zoneId);
+  const itemType = String(request.body.itemType || "").trim();  // TEXT label (Option A)
+  const itemName = String(request.body.itemName || "").trim();
+  const description = (request.body.description ?? "") as string;
 
-  if (!Number.isFinite(zoneId))
-    {
-      return res.status(400).json({ status: "error", message: "zoneId required" });
-    }
+  if (!Number.isFinite(zoneId)) {
+    return response.status(400).json({ status: "error", message: "zoneId required" });
+  }
   if (!itemType) {
-    return res.status(400).json({ status: "error", message: "itemType required" });
+    return response.status(400).json({ status: "error", message: "itemType required" });
   }
   if (!itemName) {
-    return res.status(400).json({ status: "error", message: "itemName required" });
+    return response.status(400).json({ status: "error", message: "itemName required" });
   }
 
   const exists = db
     .prepare(`SELECT item_id AS id FROM items WHERE zone_id=? AND item_type=? AND item_name=?`)
     .get(zoneId, itemType, itemName) as { id: number } | undefined;
 
-  if (exists) return res.json({ status: "success", data: { id: exists.id, name: itemName, zoneId, itemType } });
+  if (exists) return response.json({ status: "success", data: { id: exists.id, name: itemName, zoneId, itemType } });
 
   const info = db
     .prepare(`INSERT INTO items(item_type, item_name, description, zone_id) VALUES (?,?,?,?)`)
     .run(itemType, itemName, description, zoneId);
 
-  res.json({
+  response.json({
     status: "success",
     data: { id: Number(info.lastInsertRowid), name: itemName, zoneId, itemType },
   });
