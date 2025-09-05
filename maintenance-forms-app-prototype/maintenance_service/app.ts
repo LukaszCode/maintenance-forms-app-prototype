@@ -109,7 +109,7 @@ app.post("/zones", (request, response) => {
     return response.status(400).json({ status: "error", message: "zoneName is required" });
   }
   const info = db.prepare(`
-    INSERT OR IGNORE INTO zones(zone_name, zone_description, site_id)
+    INSERT OR IGNORE INTO zones(zone_label, zone_description, site_id)
     VALUES (?, ?, ?)
   `).run(zoneName.trim(), zoneDescription ?? null, siteId);
   const id = info.lastInsertRowid ?? (db.prepare(`
@@ -117,9 +117,9 @@ app.post("/zones", (request, response) => {
       AS id
       FROM zones
       WHERE site_id=? 
-      AND zone_name=?
+      AND zone_label=?
     `).get(siteId, zoneName.trim()) as { id: number } | undefined)?.id;
-    response.json({ status: "success", data: { id, zone_name: zoneName.trim(), siteId }});
+    response.json({ status: "success", data: { id, zone_label: zoneName.trim(), siteId }});
 });
 
 /**
@@ -207,8 +207,12 @@ app.post("/zones/ensure", (request, response) => {
   const zoneLabel = String(request.body.zoneLabel || "").trim();
   const description = (request.body.zoneDescription ?? "") as string;
 
-  if (!Number.isFinite(siteId)) return response.status(400).json({ status: "error", message: "siteId required" });
-  if (!zoneLabel) return response.status(400).json({ status: "error", message: "zoneLabel required" });
+  if (!Number.isFinite(siteId)) {
+    return response.status(400).json({ status: "error", message: "Site ID does not exist" });
+  }
+  if (!zoneLabel) {
+    return response.status(400).json({ status: "error", message: "Zone label is required" });
+  }
 
   // ensure unique zone per (site, label)
   const exists = db
@@ -218,7 +222,7 @@ app.post("/zones/ensure", (request, response) => {
   if (exists) return response.json({ status: "success", data: { id: exists.id, zoneLabel, siteId } });
 
   const info = db
-    .prepare(`INSERT INTO zones(zone_name, zone_description, site_id) VALUES (?,?,?)`)
+    .prepare(`INSERT INTO zones(zone_label, zone_description, site_id) VALUES (?,?,?)`)
     .run(zoneLabel, description, siteId);
 
   response.json({ status: "success", data: { id: Number(info.lastInsertRowid), zoneLabel, siteId } });
@@ -344,11 +348,11 @@ app.get("/zones", (request, response) => {
   const rows = db
     .prepare(`
     SELECT zone_id AS id, 
-    zone_name AS name, 
+    zone_label, 
     zone_description AS description, 
     site_id FROM zones 
     WHERE (? IS NULL OR site_id=?) 
-    ORDER BY zone_name
+    ORDER BY zone_label
   `)
     .all(siteId, siteId);
   response.json({ status: "success", data: rows });
