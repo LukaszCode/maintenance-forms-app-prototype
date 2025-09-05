@@ -162,6 +162,148 @@ app.post("/items", (request, response) => {
 });
 
 /**
+ * Create a new site, by (siteName)  (create if not existing)
+ * This endpoint checks if a site with the given name exists.
+ * If it does not exist, it creates a new site with that name.
+ * It returns the site ID and name.
+ * @param {Object} request - The HTTP request object.
+ * @param {Object} request.body - The request body containing the site name.
+ * @param {string} request.body.siteName - The name of the site to ensure.
+ * @param {Object} response - The HTTP response object.
+ * @returns {Object} The HTTP response with the ensured site data or an error message.
+ */
+
+app.post("/sites/ensure", (req, res) => {
+  const name = String(req.body.siteName || "").trim();
+  if (!name) return res.status(400).json({ status: "error", message: "siteName required" });
+
+  const info = db.prepare(`INSERT OR IGNORE INTO sites(site_name) VALUES (?)`).run(name);
+  const id =
+    Number(info.lastInsertRowid) ||
+    (db.prepare(`SELECT site_id AS id FROM sites WHERE site_name=?`).get(name) as any)?.id;
+
+  res.json({ status: "success", data: { id, name } });
+});
+
+
+/**
+ * Create a new zone under a site, by (siteId, zoneName)  (create if not existing)
+ * This endpoint checks if a zone with the given name exists under the specified site.
+ * If it does not exist, it creates a new zone with that name under the specified site.
+ * It returns the zone ID, name, and associated site ID.
+ * @param {Object} request - The HTTP request object.
+ * @param {Object} request.body - The request body containing the zone data.
+ * @param {string} request.body.siteId - The ID of the site to associate the zone with.
+ * @param {string} request.body.zoneName - The name of the zone to ensure.
+ * @param {string} request.body.zoneDescription - The description of the zone to create (optional).
+ * @param {Object} response - The HTTP response object.
+ * @returns {Object} The HTTP response with the ensured zone data or an error message.
+ */
+
+app.post("/zones/ensure", (req, res) => {
+  const siteId = Number(req.body.siteId);
+  const name = String(req.body.zoneName || "").trim();
+  const description = (req.body.zoneDescription ?? "") as string;
+
+  if (!Number.isFinite(siteId)) return res.status(400).json({ status: "error", message: "siteId required" });
+  if (!name) return res.status(400).json({ status: "error", message: "zoneName required" });
+
+  // ensure unique per (site, name)
+  const exists = db
+    .prepare(`SELECT zone_id AS id FROM zones WHERE site_id=? AND zone_name=?`)
+    .get(siteId, name) as { id: number } | undefined;
+
+  if (exists) return res.json({ status: "success", data: { id: exists.id, name, siteId } });
+
+  const info = db
+    .prepare(`INSERT INTO zones(zone_name, zone_description, site_id) VALUES (?,?,?)`)
+    .run(name, description, siteId);
+
+  res.json({ status: "success", data: { id: Number(info.lastInsertRowid), name, siteId } });
+});
+
+
+/**
+ * Create a new item under a zone, by (item_type, item_name)  (create if not existing)
+ * This endpoint checks if an item with the given type and name exists under the specified zone.
+ * If it does not exist, it creates a new item with that type and name under the specified zone.
+ * It returns the item ID, name, type, and associated zone ID.
+ * @param {Object} request - The HTTP request object.
+ * @param {Object} request.body - The request body containing the item data.
+ * @param {string} request.body.zoneId - The ID of the zone to associate the item with.
+ * @param {string} request.body.itemType - The type of the item to ensure.
+ * @param {string} request.body.itemName - The name of the item to ensure.
+ * @param {string} request.body.description - The description of the item to create (optional).
+ * @param {Object} response - The HTTP response object.
+ * @returns {Object} The HTTP response with the ensured item data or an error message.
+ */
+
+app.post("/items/ensure", (req, res) => {
+  const zoneId = Number(req.body.zoneId);
+  const itemType = String(req.body.itemType || "").trim();  // TEXT label (Option A)
+  const itemName = String(req.body.itemName || "").trim();
+  const description = (req.body.description ?? "") as string;
+
+  if (!Number.isFinite(zoneId)) return res.status(400).json({ status: "error", message: "zoneId required" });
+  if (!itemType) return res.status(400).json({ status: "error", message: "itemType required" });
+  if (!itemName) return res.status(400).json({ status: "error", message: "itemName required" });
+
+  const exists = db
+    .prepare(`SELECT item_id AS id FROM items WHERE zone_id=? AND item_type=? AND item_name=?`)
+    .get(zoneId, itemType, itemName) as { id: number } | undefined;
+
+  if (exists) return res.json({ status: "success", data: { id: exists.id, name: itemName, zoneId, itemType } });
+
+  const info = db
+    .prepare(`INSERT INTO items(item_type, item_name, description, zone_id) VALUES (?,?,?,?)`)
+    .run(itemType, itemName, description, zoneId);
+
+  res.json({
+    status: "success",
+    data: { id: Number(info.lastInsertRowid), name: itemName, zoneId, itemType },
+  });
+
+  
+/**
+ * Read subcheck templates by item_type label (since FE uses label)
+ * This endpoint retrieves subcheck templates associated with a specific item type label.
+ * It first looks up the item type ID based on the provided label, then fetches the corresponding subcheck templates.
+ * @param {Object} request - The HTTP request object.
+ * @param {Object} request.query - The query parameters from the request URL.
+ * @param {string} request.query.itemType - The label of the item type.
+ * @param {Object} response - The HTTP response object.
+ * @returns {Object} The HTTP response with the list of subcheck templates or an error message.
+ */
+
+app.get("/subcheck-templates/by-label", (req, res) => {
+  const itemTypeLabel = typeof req.query.itemType === "string" ? req.query.itemType.trim() : "";
+  if (!itemTypeLabel) return res.status(400).json({ status: "error", message: "itemType required" });
+
+  const typeRow = db
+    .prepare(`SELECT item_type_id FROM item_types WHERE item_type_label = ?`)
+    .get(itemTypeLabel) as { item_type_id: number } | undefined;
+
+  if (!typeRow) return res.json({ status: "success", data: [] });
+
+  const rows = db
+    .prepare(
+      `SELECT sub_template_id          AS id,
+              sub_template_label       AS name,
+              sub_template_description AS description,
+              value_type               AS valueType,
+              pass_criteria            AS passCriteria,
+              sub_template_mandatory   AS mandatory
+       FROM subcheck_templates
+       WHERE item_type_id = ?
+       ORDER BY sub_template_id`
+    )
+    .all(typeRow.item_type_id);
+
+  res.json({ status: "success", data: rows });
+});
+
+
+/**
  * Retrieve all sites.
  * @param {Object} _request - The HTTP request object (not used).
  * @param {Object} response - The HTTP response object.

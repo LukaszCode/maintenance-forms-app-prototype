@@ -6,9 +6,9 @@
   "description": "Backend for Maintenance Forms Prototype",
   "scripts": {
     "migrate": "ts-node --esm ./migrate.js",
-    "dev": "ts-node-dev --respawn --transpile-only --esm ./app.js",
+    "dev": "ts-node-dev --esm ./dist/app.js",
     "build": "tsc -p tsconfig.json",
-    "start": "ts-node --esm ./app.js"
+    "start": "ts-node --esm ./dist/app.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.2.0",
