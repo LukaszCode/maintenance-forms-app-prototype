@@ -55,8 +55,13 @@ app.post("/inspections", (request, response) => {
     const saved = manager.createInspection(request.body);
     response.json({ status: "success", data: saved });
   } catch (error: any) {
-    response.status(400).json({ status: "error", message: error.message });
-  }
+    response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: error.message 
+      });
+    }
 });
 
 /**
@@ -73,22 +78,30 @@ app.post("/sites", (request, response) => {
   if (!siteName?.trim())
     return response
       .status(400)
-      .json({ status: "error", message: "siteName required" });
+      .json({ status: "error", message: "Site name is required" });
+
   const info = db
     .prepare(`
-    INSERT OR IGNORE INTO sites(site_name) VALUES (?)
+      INSERT OR IGNORE INTO sites (site_name)
+      VALUES (?)
     `)
     .run(siteName.trim());
-    const id =
-      info.lastInsertRowid ??
-      (db.prepare(`
-        SELECT site_id 
-        FROM sites 
-        WHERE site_name=?
-        `)
-      .get(siteName.trim()) as { site_id: number }).site_id;
-    response.json({ status: "success", data: { id, site_name: siteName.trim() } });
+
+  const id =
+    Number(info.lastInsertRowid) ||
+    (db
+      .prepare(
+        `SELECT site_id AS id
+         FROM sites
+         WHERE site_name=?`
+      )
+      .get(siteName.trim()) as { id: number }).id;
+  
+  response.json({ 
+    status: "success", 
+    data: { id, name: siteName.trim() } 
   });
+});
 
 /**
  * Create a new zone.
@@ -102,24 +115,43 @@ app.post("/sites", (request, response) => {
  */
 app.post("/zones", (request, response) => {
   const { siteId, zoneName, zoneDescription } = request.body ?? {};
+
   if (!Number.isInteger(siteId)) {
-    return response.status(400).json({ status: "error", message: "Site ID is required and must be a number" });
+    return response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: "Site ID is required and must be a number" 
+      });
   }
   if (!zoneName?.trim()) {
-    return response.status(400).json({ status: "error", message: "zoneName is required" });
+    return response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: "Zone label is required" 
+      });
   }
-  const info = db.prepare(`
-    INSERT OR IGNORE INTO zones(zone_label, zone_description, site_id)
-    VALUES (?, ?, ?)
-  `).run(zoneName.trim(), zoneDescription ?? null, siteId);
-  const id = info.lastInsertRowid ?? (db.prepare(`
-      SELECT zone_id
-      AS id
-      FROM zones
-      WHERE site_id=? 
-      AND zone_label=?
-    `).get(siteId, zoneName.trim()) as { id: number } | undefined)?.id;
-    response.json({ status: "success", data: { id, zone_label: zoneName.trim(), siteId }});
+
+  const info = db
+    .prepare(`
+      INSERT OR IGNORE INTO zones (zone_label, zone_description, site_id)
+      VALUES (?, ?, ?)`)
+    .run(zoneName.trim(), zoneDescription ?? null, siteId);
+
+  const id = Number(info.lastInsertRowid) ||
+    (db
+      .prepare(`
+        SELECT zone_id AS id
+        FROM zones
+        WHERE site_id=? 
+        AND zone_label=?`)
+      .get(siteId, zoneName.trim()) as { id: number } | undefined)?.id;
+
+    response.json({
+       status: "success", 
+       data: { id, zone_label: zoneName.trim(), siteId }
+    });
 });
 
 /**
@@ -137,28 +169,50 @@ app.post("/zones", (request, response) => {
 app.post("/items", (request, response) => {
   const { zoneId, itemType, itemName, itemDescription } = request.body ?? {};
   if (!Number.isInteger(zoneId)) {
-    return response.status(400).json({ status: "error", message: "Zone ID is required and must be a number" });
+    return response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: "Zone ID is required and must be a number" 
+      });
   }
   if (!itemType?.trim()) {
-    return response.status(400).json({ status: "error", message: "itemType is required" });
+    return response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: "Item type is required" 
+      });
   }
   if (!itemName?.trim()) {
-    return response.status(400).json({ status: "error", message: "itemName is required" });
+    return response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: "Item name is required" 
+      });
   }
 
-  const info = db.prepare(`
-    INSERT OR IGNORE INTO items(item_type, item_name, item_description, zone_id)
-    VALUES (?, ?, ?, ?)
-  `).run(itemType.trim(), itemName.trim(), itemDescription ?? null, zoneId);
-  const id = info.lastInsertRowid ?? (db.prepare(`
-      SELECT item_id
-      AS id
-      FROM items
-      WHERE zone_id=?
-      AND item_type=?
-      AND item_name=?
-    `).get(zoneId, itemName.trim(), itemType.trim(), itemName.trim()) as { id: number } | undefined)?.id;
-    response.json({ status: "success", data: { id, item_name: itemName.trim(), zone_id: zoneId, item_type: itemType.trim() }});
+  const info = db
+    .prepare(`
+      INSERT OR IGNORE INTO items(item_type, item_name, item_description, zone_id)
+      VALUES (?, ?, ?, ?)`)
+    .run(itemType.trim(), itemName.trim(), itemDescription ?? null, zoneId);
+
+  const id = Number(info.lastInsertRowid)|| 
+    (db
+      .prepare(`
+        SELECT item_id AS id
+        FROM items
+        WHERE zone_id=?
+        AND item_type=?
+        AND item_name=?`)
+      .get(zoneId, itemType.trim(), itemName.trim()) as { id: number } | undefined)?.id;
+
+    response.json({ 
+      status: "success", 
+      data: { id, item_name: itemName.trim(), zone_id: zoneId, item_type: itemType.trim() }
+    });
 });
 
 /**
@@ -176,15 +230,32 @@ app.post("/items", (request, response) => {
 app.post("/sites/ensure", (request, response) => {
   const siteName = String(request.body.siteName || "").trim();
   if (!siteName) {
-    return response.status(400).json({ status: "error", message: "siteName required" });
+    return response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: "Site name is required" 
+      });
   }
 
-  const info = db.prepare(`INSERT OR IGNORE INTO sites(site_name) VALUES (?)`).run(siteName);
-  const id =
-    Number(info.lastInsertRowid) ||
-    (db.prepare(`SELECT site_id AS id FROM sites WHERE site_name=?`).get(siteName) as any)?.id;
+  const info = db
+    .prepare(`
+      INSERT OR IGNORE 
+      INTO sites(site_name) 
+      VALUES (?)`)
+    .run(siteName);
 
-  response.json({ status: "success", data: { id, siteName } });
+  const id = Number(info.lastInsertRowid) ||
+    (db
+      .prepare(`
+        SELECT site_id AS id 
+        FROM sites 
+        WHERE site_name=?`)
+      .get(siteName) as any)?.id;
+
+  response.json({ 
+    status: "success", 
+    data: { id, name: siteName } });
 });
 
 
@@ -208,24 +279,50 @@ app.post("/zones/ensure", (request, response) => {
   const description = (request.body.zoneDescription ?? "") as string;
 
   if (!Number.isFinite(siteId)) {
-    return response.status(400).json({ status: "error", message: "Site ID does not exist" });
+    return response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: "Site ID does not exist" 
+      });
   }
   if (!zoneLabel) {
-    return response.status(400).json({ status: "error", message: "Zone label is required" });
+    return response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: "Zone label is required" 
+      });
   }
 
   // ensure unique zone per (site, label)
   const exists = db
-    .prepare(`SELECT zone_id AS id FROM zones WHERE site_id=? AND zone_label=?`)
+    .prepare(`
+      SELECT zone_id AS id
+      FROM zones
+      WHERE site_id=?
+      AND zone_label=?`)
     .get(siteId, zoneLabel) as { id: number } | undefined;
 
-  if (exists) return response.json({ status: "success", data: { id: exists.id, zoneLabel, siteId } });
+  if (exists) {
+    return response
+      .status(200)
+      .json({ 
+        status: "success", 
+        data: { id: exists.id, name: zoneLabel, siteId } 
+      });
+  } 
 
   const info = db
-    .prepare(`INSERT INTO zones(zone_label, zone_description, site_id) VALUES (?,?,?)`)
+    .prepare(`
+      INSERT INTO zones (zone_label, zone_description, site_id)
+      VALUES (?,?,?)`)
     .run(zoneLabel, description, siteId);
 
-  response.json({ status: "success", data: { id: Number(info.lastInsertRowid), zoneLabel, siteId } });
+  response.json({
+    status: "success", 
+    data: { id: Number(info.lastInsertRowid), name: zoneLabel, siteId } 
+  });
 });
 
 
@@ -246,33 +343,125 @@ app.post("/zones/ensure", (request, response) => {
 
 app.post("/items/ensure", (request, response) => {
   const zoneId = Number(request.body.zoneId);
-  const itemType = String(request.body.itemType || "").trim();  // TEXT label (Option A)
+  const itemType = String(request.body.itemType || "").trim();
   const itemName = String(request.body.itemName || "").trim();
   const description = (request.body.description ?? "") as string;
 
   if (!Number.isFinite(zoneId)) {
-    return response.status(400).json({ status: "error", message: "zoneId required" });
+    return response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: "Zone ID is required" 
+      });
   }
   if (!itemType) {
-    return response.status(400).json({ status: "error", message: "itemType required" });
+    return response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: "Item Type is required" 
+      });
   }
   if (!itemName) {
-    return response.status(400).json({ status: "error", message: "itemName required" });
+    return response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: "Item Name is required" 
+      });
   }
 
   const exists = db
-    .prepare(`SELECT item_id AS id FROM items WHERE zone_id=? AND item_type=? AND item_name=?`)
+    .prepare(`
+      SELECT item_id AS id
+      FROM items
+      WHERE zone_id=?
+      AND item_type=?
+      AND item_name=?`)
     .get(zoneId, itemType, itemName) as { id: number } | undefined;
 
-  if (exists) return response.json({ status: "success", data: { id: exists.id, name: itemName, zoneId, itemType } });
+  if (exists) {
+    return response
+      .json({ 
+        status: "success", 
+        data: { id: exists.id, name: itemName, zoneId, itemType } 
+      });
+  }
 
   const info = db
-    .prepare(`INSERT INTO items(item_type, item_name, description, zone_id) VALUES (?,?,?,?)`)
+    .prepare(`
+      INSERT INTO items
+      (item_type, item_name, description, zone_id)
+      VALUES (?,?,?,?)`)
     .run(itemType, itemName, description, zoneId);
 
   response.json({
     status: "success",
     data: { id: Number(info.lastInsertRowid), name: itemName, zoneId, itemType },
+  });
+});
+
+/**
+ * Allow creating new item types (e.g. Emergency Lights, Fire Extinguishers etc)
+ * This endpoint allows the creation of new item types for inspections.
+ * It checks if an item type with the given label already exists.
+ * If it does not exist, it creates a new item type with the provided label, category, and description.
+ * It returns the item type ID, label, category, and description.
+ * @param {Object} request - The HTTP request object.
+ * @param {Object} request.body - The request body containing the item type data.
+ * @param {string} request.body.label - The label of the item type to create.
+ * @param {string} request.body.category - The category of the item type (e.g. "Facility" or "Machine Safety").
+ * @param {string} request.body.description - The description of the item type (optional).
+ * @param {Object} response - The HTTP response object.
+ * @returns {Object} The HTTP response with the created item type data or an error message.
+ */
+
+app.post("/item-types/ensure", (request, response) => {
+  const category = String(request.body.category || "").trim();
+  const label = String(request.body.itemTypeLabel || "").trim();
+  const description = (request.body.description ?? "") as string; 
+
+  if(!category) {
+    return response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: "Inspection category is required" });
+  }
+
+  if (!label) {
+    return response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: "Item Type Label is required" });
+  }
+
+  const exists = db
+    .prepare(`
+      SELECT item_type AS id
+      FROM item_types
+      WHERE inspection_category=?
+      AND item_type_label=?`)
+    .get(category, label) as { id: number } | undefined;
+
+  if (exists) {
+    return response
+      .json({ 
+        status: "success", 
+        data: { id: exists.id, label, category } 
+      });
+  }
+  const info = db
+    .prepare(`
+      INSERT INTO item_types (inspection_category, item_type_label, item_type_description)
+      VALUES (?, ?, ?)`)
+    .run(category, label, description);
+
+  response.json({ 
+    status: "success", 
+    data: { id: Number(info.lastInsertRowid), label, category },
   });
 });
 
@@ -293,19 +482,22 @@ app.get("/subcheck-templates/by-label", (req, res) => {
   if (!itemTypeLabel) return res.status(400).json({ status: "error", message: "itemType required" });
 
   const typeRow = db
-    .prepare(`SELECT item_type_id FROM item_types WHERE item_type_label = ?`)
+    .prepare(`
+      SELECT item_type_id 
+      FROM item_types 
+      WHERE item_type_label = ?`)
     .get(itemTypeLabel) as { item_type_id: number } | undefined;
 
   if (!typeRow) return res.json({ status: "success", data: [] });
 
   const rows = db
     .prepare(
-      `SELECT sub_template_id          AS id,
-              sub_template_label       AS name,
+      `SELECT sub_template_id AS id,
+              sub_template_label AS name,
               sub_template_description AS description,
-              value_type               AS valueType,
-              pass_criteria            AS passCriteria,
-              sub_template_mandatory   AS mandatory
+              value_type AS valueType,
+              pass_criteria AS passCriteria,
+              sub_template_mandatory AS mandatory
        FROM subcheck_templates
        WHERE item_type_id = ?
        ORDER BY sub_template_id`
@@ -468,12 +660,12 @@ app.get("/subcheck-templates", (request, response) => {
 
   const rows = db
     .prepare(`
-    SELECT sub_template_id          AS id,
-           sub_template_label       AS name,
+    SELECT sub_template_id AS id,
+           sub_template_label AS name,
            sub_template_description AS description,
-           value_type               AS valueType,
-           pass_criteria            AS passCriteria,
-           sub_template_mandatory   AS mandatory
+           value_type AS valueType,
+           pass_criteria AS passCriteria,
+           sub_template_mandatory AS mandatory
     FROM subcheck_templates
     WHERE item_type_id = ?
     ORDER BY sub_template_id
@@ -508,12 +700,12 @@ app.get("/subcheck-templates/by-label", (request, response) => {
   }
 
   const rows = db.prepare(`
-    SELECT sub_template_id          AS id,
-           sub_template_label       AS name,
+    SELECT sub_template_id AS id,
+           sub_template_label AS name,
            sub_template_description AS description,
-           value_type               AS valueType,
-           pass_criteria            AS passCriteria,
-           sub_template_mandatory   AS mandatory
+           value_type AS valueType,
+           pass_criteria AS passCriteria,
+           sub_template_mandatory AS mandatory
     FROM subcheck_templates
     WHERE item_type_id = ?
     ORDER BY sub_template_id
