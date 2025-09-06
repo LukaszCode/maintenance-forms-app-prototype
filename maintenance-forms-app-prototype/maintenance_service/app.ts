@@ -630,7 +630,8 @@ app.get("/item-types", (request, response) => {
 /**
  * Read items for a selected item type (e.g. Emergency Lights EL-01, Latitude, Supernova etc)
  * This endpoint retrieves all items associated with a specific item type.
- *
+ * If a zoneId is provided, it filters items by that zone.
+ * 
  * @param {Object} request - The HTTP request object.
  * @param {Object} request.query - The query parameters from the request URL.
  * @param {string} request.query.itemTypeId - The ID of the item type.
@@ -639,9 +640,12 @@ app.get("/item-types", (request, response) => {
  */
 
 app.get("/items", (request, response) => {
-  const zoneId = request.query.zoneId ? Number(request.query.zoneId) : null;
+  const zoneId = request.query.zoneId !== undefined && request.query.zoneId !== "" 
+    ? Number(request.query.zoneId) : null;
+
   const itemType =
     typeof request.query.itemType === "string"
+      && request.query.itemType.trim()
       ? request.query.itemType.trim()
       : null;
 
