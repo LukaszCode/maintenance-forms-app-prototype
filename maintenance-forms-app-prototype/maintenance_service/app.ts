@@ -467,7 +467,7 @@ app.post("/item-types/ensure", (request, response) => {
 
 
 /**
- * Read subcheck templates by item_type label (since FE uses label)
+ * Read subcheck templates by item_type label 
  * This endpoint retrieves subcheck templates associated with a specific item type label.
  * It first looks up the item type ID based on the provided label, then fetches the corresponding subcheck templates.
  * @param {Object} request - The HTTP request object.
@@ -698,45 +698,6 @@ app.get("/subcheck-templates", (request, response) => {
       WHERE item_type_id = ?
       ORDER BY sub_template_id`)
     .all(itemTypeId);
-
-  response.json({ status: "success", data: rows });
-});
-
-/**
- * Retrieve subcheck templates for a given item type label.
- * This endpoint fetches subcheck templates associated with a specific item type label.
- * It is used to build the inspection subchecks dynamically based on the selected item type.
- * @param {Object} request - The HTTP request object.
- * @param {Object} request.query - The query parameters from the request URL.
- * @param {string} request.query.itemType - The label of the item type.
- * @param {Object} response - The HTTP response object.
- * @returns {Object} The HTTP response with the list of subcheck templates or an error message.
- */
-app.get("/subcheck-templates/by-label", (request, response) => {
-  const itemTypeLabel = typeof request.query.itemType === "string" ? request.query.itemType.trim() : "";
-  if (!itemTypeLabel) {
-    return response.status(400).json({ status: "error", message: "itemType is required" });
-  }
-
-  const typeRow = db.prepare(`
-    SELECT item_type_id FROM item_types WHERE item_type_label = ?
-  `).get(itemTypeLabel) as { item_type_id: number } | undefined;
-
-  if (!typeRow) {
-    return response.json({ status: "success", data: [] });
-  }
-
-  const rows = db.prepare(`
-    SELECT sub_template_id AS id,
-           sub_template_label AS name,
-           sub_template_description AS description,
-           value_type AS valueType,
-           pass_criteria AS passCriteria,
-           sub_template_mandatory AS mandatory
-    FROM subcheck_templates
-    WHERE item_type_id = ?
-    ORDER BY sub_template_id
-  `).all(typeRow.item_type_id);
 
   response.json({ status: "success", data: rows });
 });
