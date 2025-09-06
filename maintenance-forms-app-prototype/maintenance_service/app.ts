@@ -418,7 +418,7 @@ app.post("/items/ensure", (request, response) => {
  */
 
 app.post("/item-types/ensure", (request, response) => {
-  const category = String(request.body.category || "").trim();
+  const category = String(request.body.category || "").trim(); // should be either "Facility" or "Machine Safety"
   const label = String(request.body.itemTypeLabel || "").trim();
   const description = (request.body.description ?? "") as string; 
 
@@ -435,12 +435,12 @@ app.post("/item-types/ensure", (request, response) => {
       .status(400)
       .json({ 
         status: "error", 
-        message: "Item Type Label is required" });
+        message: "Item type label is required" });
   }
 
   const exists = db
     .prepare(`
-      SELECT item_type AS id
+      SELECT item_type_id AS id
       FROM item_types
       WHERE inspection_category=?
       AND item_type_label=?`)
@@ -477,9 +477,16 @@ app.post("/item-types/ensure", (request, response) => {
  * @returns {Object} The HTTP response with the list of subcheck templates or an error message.
  */
 
-app.get("/subcheck-templates/by-label", (req, res) => {
-  const itemTypeLabel = typeof req.query.itemType === "string" ? req.query.itemType.trim() : "";
-  if (!itemTypeLabel) return res.status(400).json({ status: "error", message: "itemType required" });
+app.get("/subcheck-templates/by-label", (request, response) => {
+  const itemTypeLabel = typeof request.query.itemType === "string" ? request.query.itemType.trim() : "";
+  if (!itemTypeLabel) {
+    return response
+      .status(400)
+      .json({ 
+        status: "error", 
+        message: "Item type is required" 
+    });
+  }
 
   const typeRow = db
     .prepare(`
@@ -488,23 +495,30 @@ app.get("/subcheck-templates/by-label", (req, res) => {
       WHERE item_type_label = ?`)
     .get(itemTypeLabel) as { item_type_id: number } | undefined;
 
-  if (!typeRow) return res.json({ status: "success", data: [] });
-
+  if (!typeRow) {
+    return response
+      .json({ status: "success", data: [] });
+  }
+  
   const rows = db
-    .prepare(
-      `SELECT sub_template_id AS id,
-              sub_template_label AS name,
-              sub_template_description AS description,
-              value_type AS valueType,
-              pass_criteria AS passCriteria,
-              sub_template_mandatory AS mandatory
-       FROM subcheck_templates
-       WHERE item_type_id = ?
-       ORDER BY sub_template_id`
-    )
+    .prepare(`
+      SELECT 
+        sub_template_id AS id,
+        sub_template_label AS name,
+        sub_template_description AS description,
+        value_type AS valueType,
+        pass_criteria AS passCriteria,
+        sub_template_mandatory AS mandatory
+      FROM subcheck_templates
+      WHERE item_type_id = ?
+      ORDER BY sub_template_id`)
+
     .all(typeRow.item_type_id);
 
-  res.json({ status: "success", data: rows });
+  response.json({ 
+    status: "success", 
+    data: rows 
+  });
 });
 
 
@@ -519,12 +533,15 @@ app.get("/subcheck-templates/by-label", (req, res) => {
 app.get("/sites", (_request, response) => {
   const rows = db
     .prepare(`
-    SELECT site_id AS id, 
-    site_name AS name FROM sites 
-    ORDER BY site_name
-  `)
+      SELECT site_id AS id, 
+      site_name AS name 
+      FROM sites 
+      ORDER BY site_name`)
     .all();
-  response.json({ status: "success", data: rows });
+  response.json({ 
+    status: "success", 
+    data: rows 
+  });
 });
 
 /**
@@ -539,15 +556,19 @@ app.get("/zones", (request, response) => {
   const siteId = Number(request.query.siteId) || null;
   const rows = db
     .prepare(`
-    SELECT zone_id AS id, 
-    zone_label, 
-    zone_description AS description, 
-    site_id FROM zones 
-    WHERE (? IS NULL OR site_id=?) 
-    ORDER BY zone_label
-  `)
+      SELECT 
+        zone_id AS id, 
+        zone_label AS name,
+        zone_description AS description, 
+        site_id 
+      FROM zones 
+      WHERE (? IS NULL OR site_id=?) 
+      ORDER BY zone_label`)
     .all(siteId, siteId);
-  response.json({ status: "success", data: rows });
+  response.json({ 
+    status: "success", 
+    data: rows 
+  });
 });
 
 /**
@@ -566,7 +587,10 @@ app.get("/inspections/:id", (request, response) => {
   if (!singleInspection) {
     return response
       .status(404)
-      .json({ status: "error", message: "Inspection not found" });
+      .json({ 
+        status: "error", 
+        message: "Inspection not found" 
+      });
   }
   response.json({ status: "success", data: singleInspection });
 });
@@ -623,16 +647,16 @@ app.get("/items", (request, response) => {
 
   const rows = db
     .prepare(`
-    SELECT item_id AS id,
-           item_name AS name,
-           description,
-           zone_id,
-           item_type
-    FROM items
-    WHERE (? IS NULL OR zone_id = ?)
+      SELECT 
+        item_id AS id,
+        item_name AS name,
+        item_description AS description,
+        zone_id,
+        item_type
+      FROM items
+      WHERE (? IS NULL OR zone_id = ?)
       AND (? IS NULL OR item_type = ?)
-    ORDER BY item_name
-  `)
+      ORDER BY item_name`)
     .all(zoneId, zoneId, itemType, itemType);
 
   response.json({ status: "success", data: rows });
@@ -655,21 +679,24 @@ app.get("/subcheck-templates", (request, response) => {
   if (!Number.isFinite(itemTypeId)) {
     return response
       .status(400)
-      .json({ status: "error", message: "itemTypeId must be a number" });
+      .json({ 
+        status: "error", 
+        message: "itemTypeId must be a number" 
+      });
   }
 
   const rows = db
     .prepare(`
-    SELECT sub_template_id AS id,
-           sub_template_label AS name,
-           sub_template_description AS description,
-           value_type AS valueType,
-           pass_criteria AS passCriteria,
-           sub_template_mandatory AS mandatory
-    FROM subcheck_templates
-    WHERE item_type_id = ?
-    ORDER BY sub_template_id
-  `)
+      SELECT 
+        sub_template_id AS id,
+        sub_template_label AS name,
+        sub_template_description AS description,
+        value_type AS valueType,
+        pass_criteria AS passCriteria,
+        sub_template_mandatory AS mandatory
+      FROM subcheck_templates
+      WHERE item_type_id = ?
+      ORDER BY sub_template_id`)
     .all(itemTypeId);
 
   response.json({ status: "success", data: rows });
@@ -715,7 +742,7 @@ app.get("/subcheck-templates/by-label", (request, response) => {
 });
 
 // Health check endpoint
-app.get("/healthz", (_request, response) => response.json({ ok: true }));
+app.get("/health", (_request, response) => response.json({ ok: true }));
 
 // Start the server
 app.listen(3001, () => {
