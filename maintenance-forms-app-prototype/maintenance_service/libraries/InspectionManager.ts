@@ -56,13 +56,12 @@ export class InspectionManager {
     const runTransaction = db.transaction((formParameter: InspectionForm) => {
       // 1) Insert inspection
       const info = db
-        .prepare(
-          `INSERT INTO inspections
-             (inspection_date, category, item_id, engineer_id, comment, overall_result)
-           VALUES (?,?,?,?,?,?)`
-        )
+        .prepare(`
+          INSERT INTO inspections 
+            (inspection_date, category, item_id, engineer_id, comment, overall_result)
+          VALUES (?,?,?,?,?,?)`)
         .run(
-          formParameter.inspectionDate, // ISO string (TEXT/DATE)
+          formParameter.inspectionDate, 
           formParameter.inspectionCategory, // 'Facility' | 'Machine Safety'
           formParameter.itemId,
           engineerId,
@@ -72,65 +71,118 @@ export class InspectionManager {
 
       const inspectionId = Number(info.lastInsertRowid);
 
-      // 2) Get the item's text label for its type (Option A design)
+      // 2) Get the item's text label for its type (for template lookup)
       const item = db
-        .prepare(
-          `SELECT item_type FROM items 
-        WHERE item_id = ?`
-        )
+        .prepare(`
+          SELECT item_type FROM items 
+          WHERE item_id = ?`)
         .get(formParameter.itemId) as { item_type: string } | undefined;
       if (!item) {
         throw new Error("Invalid itemId (item not found).");
       }
       const itemTypeLabel = item.item_type;
 
-      // Optional: get the numeric item_type_id for template lookup
-      const typeRow = db
-        .prepare(
-          `SELECT item_type_id FROM item_types 
-          WHERE item_type_label = ?`
-        )
+      // 3) Get the numeric item_type_id for template lookup
+      let typeRow = db
+        .prepare(`
+          SELECT item_type_id 
+          FROM item_types 
+          WHERE item_type_label = ?`)
         .get(itemTypeLabel) as { item_type_id: number } | undefined;
 
-      // 3) Prepare subcheck insert
-      const insertSubcheck = db.prepare(
-        `INSERT INTO subcheck_results
-            (inspection_id,
-            sub_template_id,
-            sub_result_label,
-            sub_result_description,
-            value_type,
-            sub_result_mandatory,
-            pass_criteria,
-            result,
-            reading_number,
-            reading_text)
-         VALUES (?,?,?,?,?,?,?,?,?,?)`
+      // 4) Check if the item type exists, if not allow to create it
+      if (!typeRow) {
+        const infoType = db
+          .prepare(`
+            INSERT INTO item_types 
+              (inspection_category, item_type_label, item_type_description)
+            VALUES (?,?,?)`)
+          .run(formParameter.inspectionCategory, itemTypeLabel, null);
+          typeRow = { item_type_id: Number(infoType.lastInsertRowid)};
+      }
+      
+      // 5) Prepare the subcheck insert
+      const insertSubcheck = db.prepare(`
+        INSERT INTO subcheck_results
+          (inspection_id,
+          sub_template_id,
+          sub_result_label,
+          sub_result_description,
+          value_type,
+          sub_result_mandatory,
+          pass_criteria,
+          result,
+          reading_number,
+          reading_text)
+        VALUES (?,?,?,?,?,?,?,?,?,?)`
       );
 
-      // 4) Insert each subcheck (validate each row)
+      // Insert each subcheck (validate each row) - dynamic number of subchecks
       for (const subcheckParameter of formParameter.subchecks) {
         this.assertSubcheck(subcheckParameter);
 
         // Try to match a template by (item_type_id, sub_template_label)
-        let subcheckTemplate:
-          | {
-              sub_template_id: number;
-              value_type: string; // 'boolean'|'number'|'TEXT'
-              sub_template_mandatory: number; // 0/1
-              pass_criteria: string | null;
-            }
-          | undefined;
+        let subcheckTemplate = db
+          .prepare(`
+            SELECT 
+              sub_template_id, 
+              value_type, 
+              sub_template_mandatory, 
+              pass_criteria
+            FROM subcheck_templates
+            WHERE item_type_id = ? 
+            AND sub_template_label = ?`)
 
-        if (typeRow) {
-          subcheckTemplate = db
+          .get(typeRow.item_type_id, subcheckParameter.subcheckName) as 
+            | {
+                sub_template_id: number;
+                value_type: string;
+                sub_template_mandatory: number;
+                pass_criteria: string | null;
+              }
+            | undefined;
+        // Note: subcheckTemplate can be undefined if no match found
+        // In that case we will insert with NULL sub_template_id (ad-hoc subcheck
+        // not linked to any template)
+        if (!subcheckTemplate) {
+          const dbValueType = this.toDbValueType(subcheckParameter.valueType);
+          /* If no template, we can still create one on the fly
+          This is useful for prototyping and dynamic forms
+          In a real app this behavior might be restricted 
+          to certain user roles or have a separate admin interface
+          to manage templates.
+          Here we create a new template with the provided details.
+          This ensures that future inspections can reuse this template.
+          The new template will be linked to the current item type.
+          We set it as mandatory by default (you can adjust as needed).
+          Pass criteria is optional and can be set to null if not provided.
+          */
+          const infoTpl = db
             .prepare(`
-              SELECT sub_template_id, value_type, sub_template_mandatory, pass_criteria
-               FROM subcheck_templates
-               WHERE item_type_id = ? 
-               AND sub_template_label = ?`)
-            .get(typeRow.item_type_id, subcheckParameter.subcheckName) as any;
+              INSERT INTO subcheck_templates
+                (item_type_id, 
+                sub_template_label, 
+                sub_template_description, 
+                value_type, 
+                sub_template_mandatory, 
+                pass_criteria)
+              VALUES (?,?,?,?,?,?)`)
+            .run(
+              typeRow.item_type_id,
+              subcheckParameter.subcheckName,
+              subcheckParameter.subcheckDescription ?? "",
+              dbValueType,
+              1, // mandatory by default
+              subcheckParameter.passCriteria ?? "true"
+            );
+          subcheckTemplate = {
+            sub_template_id: Number(infoTpl.lastInsertRowid),
+            value_type: this.toDbValueType(subcheckParameter.valueType),
+            sub_template_mandatory: 1,
+            pass_criteria: subcheckParameter.passCriteria ?? "true"
+          };
         }
+
         /**
          * Determine the database value type for the subcheck.
          * This is used to ensure the correct data type is stored in the database.
@@ -211,7 +263,7 @@ export class InspectionManager {
     const inspectionRow = db
       .prepare(
         `SELECT inspection.*,
-                u.full_name AS engineer_name
+            u.full_name AS engineer_name
          FROM inspections inspection
          JOIN users u ON u.user_id = inspection.engineer_id
          WHERE inspection.inspection_id = ?`
@@ -222,14 +274,15 @@ export class InspectionManager {
 
     const inspectionSubchecks = db
       .prepare(
-        `SELECT sub_result_label,
-                sub_result_description,
-                value_type,
-                pass_criteria,
-                result
-         FROM subcheck_results
-         WHERE inspection_id = ?
-         ORDER BY sub_result_id`
+        `SELECT 
+          sub_result_label,
+          sub_result_description,
+          value_type,
+          pass_criteria,
+          result
+        FROM subcheck_results
+        WHERE inspection_id = ?
+        ORDER BY sub_result_id`
       )
       .all(id) as Array<{
       sub_result_label: string;
