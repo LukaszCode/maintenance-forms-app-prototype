@@ -661,7 +661,7 @@ app.get("/items", (request, response) => {
       WHERE (? IS NULL OR zone_id = ?)
       AND (? IS NULL OR item_type = ?)
       ORDER BY item_name`)
-    .all(zoneId, zoneId, itemType, itemType);
+    .all({zoneId, itemType});
 
   response.json({ status: "success", data: rows });
 });
