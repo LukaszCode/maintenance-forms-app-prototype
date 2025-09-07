@@ -71,6 +71,7 @@ db.exec(`
     sub_result_mandatory INTEGER NOT NULL CHECK (sub_result_mandatory IN (0,1)),
     pass_criteria TEXT,
     result TEXT CHECK (result IN ('pass','fail','na')),
+    comment TEXT,
     reading_number REAL,
     reading_text TEXT
   );
@@ -86,15 +87,49 @@ db.exec(`
 console.log("Migration OK.");
 db.exec(`
   INSERT OR IGNORE INTO users (user_id, username, full_name, role, email)
-  VALUES (1, 'engineer1', 'John Engineer', 'Engineer', 'john@example.com');
+  VALUES (1, 'LB', 'Lukasz Brzozowski', 'Engineer', 'lukasz.brzozowski@company.com');
 
-  INSERT OR IGNORE INTO sites(site_id, site_name) VALUES (1, 'Main Site');
+  INSERT OR IGNORE INTO sites(site_id, site_name, building_number, site_address) VALUES (1, 'GWP Packaging', '6', 'Chelworth Industrial Estate, Cricklade, SN6 6HE');
+  INSERT OR IGNORE INTO sites(site_id, site_name, building_number, site_address) VALUES (2, 'GWP Packaging', '20', 'Chelworth Industrial Estate, Cricklade, SN6 6HE');
+  INSERT OR IGNORE INTO sites(site_id, site_name, building_number, site_address) VALUES (3, 'GWP Packaging', '22', 'Chelworth Industrial Estate, Cricklade, SN6 6HE');
+  INSERT OR IGNORE INTO sites(site_id, site_name, building_number, site_address) VALUES (4, 'GWP Packaging', '27', 'Chelworth Industrial Estate, Cricklade, SN6 6HE');
+
 
   INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (1, 'Zone A', 'First zone', 1);
+  VALUES (1, 'Zone A', 'Boiler Room', 2);
+  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
+  VALUES (2, 'Zone A', 'External Fire exit next to Supernova', 2);
+  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
+  VALUES (3, 'Zone A', 'Production Supernova Fire Exit', 2);
+  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
+  VALUES (4, 'Zone A', 'Production above Emmepi Belt', 2);
+  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
+  VALUES (5, 'Zone A', 'Production above Bobst machine', 2);
+  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
+  VALUES (6, 'Zone A', 'Production above blue board pushers', 2);
+  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
+  VALUES (7, 'Zone A', 'Production above extract duct', 2);
+  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
+  VALUES (8, 'Zone A', 'Production above pre production desk', 2);
 
   INSERT OR IGNORE INTO item_types(item_type_id, inspection_category, item_type_label, item_type_description)
-  VALUES (1, 'Facility', 'Emergency Lighting', 'EL type');
+  VALUES (1, 'Facility', 'Emergency Lighting', 'Bulkhead, wall-mounted');
+  INSERT OR IGNORE INTO item_types(item_type_id, inspection_category, item_type_label, item_type_description)
+  VALUES (2, 'Facility', 'Emergency lighting', 'Bulkhead, ceiling-mounted');
+  INSERT OR IGNORE INTO item_types(item_type_id, inspection_category, item_type_label, item_type_description)
+  VALUES (3, 'Facility', 'Emergency lighting', 'Panel light, wall-mounted');
+  INSERT OR IGNORE INTO item_types(item_type_id, inspection_category, item_type_label, item_type_description)
+  VALUES (4, 'Facility', 'Emergency lighting', 'Twin spotlight, wall-mounted');
+  INSERT OR IGNORE INTO item_types(item_type_id, inspection_category, item_type_label, item_type_description)
+  VALUES (5, 'Facility', 'Emergency lighting', 'Twin spotlight, wall-mounted');
+  INSERT OR IGNORE INTO item_types(item_type_id, inspection_category, item_type_label, item_type_description)
+  VALUES (6, 'Facility', 'Emergency lighting', 'Twin spotlight, wall-mounted');
+  INSERT OR IGNORE INTO item_types(item_type_id, inspection_category, item_type_label, item_type_description)
+  VALUES (7, 'Facility', 'Emergency lighting', 'Twin spotlight, wall-mounted');
+  INSERT OR IGNORE INTO item_types(item_type_id, inspection_category, item_type_label, item_type_description)
+  VALUES (8, 'Facility', 'Emergency lighting', 'Twin spotlight, wall-mounted');
+
+
 
   -- Option A: items.item_type is TEXT label
   INSERT OR IGNORE INTO items(item_id, item_type, item_name, description, zone_id)
