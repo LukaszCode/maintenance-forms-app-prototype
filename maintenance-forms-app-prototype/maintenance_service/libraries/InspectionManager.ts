@@ -1,3 +1,4 @@
+import { info } from "console";
 import { db } from "../data-layer/db/sqlite.js";
 import { InspectionForm } from "./InspectionForm.js";
 import type { SubcheckInput, ValueType } from "./InspectionForm.js";
@@ -14,10 +15,6 @@ import type { SubcheckInput, ValueType } from "./InspectionForm.js";
  * @description This class manages the creation and retrieval of inspections and their subchecks.
  */
 export class InspectionManager {
-  // -----------------------------
-  // Public methods (used by routes)
-  // -----------------------------
-
   /**
    * Create a new inspection and its subchecks (transaction).
    *
@@ -31,58 +28,41 @@ export class InspectionManager {
     this.assertBasicForm(form);
 
     /**
-     * Resolve the engineer ID from the form data.
+     * Find the engineer ID from the form data or auto-generate the user ID.
      * This can be either the engineer's name (string) or their ID (number).
      * @param {InspectionForm} form - The inspection form data.
      * @returns {number} - The resolved engineer ID.
      */
     const engineerId = this.resolveEngineerId(form);
-
     if (!Number.isInteger(engineerId)) {
       throw new Error("Engineer ID (or a known engineer name) is required.");
     }
 
-    // Overall result is 'pass' only if every subcheck is pass or na
-    const overall = this.computeOverall(form.subchecks);
-
     /**
      * Run the database transaction for inserting the inspection and its subchecks.
      * This ensures that all inserts are dynamic and can be rolled back if any fail.
-     * @param {InspectionForm} formParameter - The inspection form data.
+     * @param {InspectionForm} formData - The inspection form data.
      * @returns {InspectionForm} - The saved inspection reloaded from the database.
      * @throws {Error} - If any part of the transaction fails.
      *
      */
-    const runTransaction = db.transaction((formParameter: InspectionForm) => {
-      // 1) Insert inspection
-      const info = db
-        .prepare(`
-          INSERT INTO inspections 
-            (inspection_date, category, item_id, engineer_id, comment, overall_result)
-          VALUES (?,?,?,?,?,?)`)
-        .run(
-          formParameter.inspectionDate, 
-          formParameter.inspectionCategory, // 'Facility' | 'Machine Safety'
-          formParameter.itemId,
-          engineerId,
-          formParameter.comment ?? null,
-          overall // 'pass' | 'fail'
-        );
 
-      const inspectionId = Number(info.lastInsertRowid);
-
-      // 2) Get the item's text label for its type (for template lookup)
+    const runTransaction = db.transaction((formData: InspectionForm) => {
+      // 1) Find the item type 
+      // We need item type because subchecks are added based on item_type of the inspected item
+      // e.g. If the item_type is "emergency lights", we look for subchecks related to emergency lights.
       const item = db
         .prepare(`
-          SELECT item_type FROM items 
+          SELECT item_type 
+          FROM items 
           WHERE item_id = ?`)
-        .get(formParameter.itemId) as { item_type: string } | undefined;
+        .get(formData.itemId) as { item_type: string } | undefined;
       if (!item) {
         throw new Error("Invalid itemId (item not found).");
       }
       const itemTypeLabel = item.item_type;
 
-      // 3) Get the numeric item_type_id for template lookup
+      // 2) Find or create the item_type_id for this label (if missing)
       let typeRow = db
         .prepare(`
           SELECT item_type_id 
@@ -90,18 +70,57 @@ export class InspectionManager {
           WHERE item_type_label = ?`)
         .get(itemTypeLabel) as { item_type_id: number } | undefined;
 
-      // 4) Check if the item type exists, if not allow to create it
       if (!typeRow) {
         const infoType = db
           .prepare(`
-            INSERT INTO item_types 
-              (inspection_category, item_type_label, item_type_description)
+            INSERT INTO item_types (inspection_category, item_type_label, item_type_description)
             VALUES (?,?,?)`)
-          .run(formParameter.inspectionCategory, itemTypeLabel, null);
-          typeRow = { item_type_id: Number(infoType.lastInsertRowid)};
+          .run(formData.inspectionCategory, itemTypeLabel, null);
+        typeRow = { item_type_id: Number(infoType.lastInsertRowid) };
       }
+      // Extract the item_type_id from the typeRow 
+      const typeId = typeRow.item_type_id;
+
+      // 3) Build mandatoryMap from templates for this item type
+      const mandatoryMap = new Map<string, 0 | 1>();
+      const mandatoryRows = db
+        .prepare(`
+          SELECT
+            sub_template_label, sub_template_mandatory 
+          FROM subcheck_templates
+          WHERE item_type_id = ?`)
+        .all(typeRow.item_type_id) as Array<{ sub_template_label: string; sub_template_mandatory: 0 | 1 }>;
+      mandatoryRows.forEach(row => mandatoryMap.set(row.sub_template_label, row.sub_template_mandatory));
       
-      // 5) Prepare the subcheck insert
+      // 4) Compute overall result based on the mandatory subchecks
+      const overallResult = this.computeOverall(formData.subchecks, mandatoryMap);
+
+      // 5) Enforce comment if overall is 'fail'
+      if (overallResult === "fail" && !formData.comment?.trim()) {
+        throw new Error("Comment is required when overall result is 'fail'.");
+      }
+      // 5) Insert the inspection with the overall result
+      const infoInspection = db
+        .prepare(`
+          INSERT INTO inspections
+            (inspection_date,
+            category,
+            item_id,
+            engineer_id,
+            comment,
+            overall_result)
+          VALUES (?,?,?,?,?,?)`)
+        .run(
+          formData.inspectionDate,
+          formData.inspectionCategory,
+          formData.itemId,
+          this.resolveEngineerId(formData),
+          formData.comment ?? null,
+          overallResult
+        );
+      const inspectionId = Number(infoInspection.lastInsertRowid);
+
+      // 6) Prepare the subcheck for insert
       const insertSubcheck = db.prepare(`
         INSERT INTO subcheck_results
           (inspection_id,
@@ -114,12 +133,11 @@ export class InspectionManager {
           result,
           reading_number,
           reading_text)
-        VALUES (?,?,?,?,?,?,?,?,?,?)`
-      );
+        VALUES (?,?,?,?,?,?,?,?,?,?)`);
 
-      // Insert each subcheck (validate each row) - dynamic number of subchecks
-      for (const subcheckParameter of formParameter.subchecks) {
-        this.assertSubcheck(subcheckParameter);
+      // 7) Insert each subcheck - create template on-the-fly if missing
+      for (const subcheck of formData.subchecks) {
+        this.assertSubcheck(subcheck);
 
         // Try to match a template by (item_type_id, sub_template_label)
         let subcheckTemplate = db
@@ -132,32 +150,20 @@ export class InspectionManager {
             FROM subcheck_templates
             WHERE item_type_id = ? 
             AND sub_template_label = ?`)
+          .get(typeId, subcheck.subcheckName) as
+          | {
+              sub_template_id: number;
+              value_type: "boolean" | "number" | "TEXT";
+              sub_template_mandatory: 1 | 0;
+              pass_criteria: string | null;
+            }
+          | undefined;
 
-          .get(typeRow.item_type_id, subcheckParameter.subcheckName) as 
-            | {
-                sub_template_id: number;
-                value_type: string;
-                sub_template_mandatory: number;
-                pass_criteria: string | null;
-              }
-            | undefined;
-        // Note: subcheckTemplate can be undefined if no match found
-        // In that case we will insert with NULL sub_template_id (ad-hoc subcheck
-        // not linked to any template)
+        // If no template found, create one on the fly
         if (!subcheckTemplate) {
-          const dbValueType = this.toDbValueType(subcheckParameter.valueType);
-          /* If no template, we can still create one on the fly
-          This is useful for prototyping and dynamic forms
-          In a real app this behavior might be restricted 
-          to certain user roles or have a separate admin interface
-          to manage templates.
-          Here we create a new template with the provided details.
-          This ensures that future inspections can reuse this template.
-          The new template will be linked to the current item type.
-          We set it as mandatory by default (you can adjust as needed).
-          Pass criteria is optional and can be set to null if not provided.
-          */
-          const infoTpl = db
+          const dbValueType = this.toDbValueType(subcheck.valueType);
+
+          const infoSubTemplate = db
             .prepare(`
               INSERT INTO subcheck_templates
                 (item_type_id, 
@@ -166,72 +172,42 @@ export class InspectionManager {
                 value_type, 
                 sub_template_mandatory, 
                 pass_criteria)
-              VALUES (?,?,?,?,?,?)`)
+              VALUES (?,?,?,?,?,?)`
+            )
             .run(
-              typeRow.item_type_id,
-              subcheckParameter.subcheckName,
-              subcheckParameter.subcheckDescription ?? "",
+              typeId,
+              subcheck.subcheckName,
+              subcheck.subcheckDescription ?? "",
               dbValueType,
               1, // mandatory by default
-              subcheckParameter.passCriteria ?? "true"
+              subcheck.passCriteria ?? "true"
             );
           subcheckTemplate = {
-            sub_template_id: Number(infoTpl.lastInsertRowid),
-            value_type: this.toDbValueType(subcheckParameter.valueType),
+            sub_template_id: Number(infoSubTemplate.lastInsertRowid),
+            value_type: this.toDbValueType(subcheck.valueType),
             sub_template_mandatory: 1,
-            pass_criteria: subcheckParameter.passCriteria ?? "true"
+            pass_criteria: subcheck.passCriteria ?? "true",
           };
+          // Update the mandatoryMap
+          mandatoryMap.set(subcheck.subcheckName, 1);
         }
-
-        /**
-         * Determine the database value type for the subcheck.
-         * This is used to ensure the correct data type is stored in the database.
-         * @param {SubcheckInput} subcheckParameter - The subcheck input data.
-         * @returns {string} - The database value type.
-         *
-         */
-        const dbValueType =
-          subcheckTemplate?.value_type ??
-          this.toDbValueType(subcheckParameter.valueType); // 'boolean'|'number'|'string'
-        const mandatory = subcheckTemplate?.sub_template_mandatory ?? 1; // default to mandatory
-        const passCriteria =
-          subcheckParameter.passCriteria ??
-          subcheckTemplate?.pass_criteria ??
-          null;
-
-          //NEW: If there is no template yet 
-          if(typeRow && !subcheckTemplate) {
-            const info = db.prepare(`
-              INSERT INTO subcheck_templates
-              (item_type_id, sub_template_label, sub_template_description, value_type, sub_template_mandatory, pass_criteria)
-              VALUES (?,?,?,?,?,?)`)
-            .run(
-              typeRow.item_type_id,
-              subcheckParameter.subcheckName,
-              subcheckParameter.subcheckDescription ?? "",
-              dbValueType,
-              mandatory,
-              passCriteria
-            );
-            subcheckTemplate = {
-              sub_template_id: Number(info.lastInsertRowid),
-              value_type: dbValueType,
-              sub_template_mandatory: mandatory,
-              pass_criteria: passCriteria
-            };
-          }
+        // Insert the subcheck result, linking to the template if available
+        // Use template values as defaults if not provided in the subcheck
+        const dbValueType = subcheckTemplate.value_type ?? this.toDbValueType(subcheck.valueType);
+        const mandatory = subcheckTemplate.sub_template_mandatory ?? 1;
+        const passCriteria = subcheckTemplate.pass_criteria ?? subcheck.passCriteria ?? "true";
 
         insertSubcheck.run(
           inspectionId,
-          subcheckTemplate?.sub_template_id ?? null,
-          subcheckParameter.subcheckName,
-          subcheckParameter.subcheckDescription ?? "",
+          subcheckTemplate.sub_template_id ?? null,
+          subcheck.subcheckName,
+          subcheck.subcheckDescription ?? "",
           dbValueType,
           mandatory,
           passCriteria,
-          subcheckParameter.status, // 'pass'|'fail'|'na'
-          null, // reading_number (optional later)
-          null // reading_text (optional later)
+          subcheck.status, // 'pass'|'fail'|'na'
+          null, // reading_number (optional)
+          null // reading_text (optional)
         );
       }
 
@@ -315,7 +291,7 @@ export class InspectionManager {
   }
 
   /**
-   * List inspections (simple version: newest first).
+   * List inspections (newest first).
    *
    * @returns {InspectionForm[]} - An array of all inspection forms.
    *
@@ -339,10 +315,7 @@ export class InspectionManager {
     return out;
   }
 
-  // -----------------------------
-  // Private helpers (small & clear)
-  // AI Assistant: Copilot
-  // -----------------------------
+  // Private methods to help with validation and lookups
 
   /**
    * Assert the basic structure of an inspection form.
@@ -381,38 +354,56 @@ export class InspectionManager {
     }
   }
 
-  /** Resolve engineer id either from form.engineerId or by engineerName lookup. */
+  /** Resolve engineer id either from form.engineerId or by engineerName lookup.
+   * If engineerName not found, auto-create a new user.
+   */
   private resolveEngineerId(form: InspectionForm): number | undefined {
     if (Number.isInteger((form as any).engineerId)) {
       return (form as any).engineerId as number;
     }
     if (form.engineerName && form.engineerName.trim()) {
       const name = form.engineerName.trim();
-      const found = db.prepare(`SELECT user_id FROM users WHERE full_name=?`).get(name) as { user_id: number } | undefined;
+      const found = db
+        .prepare(`SELECT user_id FROM users WHERE full_name=?`)
+        .get(name) as { user_id: number } | undefined;
       if (found) {
         return found.user_id;
       }
-      
-      // Prototype convenience: auto-create if missing
-      const info = db.prepare(`
+
+      // Auto-create a new engineer user
+      const info = db
+        .prepare(
+          `
         INSERT INTO users(username, full_name, role, email)
         VALUES(?,?, 'Engineer', ?)
-      `).run(name.toLowerCase().replace(/\s+/g,'_'), name, `${name.toLowerCase().replace(/\s+/g,'.')}@example.com`);
+      `
+        )
+        .run(
+          name.toLowerCase().replace(/\s+/g, "_"),
+          name,
+          `${name.toLowerCase().replace(/\s+/g, ".")}@example.com`
+        );
       return Number(info.lastInsertRowid);
     }
     return undefined;
   }
 
   /** 'pass' if all subchecks are 'pass' or 'na', otherwise 'fail'. */
-  private computeOverall(subs: SubcheckInput[]): "pass" | "fail" {
-    return subs.every(
-      (subcheck) => subcheck.status === "pass" || subcheck.status === "na"
-    )
-      ? "pass"
-      : "fail";
-    // (You can add 'incomplete' later if you support partial saves.)
+  private computeOverall(
+    subs: SubcheckInput[], 
+    mandatoryMap?: Map<string, 0 | 1>
+  ): "pass" | "fail" {
+    const ok = subs.every(sub => {
+      const isMandatory = (mandatoryMap?.get(sub.subcheckName) ?? 1) === 1;
+      if (isMandatory) {
+        // If mandatory, must be 'pass'
+        return sub.status === "pass";
+      }
+      // If not mandatory, can be 'pass' or 'na'
+      return sub.status === "pass" || sub.status === "na";
+    });
+    return ok ? "pass" : "fail";
   }
-
 
   /** Map TypeScript value types to the DB CHECK set ('TEXT' vs 'string'). */
   private toDbValueType(value: ValueType): "boolean" | "number" | "TEXT" {
