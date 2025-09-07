@@ -5,10 +5,10 @@
   "version": "1.0.0",
   "description": "Backend for Maintenance Forms Prototype",
   "scripts": {
-    "migrate": "ts-node --esm ./migrate.js",
-    "dev": "ts-node-dev --esm ./dist/app.js",
+    "migrate": "ts-node ./dist/migrate.js",
+    "dev": "ts-node-dev ./dist/app.js",
     "build": "tsc -p tsconfig.json",
-    "start": "ts-node --esm ./dist/app.js"
+    "start": "ts-node ./dist/app.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.2.0",
