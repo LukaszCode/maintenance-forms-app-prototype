@@ -49,8 +49,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
  
 
   /**
-   * This is a placeholder for the item ID.
-   * For simplicity, here we just use names and a single hardcoded ID
+   * Selected item ID (not used directly in the form, but can be useful for future enhancements).
    */
   const [itemId, setItemId] = useState<number | null>(null);
 
