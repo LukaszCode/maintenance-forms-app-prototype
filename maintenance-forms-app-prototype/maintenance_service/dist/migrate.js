@@ -50,7 +50,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS inspections (
     inspection_id INTEGER PRIMARY KEY,
     inspection_date TEXT NOT NULL,
-    category TEXT NOT NULL CHECK (category IN ('Facility','Machine Safety')),
+    inspection_category TEXT NOT NULL CHECK (inspection_category IN ('Facility','Machine Safety')),
     item_id INTEGER NOT NULL REFERENCES items(item_id) ON DELETE RESTRICT,
     engineer_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT,
     comment TEXT,
