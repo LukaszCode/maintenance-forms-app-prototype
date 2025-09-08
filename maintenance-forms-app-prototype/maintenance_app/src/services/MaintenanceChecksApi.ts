@@ -20,6 +20,36 @@ export class MaintenanceChecksApi {
   }
 
   /**
+   * Register a new user with the API.
+   * @param username - The username of the new user.
+   * @param password - The password of the new user.
+   * 
+   * @returns A promise that resolves to the created user.
+   */
+  registerUser(username: string, password: string) {
+    return fetch(`${this.baseUrl}/register`, {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify({ username, password }),
+    }).then(r => r.json());
+
+  }
+
+  /**
+   * Login an existing user with the API.
+   * @param username - The username of the user.
+   * @param password - The password of the user.
+   * @returns A promise that resolves to the logged-in user.
+   */
+  loginUser(username: string, password: string) {
+    return fetch(`${this.baseUrl}/login`, {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify({ username, password }),
+    }).then(r => r.json());
+  }
+
+  /**
    * Retrieve all sites.
    * @returns A promise that resolves to the list of sites.
    */
