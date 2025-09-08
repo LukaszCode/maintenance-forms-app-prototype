@@ -158,17 +158,11 @@ export class MaintenanceChecksApi {
    * @returns A promise that resolves to the existing or created zone.
    */
   ensureZone(siteId: number, zoneName: string, zoneDescription?: string) {
-    return fetch(`${this.baseUrl}/zones?siteId=${siteId}&name=${encodeURIComponent(zoneName)}`)
-    .then(r => r.json())
-    .then(async (zones) => {
-      if (zones.length > 0) {
-        // Zone exists
-        return zones[0];
-      } else {
-      // Create the zone
-      return this.createZone(siteId, zoneName, zoneDescription);
-      }
-    });
+    return fetch(`${this.baseUrl}/zones/ensure`, {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify({ siteId, zoneName, zoneDescription }),
+    }).then(r => r.json());   // inserts data in { status, data: { id, name, siteId } }
   }
 
   /**
