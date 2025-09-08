@@ -9,7 +9,8 @@ db.exec(`
     username TEXT NOT NULL UNIQUE,
     full_name TEXT NOT NULL,
     password_hash TEXT,              -- optional for later
-    role TEXT NOT NULL CHECK (role IN ('Engineer','Manager','Admin')) DEFAULT 'Engineer',
+    role TEXT 
+    NOT NULL CHECK (role IN ('Engineer','Manager','Admin')) DEFAULT 'Engineer',
     email TEXT
   );
 
@@ -34,14 +35,13 @@ db.exec(`
     item_type_id INTEGER PRIMARY KEY,
     inspection_category TEXT NOT NULL CHECK (inspection_category IN ('Facility','Machine Safety')),
     item_type_label TEXT NOT NULL,
-    item_type_description TEXT,
-    UNIQUE (inspection_category, item_type_label)
+    item_type_description TEXT
   );
-
-  -- Option A: store the type label as TEXT; DO NOT FK it (parent key not unique alone)
+  
+  -- Items: item_type references item_types(item_type_label) for easier reading
   CREATE TABLE IF NOT EXISTS items (
     item_id INTEGER PRIMARY KEY,
-    item_type TEXT NOT NULL REFERENCES item_types(item_type_label) ON DELETE RESTRICT,
+    item_type TEXT NOT NULL REFERENCES item_types(item_type_label) ON DELETE CASCADE,
     item_name TEXT NOT NULL,
     item_description TEXT,
     zone_id INTEGER NOT NULL REFERENCES zones(zone_id) ON DELETE CASCADE

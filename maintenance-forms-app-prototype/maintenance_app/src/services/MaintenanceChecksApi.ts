@@ -19,6 +19,8 @@ export class MaintenanceChecksApi {
     };
   }
 
+  // -- User management --
+
   /**
    * Register a new user with the API.
    * @param username - The username of the new user.
@@ -39,130 +41,37 @@ export class MaintenanceChecksApi {
    * Login an existing user with the API.
    * @param username - The username of the user.
    * @param password - The password of the user.
-   * @returns A promise that resolves to the logged-in user.
+   * @returns A promise that resolves to the login response.
    */
-  loginUser(username: string, password: string) {
-    return fetch(`${this.baseUrl}/login`, {
+  async login(username: string, password: string) {
+    const res = await fetch(`${this.baseUrl}/login`, {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify({ username, password }),
-    }).then(r => r.json());
-  }
-
-  /**
-   * Retrieve all sites.
-   * @returns A promise that resolves to the list of sites.
-   */
-  sites() {
-     return fetch(`${this.baseUrl}/sites`).then(r => r.json()); 
+    });
+    if (!res.ok) {
+      throw new Error(`Login failed: ${res.statusText}`);
     }
-  
-  /**
-   * Retrieve all zones based on site ID.
-   * @param siteId - The ID of the site to filter zones.
-   * @returns A promise that resolves to the list of zones.
-   */
-  zones(siteId?: number) {
-    const q = siteId ? `?siteId=${siteId}` : "";
-    return fetch(`${this.baseUrl}/zones${q}`).then(r => r.json());
-  }
-
-
-  /**
-   * Retrieve item types based on category.
-   * @param category - The category to filter item types.
-   * @returns A promise that resolves to the list of item types.
-   */
-  itemTypes(category?: string) {
-    const q = category ? `?category=${encodeURIComponent(category)}` : "";
-    return fetch(`${this.baseUrl}/item-types${q}`).then(r => r.json());
+    return res.json() as Promise<{ token: string; fullName: string }>;
   }
 
   /**
-   * Retrieve items based on zone ID and item type.
-   * @param zoneId - The ID of the zone to filter items.
-   * @param itemType - The type of the item to filter items.
-   * @returns A promise that resolves to the list of items.
+   * Logout the current user.
+   * @returns A promise that resolves when the logout is successful.
    */
-  items(zoneId?: number, itemType?: string) {
-    const qs:string[] = [];
-    if (zoneId) {
-      qs.push(`zoneId=${zoneId}`);
-    }
-    if (itemType) {
-      qs.push(`itemType=${encodeURIComponent(itemType)}`);
-    }
-    const q = qs.length ? `?${qs.join("&")}` : "";
-    return fetch(`${this.baseUrl}/items${q}`).then(r => r.json());
-  }
-
-  /**
-   * Retrieve subcheck templates based on item type ID.
-   * @param itemTypeId - The ID of the item type to filter templates.
-   * @returns A promise that resolves to the list of subcheck templates.
-   */
-  templatesByTypeId(itemTypeId:number) {
-    return fetch(`${this.baseUrl}/subcheck-templates?itemTypeId=${itemTypeId}`)
-    .then(r => r.json());
-  }
-
-  /**
-   * Retrieve subcheck templates based on item type label.
-   * @param itemTypeLabel - The label of the item type to filter templates.
-   * @returns A promise that resolves to the list of subcheck templates.
-   */
-  templatesByLabel(itemTypeLabel:string) {
-    return fetch(`${this.baseUrl}/subcheck-templates/by-label?itemType=${encodeURIComponent(itemTypeLabel)}`)
-    .then(r => r.json());
-  }
-
-  /**
-   * Create a new site.
-   * @param siteName - Name of the new site to create.
-   * @returns A promise that resolves to the created site.
-   */
-  createSite(siteName:string) {
-    return fetch(`${this.baseUrl}/sites`, {
-        method:"POST",
-        headers:this.headers(),
-        body:JSON.stringify({ siteName })
-    }).then(r => r.json());
-  }
-  
-  /**
-   * Create a new zone.
-   * @param zoneName - Name of the new zone to create.
-   * @param zoneDescription - Optional description of the new zone.
-   * @param siteId - ID of the site to which the zone belongs.
-   * @returns A promise that resolves to the created zone.
-   */
-
-  createZone (siteId: number, zoneName: string, zoneDescription?: string) {
-    return fetch(`${this.baseUrl}/zones`, {
+  async logout() {
+    const res = await fetch(`${this.baseUrl}/logout`, {
       method: "POST",
       headers: this.headers(),
-      body: JSON.stringify({ siteId, zoneName, zoneDescription}),
-    }).then(r => r.json());
+    });
+    if (!res.ok) {
+      throw new Error(`Logout failed: ${res.statusText}`);
+    }
+    return res.json();
   }
 
-  /**
-   * Create a new item.
-   * @param zoneId - ID of the zone to which the item belongs.
-   * @param itemType - Type of the item.
-   * @param itemName - Name of the new item to create.
-   * @param itemDescription - Optional description of the new item.
-   * @returns A promise that resolves to the created item.
-   */
+  // --- Form management - create, retrieve, update,  ---
 
-  createItem(zoneId: number, itemType: string, itemName: string, itemDescription?: string) {
-    return fetch(`${this.baseUrl}/items`, {
-      method: "POST",
-      headers: this.headers(),
-      body: JSON.stringify({ zoneId, itemType, itemName, itemDescription }),
-    }).then(r => r.json());
-  }
-
-  // --- inspections ---
   /**
    * Create a new inspection.
    * @param inspectionData - The data for the new inspection.
@@ -186,21 +95,155 @@ export class MaintenanceChecksApi {
     .then(r => r.json());
   }
 
-  /**
-   * User login.
-   * @param username - The username of the user.
-   * @param password - The password of the user.
-   * @returns A promise that resolves to the login response.
+/**
+   * Create a new site.
+   * @param siteName - Name of the new site to create.
+   * @returns A promise that resolves to the created site.
    */
-  async login(username: string, password: string) {
-    const res = await fetch(`${this.baseUrl}/login`, {
+  createSite(siteName:string) {
+    return fetch(`${this.baseUrl}/sites`, {
+        method:"POST",
+        headers:this.headers(),
+        body:JSON.stringify({ siteName })
+    }).then(r => r.json());
+  }
+
+  /** 
+   * Ensure the site exists; if not, create it.
+   * @param siteName - The name of the site to ensure.
+   * @returns A promise that resolves to the existing or created site.
+   * 
+   * @deprecated Use createSite method instead.
+   */
+
+  ensureSite(siteName:string, buildingNumber?:string, siteAddress?:string) {
+    return fetch(`${this.baseUrl}/sites/ensure`, {
       method: "POST",
       headers: this.headers(),
-      body: JSON.stringify({ username, password }),
-    });
-    if (!res.ok) {
-      throw new Error(`Login failed: ${res.statusText}`);
-    }
-    return res.json() as Promise<{ token: string; fullName: string }>;
+      body: JSON.stringify({ siteName, buildingNumber, siteAddress }),
+    })
+    .then(r => r.json());
   }
+
+  /**
+   * Retrieve all sites.
+   * @returns A promise that resolves to the list of sites.
+   */
+  sites() {
+     return fetch(`${this.baseUrl}/sites`).then(r => r.json()); 
+    }
+
+  /**
+   * Create a new zone.
+   * @param zoneName - Name of the new zone to create.
+   * @param zoneDescription - Optional description of the new zone.
+   * @param siteId - ID of the site to which the zone belongs.
+   * @returns A promise that resolves to the created zone.
+   * 
+   */
+
+  createZone (siteId: number, zoneName: string, zoneDescription?: string) {
+    return fetch(`${this.baseUrl}/zones`, {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify({ siteId, zoneName, zoneDescription}),
+    }).then(r => r.json());
+  }
+
+  /**
+   * Ensure the zone exists; if not, create it.
+   * @param siteId - The ID of the site to which the zone belongs.
+   * @param zoneName - The name of the zone to ensure.
+   * @param zoneDescription - Optional description of the zone.
+   * @returns A promise that resolves to the existing or created zone.
+   */
+  ensureZone(siteId: number, zoneName: string, zoneDescription?: string) {
+    return fetch(`${this.baseUrl}/zones?siteId=${siteId}&name=${encodeURIComponent(zoneName)}`)
+    .then(r => r.json())
+    .then(async (zones) => {
+      if (zones.length > 0) {
+        // Zone exists
+        return zones[0];
+      } else {
+      // Create the zone
+      return this.createZone(siteId, zoneName, zoneDescription);
+      }
+    });
+  }
+
+  /**
+   * Retrieve all zones based on site ID.
+   * @param siteId - The ID of the site to filter zones.
+   * @returns A promise that resolves to the list of zones.
+   */
+  zones(siteId?: number) {
+    const q = siteId ? `?siteId=${siteId}` : "";
+    return fetch(`${this.baseUrl}/zones${q}`).then(r => r.json());
+  }
+
+/**
+   * Create a new item.
+   * @param zoneId - ID of the zone to which the item belongs.
+   * @param itemType - Type of the item.
+   * @param itemName - Name of the new item to create.
+   * @param itemDescription - Optional description of the new item.
+   * @returns A promise that resolves to the created item.
+   */
+
+  createItem(zoneId: number, itemType: string, itemName: string, itemDescription?: string) {
+    return fetch(`${this.baseUrl}/items`, {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify({ zoneId, itemType, itemName, itemDescription }),
+    }).then(r => r.json());
+  }
+
+  /**
+   * Retrieve items based on zone ID and item type.
+   * @param zoneId - The ID of the zone to filter items.
+   * @param itemType - The type of the item to filter items.
+   * @returns A promise that resolves to the list of items.
+   */
+  items(zoneId?: number, itemType?: string) {
+    const qs:string[] = [];
+    if (zoneId) {
+      qs.push(`zoneId=${zoneId}`);
+    }
+    if (itemType) {
+      qs.push(`itemType=${encodeURIComponent(itemType)}`);
+    }
+    const q = qs.length ? `?${qs.join("&")}` : "";
+    return fetch(`${this.baseUrl}/items${q}`).then(r => r.json());
+  }
+
+  /**
+   * Retrieve item types based on category.
+   * @param category - The category to filter item types.
+   * @returns A promise that resolves to the list of item types.
+   */
+  itemTypes(category?: string) {
+    const q = category ? `?category=${encodeURIComponent(category)}` : "";
+    return fetch(`${this.baseUrl}/item-types${q}`).then(r => r.json());
+  }
+
+  /**
+   * Retrieve subcheck templates based on item type ID.
+   * @param itemTypeId - The ID of the item type to filter templates.
+   * @returns A promise that resolves to the list of subcheck templates.
+   */
+  templatesByTypeId(itemTypeId:number) {
+    return fetch(`${this.baseUrl}/subcheck-templates?itemTypeId=${itemTypeId}`)
+    .then(r => r.json());
+  }
+
+  /**
+   * Retrieve subcheck templates based on item type label.
+   * @param itemTypeLabel - The label of the item type to filter templates.
+   * @returns A promise that resolves to the list of subcheck templates.
+   */
+  templatesByLabel(itemTypeLabel:string) {
+    return fetch(`${this.baseUrl}/subcheck-templates/by-label?itemType=${encodeURIComponent(itemTypeLabel)}`)
+    .then(r => r.json());
+  }
+  
 }
