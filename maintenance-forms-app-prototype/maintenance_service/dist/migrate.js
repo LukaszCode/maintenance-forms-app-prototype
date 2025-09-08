@@ -2,7 +2,7 @@ import { db } from "./data-layer/db/sqlite.js";
 
 // ----- SCHEMA -----
 db.exec(`
-  PRAGMA foreign_keys = OFF;
+  PRAGMA foreign_keys = ON;
 
   CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY,
@@ -13,7 +13,7 @@ db.exec(`
     email TEXT
   );
 
-  -- Sites unique by (site_name, building_number)
+  -- Sites are unique by (site_name, building_number)
   CREATE TABLE IF NOT EXISTS sites (
     site_id INTEGER PRIMARY KEY,
     site_name TEXT NOT NULL,
@@ -22,7 +22,7 @@ db.exec(`
     UNIQUE (site_name, building_number)
   );
 
-  -- Zones: keep zone_name and make it unique per site
+  -- Zones: keep zone_name; unique per site
   CREATE TABLE IF NOT EXISTS zones (
     zone_id INTEGER PRIMARY KEY,
     zone_name TEXT NOT NULL,
@@ -38,16 +38,16 @@ db.exec(`
     UNIQUE (inspection_category, item_type_label)
   );
 
-  -- Option A: store item type as a TEXT label; NO FK to item_types(item_type_label)
+  -- Option A: store the type label as TEXT; DO NOT FK it (parent key not unique alone)
   CREATE TABLE IF NOT EXISTS items (
     item_id INTEGER PRIMARY KEY,
-    item_type TEXT NOT NULL,         -- TEXT label (e.g., 'Emergency Lighting')
+    item_type TEXT NOT NULL REFERENCES item_types(item_type_label) ON DELETE RESTRICT,
     item_name TEXT NOT NULL,
     item_description TEXT,
     zone_id INTEGER NOT NULL REFERENCES zones(zone_id) ON DELETE CASCADE
   );
 
-  -- IMPORTANT: column name 'category' matches your backend code
+  -- Column name 'category' matches your backend code
   CREATE TABLE IF NOT EXISTS inspections (
     inspection_id INTEGER PRIMARY KEY,
     inspection_date TEXT NOT NULL,
@@ -85,15 +85,15 @@ db.exec(`
 
   -- Indexes / uniqueness
   CREATE UNIQUE INDEX IF NOT EXISTS uq_zones_site_name ON zones(site_id, zone_name COLLATE NOCASE);
-  CREATE INDEX IF NOT EXISTS idx_zones_site         ON zones(site_id);
-  CREATE INDEX IF NOT EXISTS idx_items_zone         ON items(zone_id);
-  CREATE INDEX IF NOT EXISTS idx_items_type         ON items(item_type);
-  CREATE INDEX IF NOT EXISTS idx_items_name         ON items(item_name COLLATE NOCASE);
-  CREATE INDEX IF NOT EXISTS idx_items_desc         ON items(item_description COLLATE NOCASE);
-  CREATE INDEX IF NOT EXISTS idx_inspections_eng    ON inspections(engineer_id);
-  CREATE INDEX IF NOT EXISTS idx_inspections_item   ON inspections(item_id);
-  CREATE INDEX IF NOT EXISTS idx_inspections_date   ON inspections(inspection_date);
-  CREATE INDEX IF NOT EXISTS idx_subchecks_insp     ON subcheck_results(inspection_id);
+  CREATE INDEX IF NOT EXISTS idx_zones_site       ON zones(site_id);
+  CREATE INDEX IF NOT EXISTS idx_items_zone       ON items(zone_id);
+  CREATE INDEX IF NOT EXISTS idx_items_type       ON items(item_type);
+  CREATE INDEX IF NOT EXISTS idx_items_name       ON items(item_name COLLATE NOCASE);
+  CREATE INDEX IF NOT EXISTS idx_items_desc       ON items(item_description COLLATE NOCASE);
+  CREATE INDEX IF NOT EXISTS idx_inspections_eng  ON inspections(engineer_id);
+  CREATE INDEX IF NOT EXISTS idx_inspections_item ON inspections(item_id);
+  CREATE INDEX IF NOT EXISTS idx_inspections_date ON inspections(inspection_date);
+  CREATE INDEX IF NOT EXISTS idx_subchecks_insp   ON subcheck_results(inspection_id);
 `);
 
 console.log("Migration (schema) OK.");
@@ -119,49 +119,49 @@ db.exec(`
   INSERT OR IGNORE INTO sites(site_id, site_name, building_number, site_address)
   VALUES (4, 'GWP Packaging', '27', 'Chelworth Industrial Estate, Cricklade, SN6 6HE');
 
-  -- Zones (distinct zone_name per site_id=2)
+  -- Zones (distinct zone_name under site_id=2)
   INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (1, 'Boiler room adjacent to gents toilets',  'Zone A', 2);
+  VALUES (1, 'Boiler Room',                               'adjacent to gents toilets', 2);
 
   INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (2, 'External Fire Exit - Supernova',         'Zone A', 2);
+  VALUES (2, 'External Fire Exit - Supernova',            NULL,                         2);
 
   INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (3, 'Production - Supernova Fire Exit',       'Zone A', 2);
+  VALUES (3, 'Production - Supernova Fire Exit',          NULL,                         2);
 
   INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (4, 'Production - above Emmepi Belt',         'Zone A', 2);
+  VALUES (4, 'Production - above Emmepi Belt',            NULL,                         2);
 
   INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (5, 'Production - above Bobst machine',       'Zone A', 2);
+  VALUES (5, 'Production - above Bobst machine',          NULL,                         2);
 
   INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (6, 'Production - above blue board pushers',  'Zone A', 2);
+  VALUES (6, 'Production - above blue board pushers',     NULL,                         2);
 
   INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (7, 'Production - above extract duct',        'Zone A', 2);
+  VALUES (7, 'Production - above extract duct',           NULL,                         2);
 
   INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (8, 'Production - above pre production desk', 'Zone A', 2);
+  VALUES (8, 'Production - pre-production desk',          NULL,                         2);
 
   -- Item types (single canonical row)
   INSERT OR IGNORE INTO item_types(item_type_id, inspection_category, item_type_label, item_type_description)
   VALUES (1, 'Facility', 'Emergency Lighting', 'Emergency lighting fixtures');
 
-  -- Items (all reference existing zone ids above)
+  -- Items point to existing zone_ids above
   INSERT OR IGNORE INTO items(item_id, item_type, item_name, item_description, zone_id)
-  VALUES (1, 'Emergency Lighting', 'Meteor',    'Square/circular ceiling-mounted emergency lamp', 2);
+  VALUES (1, 'Emergency Lighting', 'Meteor',    'Ceiling-mounted emergency lamp', 2);
 
   INSERT OR IGNORE INTO items(item_id, item_type, item_name, item_description, zone_id)
-  VALUES (2, 'Emergency Lighting', 'Meteor',    'Square/circular ceiling-mounted emergency lamp', 2);
+  VALUES (2, 'Emergency Lighting', 'Meteor',    'Ceiling-mounted emergency lamp', 3);
 
   INSERT OR IGNORE INTO items(item_id, item_type, item_name, item_description, zone_id)
-  VALUES (3, 'Emergency Lighting', 'Panel',     'Rectangular wall-mounted emergency light', 2);
+  VALUES (3, 'Emergency Lighting', 'Panel',     'Rectangular wall-mounted lamp', 4);
 
   INSERT OR IGNORE INTO items(item_id, item_type, item_name, item_description, zone_id)
-  VALUES (4, 'Emergency Lighting', 'Twin Spot', 'Twin spot wall-mounted emergency light', 2);
+  VALUES (4, 'Emergency Lighting', 'Twin Spot', 'Two-head emergency lamp',       5);
 
-  -- Subcheck templates for Emergency Lighting
+  -- Subcheck templates for that item_type
   INSERT OR IGNORE INTO subcheck_templates
     (sub_template_id, item_type_id, sub_template_label, sub_template_description, value_type, sub_template_mandatory, pass_criteria)
   VALUES
