@@ -84,7 +84,7 @@ db.exec(`
   );
 
   -- Indexes / uniqueness
-  CREATE UNIQUE INDEX IF NOT EXISTS uq_zones_site_name ON zones(site_id, zone_name COLLATE NOCASE);
+  CREATE UNIQUE INDEX IF NOT EXISTS uq_zones_descr_site_name ON zones(site_id, zone_name, zone_description COLLATE NOCASE);
   CREATE INDEX IF NOT EXISTS idx_zones_site       ON zones(site_id);
   CREATE INDEX IF NOT EXISTS idx_items_zone       ON items(zone_id);
   CREATE INDEX IF NOT EXISTS idx_items_type       ON items(item_type);
@@ -97,78 +97,3 @@ db.exec(`
 `);
 
 console.log("Migration (schema) OK.");
-
-db.exec(`
-  -- Users
-  INSERT OR IGNORE INTO users (user_id, username, full_name, password_hash, role, email)
-  VALUES (1, 'LB', 'Lukasz Brzozowski', 'CompanyPass1', 'Engineer', 'lukasz.brzozowski@company.com');
-
-  INSERT OR IGNORE INTO users (user_id, username, full_name, password_hash, role, email)
-  VALUES (2, 'JD', 'John Doe', 'CompanyPass2', 'Manager', 'john.doe@company.com');
-
-  -- Sites
-  INSERT OR IGNORE INTO sites(site_id, site_name, building_number, site_address)
-  VALUES (1, 'GWP Packaging', '6',  'Chelworth Industrial Estate, Cricklade, SN6 6HE');
-
-  INSERT OR IGNORE INTO sites(site_id, site_name, building_number, site_address)
-  VALUES (2, 'GWP Packaging', '20', 'Chelworth Industrial Estate, Cricklade, SN6 6HE');
-
-  INSERT OR IGNORE INTO sites(site_id, site_name, building_number, site_address)
-  VALUES (3, 'GWP Packaging', '22', 'Chelworth Industrial Estate, Cricklade, SN6 6HE');
-
-  INSERT OR IGNORE INTO sites(site_id, site_name, building_number, site_address)
-  VALUES (4, 'GWP Packaging', '27', 'Chelworth Industrial Estate, Cricklade, SN6 6HE');
-
-  -- Zones (distinct zone_name under site_id=2)
-  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (1, 'Boiler Room',                               'adjacent to gents toilets', 2);
-
-  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (2, 'External Fire Exit - Supernova',            NULL,                         2);
-
-  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (3, 'Production - Supernova Fire Exit',          NULL,                         2);
-
-  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (4, 'Production - above Emmepi Belt',            NULL,                         2);
-
-  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (5, 'Production - above Bobst machine',          NULL,                         2);
-
-  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (6, 'Production - above blue board pushers',     NULL,                         2);
-
-  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (7, 'Production - above extract duct',           NULL,                         2);
-
-  INSERT OR IGNORE INTO zones(zone_id, zone_name, zone_description, site_id)
-  VALUES (8, 'Production - pre-production desk',          NULL,                         2);
-
-  -- Item types (single canonical row)
-  INSERT OR IGNORE INTO item_types(item_type_id, inspection_category, item_type_label, item_type_description)
-  VALUES (1, 'Facility', 'Emergency Lighting', 'Emergency lighting fixtures');
-
-  -- Items point to existing zone_ids above
-  INSERT OR IGNORE INTO items(item_id, item_type, item_name, item_description, zone_id)
-  VALUES (1, 'Emergency Lighting', 'Meteor',    'Ceiling-mounted emergency lamp', 2);
-
-  INSERT OR IGNORE INTO items(item_id, item_type, item_name, item_description, zone_id)
-  VALUES (2, 'Emergency Lighting', 'Meteor',    'Ceiling-mounted emergency lamp', 3);
-
-  INSERT OR IGNORE INTO items(item_id, item_type, item_name, item_description, zone_id)
-  VALUES (3, 'Emergency Lighting', 'Panel',     'Rectangular wall-mounted lamp', 4);
-
-  INSERT OR IGNORE INTO items(item_id, item_type, item_name, item_description, zone_id)
-  VALUES (4, 'Emergency Lighting', 'Twin Spot', 'Two-head emergency lamp',       5);
-
-  -- Subcheck templates for that item_type
-  INSERT OR IGNORE INTO subcheck_templates
-    (sub_template_id, item_type_id, sub_template_label, sub_template_description, value_type, sub_template_mandatory, pass_criteria)
-  VALUES
-    (1, 1, 'Function test – all luminaires illuminate', 'All luminaires must illuminate', 'boolean', 1, 'true'),
-    (2, 1, 'Recharge indicator working',                 'Indicator must light when charging', 'boolean', 1, 'true'),
-    (3, 1, 'Labels/ID present and legible',              'IDs must be legible', 'boolean', 0, 'true'),
-    (4, 1, 'No visible damage or faults',                'No cracks, burns, etc.', 'boolean', 1, 'true');
-`);
-
-console.log("Seeding OK.");
