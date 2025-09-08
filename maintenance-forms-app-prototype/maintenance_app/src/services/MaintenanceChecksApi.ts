@@ -100,11 +100,11 @@ export class MaintenanceChecksApi {
    * @param siteName - Name of the new site to create.
    * @returns A promise that resolves to the created site.
    */
-  createSite(siteName:string) {
+  createSite(siteName: string, buildingNumber?: string, siteAddress?: string) {
     return fetch(`${this.baseUrl}/sites`, {
-        method:"POST",
-        headers:this.headers(),
-        body:JSON.stringify({ siteName })
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify({ siteName, buildingNumber, siteAddress }),
     }).then(r => r.json());
   }
 
