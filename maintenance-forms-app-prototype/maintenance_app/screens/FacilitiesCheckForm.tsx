@@ -46,7 +46,17 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
   const [items, setItems] = useState<ItemRow[]>([]);
   const [subchecks, setSubchecks] = useState<SubcheckUI[]>([]);
 
- 
+ // Load sites and item types on mount
+  useEffect(() => {
+    api
+      .sites()
+      .then((r) => setSites(r.data ?? []))
+      .catch(() => setSites([]));
+    api
+      .itemTypes("Facility")
+      .then((r) => setItemTypes(r.data ?? []))
+      .catch(() => setItemTypes([]));
+  }, []);
 
   /**
    * Selected item ID (not used directly in the form, but can be useful for future enhancements).
@@ -62,6 +72,32 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
     api.sites().then(r => setSites(r.data ?? [])).catch(() => setSites([]));
     api.itemTypes("Facility").then(r => setItemTypes(r.data ?? [])).catch(() => setItemTypes([]));
   }, []);
+
+  /**
+   * Ensure the site exists in the list
+   * Create the site on-the-fly if it does not exist.
+   * This is called before saving the form.
+   * 
+   * @returns A promise that resolves when the site is ensured.
+   */
+
+  const ensureSiteExists = async () => {
+    const name = siteName.trim();
+    if (!name) {
+      return null;
+    }
+    // Check if the site already exists - ignore case when comparing
+    let site = sites.find(s => s.name.toLowerCase() === name.toLowerCase());
+    if (!site) {
+      const res = await api.ensureSite(name);
+      if (res.status !== "success" ) 
+        throw new Error(res.message ?? "Failed to create site.");
+      // Add the new site to the list and select it
+      const created = {id: res.data.id, name: res.data.name};
+      setSites(prev => [...prev, created].sort((a,b) => a.name.localeCompare(b.name)));
+      site = created;
+  }
+
 
   /**
    * Load zones for the selected site.
