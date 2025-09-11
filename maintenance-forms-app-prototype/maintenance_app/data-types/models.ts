@@ -46,6 +46,7 @@ export interface Inspection {
 export interface Site {
   siteId: number;
   siteName: string;
+  siteAddress?: string | null;
 }
 
 export interface Zone {
