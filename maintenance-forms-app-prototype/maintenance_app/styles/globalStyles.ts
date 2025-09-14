@@ -130,6 +130,57 @@ export const globalStyles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 15,
   },
+  subcheckToggleRow: {
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#ddd",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  subcheckToggleRowLabelContainer: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  subcheckToggleRowLabel: {
+    fontWeight: "600",
+  },
+  subcheckToggleRowToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  subcheckToggleRowPill: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  subcheckToggleRowPass: {
+    color: "#2a9d9d",
+  },
+  subcheckToggleRowFail: {
+    color: "#c0392b",
+  },
+  subcheckToggleRowDim: {
+    color: "#999",
+  },
+  subcheckToggleRowMandatory: {
+    color: "#b00020",
+    marginLeft: 4,
+    fontWeight: "700",
+  },
+  subcheckToggleRowInfoButton: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    textAlign: "center",
+    lineHeight: 22,
+    borderWidth: 1,
+    borderColor: "#999",
+    color: "#333",
+    marginRight: 4,
+  },
+
   scrollContainer: {
     maxHeight: 200, // Ensures scroll is visible when there are many buttons
     width: "100%",
@@ -141,6 +192,23 @@ export const globalStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     gap: 10,
+  },
+  inlineRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  subcheckRow: {
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e2e2e2",
+    paddingBottom: 10,
+  },
+  removeLink: {
+    color: "#c0392b",
+    textDecorationLine: "underline",
+    marginTop: 5,
+    fontSize: 12,
   },
   formPane: {
     backgroundColor: "#f4f4f4",

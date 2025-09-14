@@ -10,21 +10,14 @@
             14/08/2025
             18/08/2025: Added path handling for database file
 */
-
 // maintenance_service/data-layer/db/sqlite.ts
 import Database from "better-sqlite3";
 import { fileURLToPath } from "url";
 import path from "path";
-import type { Database as BetterSqlite3Database } from "better-sqlite3";
-
 // ESM-safe __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 // DB file sits next to this file
 const dbPath = path.join(__dirname, "maintenance_checks.sqlite");
-
-export type SqliteDb = BetterSqlite3Database;
-export const db: SqliteDb = new (Database as any)(dbPath);
+export const db = new Database(dbPath);
 db.pragma("foreign_keys = ON");
-

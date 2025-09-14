@@ -2,39 +2,30 @@
   "name": "maintenance-service",
   "private": true,
   "type": "module",
+  "version": "1.0.0",
+  "description": "Backend for Maintenance Forms Prototype",
   "scripts": {
-    "migrate": "ts-node ./maintenance_service/migrate.ts",
-    "dev": "ts-node-dev --respawn --transpile-only ./maintenance_service/app.ts",
-    "build": "tsc",
-    "start": "node dist/app.js"
+    "migrate": "ts-node ./dist/migrate.js",
+    "dev": "ts-node-dev ./dist/app.js",
+    "build": "tsc -p tsconfig.json",
+    "start": "ts-node ./dist/app.js"
   },
   "dependencies": {
-    "better-sqlite3": "^9.4.0",
-    "body-parser": "^2.2.0",
-    "cors": "^2.8.5",
-    "expo": "^53.0.20",
-    "expo-sqlite": "^15.2.14",
-    "express": "^5.1.0",
+    "better-sqlite3": "^12.2.0",
+    "body-parser": "1.20.3",
+    "cors": "2.8.5",
+    "express": "4.21.2",
     "node": "^22.19.0",
-    "node-js": "^1.0.0",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7",
-    "zod": "^3.21.4"
+    "zod": "3.25.6"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
-    "@types/body-parser": "^1.19.6",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
-    "@types/sqlite3": "^3.1.11",
-    "ts-node": "^10.9.1",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.4.0"
-  },
-  "version": "1.0.0",
-  "main": "index.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+    "@types/body-parser": "1.19.5",
+    "@types/cors": "2.8.17",
+    "@types/express": "4.17.21",
+    "@types/node": "22.7.4",
+    "ts-node": "10.9.2",
+    "ts-node-dev": "2.0.0",
+    "typescript": "5.4.5"
+  }
 }
