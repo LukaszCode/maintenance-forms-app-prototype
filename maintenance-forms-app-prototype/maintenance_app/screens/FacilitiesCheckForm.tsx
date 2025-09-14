@@ -33,7 +33,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
   const [dateString, setDateString] = useState(new Date().toISOString().slice(0,10));
   const [siteName, setSiteName] = useState("");
   const [zoneName, setZoneName] = useState("");
-  const [itemTypeLabel, setItemTypeLabel] = useState("Emergency Lighting");
+  const [itemTypeLabel, setItemTypeLabel] = useState("");
   const [itemName, setItemName] = useState("");
   const [comment, setComment] = useState("");
   const [newCheckName, setNewCheckName] = useState("");
@@ -281,7 +281,7 @@ const addSubcheck = () => {
 
       <ScrollView contentContainerStyle={{ paddingVertical: 10 }}>
         <View style={globalStyles.card}>
-          <Text style={globalStyles.cardTitle}>Facility Inspection</Text>
+          <Text style={globalStyles.cardTitle}>Facility Check</Text>
 
           {/* Date */}
           <View style={globalStyles.formRow}>
