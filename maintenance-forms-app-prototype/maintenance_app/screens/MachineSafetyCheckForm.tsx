@@ -25,7 +25,6 @@ import { api } from "../src/services/apiClient";
 import { validateAndBuildFormPayload, SubcheckUI } from "../business-logic/validation/formValidation";
 
 
-
 type Props = NativeStackScreenProps<RootStackParamList, "MachineSafetyCheckForm">;
 
 type Named = { id: number; name: string };
