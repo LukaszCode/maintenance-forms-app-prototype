@@ -10,7 +10,7 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { InspectionManager } from "./libraries/InspectionManager.js";
-import { db } from "./data-layer/db/sqlite.js";
+import { db } from "../data-layer/sqlite.js";
 const app = express();
 // Global middleware
 app.use(cors()); // Allow the API to be accessed from other origins

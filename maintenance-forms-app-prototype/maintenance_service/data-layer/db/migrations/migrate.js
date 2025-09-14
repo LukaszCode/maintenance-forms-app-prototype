@@ -1,4 +1,4 @@
-import { db } from "./data-layer/db/sqlite.js";
+import { db } from "../../sqlite.js";
 
 // ----- SCHEMA -----
 db.exec(`
