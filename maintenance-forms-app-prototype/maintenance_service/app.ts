@@ -596,6 +596,39 @@ app.get("/inspections/:id", (request, response) => {
 });
 
 /**
+ * Retrieve all inspections (summary view).
+ *
+ * @param {Object} request - The HTTP request object.
+ * @param {Object} response - The HTTP response object.
+ * @returns {Object} The HTTP response with the list of inspection summaries.
+ */
+app.get("/inspections", (_request, response) => {
+  const rows = db
+    .prepare(`
+      SELECT 
+        i.inspection_id AS id,
+        i.inspection_date AS date,
+        i.category,
+        i.item_id,
+        it.item_name,
+        z.zone_label AS zoneName,
+        s.site_name AS siteName,
+        u.full_name AS engineerName,
+        i.overall_result AS result
+      FROM inspections i
+      JOIN items it ON i.item_id = it.item_id
+      JOIN zones z ON it.zone_id = z.zone_id
+      JOIN sites s ON z.site_id = s.site_id
+      JOIN users u ON i.engineer_id = u.user_id
+      ORDER BY i.inspection_date DESC, i.inspection_id DESC
+    `)
+    .all();
+
+  response.json({ status: "success", data: rows });
+});
+
+
+/**
  * Read item types by inspection category (Facilities or Machine Safety)
  * This endpoint dynamically retrieves item types based on the specified inspection category.
  *
