@@ -91,8 +91,9 @@ const MachineSafetyCheckForm: React.FC<Props> = ({ navigation, route }) => {
     let site = sites.find(s => s.name.toLowerCase() === name.toLowerCase());
     if (!site) {
       const res = await api.ensureSite(name);
-      if (res.status !== "success" ) 
+      if (res.status !== "success" ) {
         throw new Error(res.message ?? "Failed to create site.");
+      }
       // Add the new site to the list and select it
       const created = {id: res.data.id, name: res.data.name};
       setSites(prev => [...prev, created].sort((a,b) => a.name.localeCompare(b.name)));
@@ -100,7 +101,6 @@ const MachineSafetyCheckForm: React.FC<Props> = ({ navigation, route }) => {
     }
     return site;
   }
-
 
   /**
    * Load zones for the selected site.
@@ -238,26 +238,66 @@ const addSubcheck = () => {
   const suggestions = (q: string, list: Named[]) =>
     q.trim().length ? list.filter((s) => s.name.toLowerCase().includes(q.toLowerCase())).slice(0,5) : [];
   
+  
   /** Save the form.
    * This will validate the form and submit it to the backend.
    * On success, navigate back. On failure, show an alert.
+   * Added functionality: The form will create site, zone, and item on-the-fly if they do not exist.
    * @param navigation - The navigation object.
    * @returns A promise that resolves when the save is complete.
    */
 
   const onSave = async () => {
     try {
+      // Ensure the site exists (create if needed)
+      const site = await ensureSiteExists();
+      if (!site) {
+        throw new Error("Site name is required.");
+      }
+      //2. Ensure the zone exists (create if needed)
+      let zone = zones.find(z => z.name === zoneName.trim());
+      if (!zone) {
+        const res = await api.createZone(site.id, zoneName.trim());
+        if (res.status !== "success") {
+          throw new Error(res.message ?? "Failed to create zone.");
+        }
+        const created = { id: res.data.id, name: res.data.name };
+        setZones(prev => [...prev, created].sort((a,b) => a.name.localeCompare(b.name)));
+        zone = created;
+      }
+
+      // 3. Ensure the item exists (create if needed)
+      const item = items.find(i =>
+        i.name.toLowerCase() === itemName.trim().toLowerCase() &&
+        i.item_type === itemTypeLabel &&
+        i.zone_id === zone.id
+      );
+      if (!item) {
+        const res = await api.createItem(zone.id, itemTypeLabel, itemName.trim());
+        if (res.status !== "success") {
+          throw new Error(res.message ?? "Failed to create item.");
+        }
+        const createdItem = {
+          id: res.data.id,
+          name: res.data.name,
+          item_type: itemTypeLabel,
+          zone_id: zone.id
+        };
+        setItems(prev => [...prev, createdItem]);;
+      }
+
+      // 4. Validate and build the payload
       const { payload } = validateAndBuildFormPayload({
         dateString,
         engineerName,
         category: "Machine Safety",
-        siteName,
-        zoneName,
+        siteName: site.name,
+        zoneName: zone.name,
         itemType: itemTypeLabel,
         itemName,
         comment,
-        sites,
-        zones,
+        sites: [...sites, site],
+        zones : [...zones, zone],
         items,
         subchecksUi: subchecks,
       });
