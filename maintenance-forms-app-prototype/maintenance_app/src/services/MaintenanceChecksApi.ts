@@ -44,16 +44,17 @@ export class MaintenanceChecksApi {
    * @returns A promise that resolves to the login response.
    */
   async login(username: string, password: string) {
-    const res = await fetch(`${this.baseUrl}/login`, {
-      method: "POST",
-      headers: this.headers(),
-      body: JSON.stringify({ username, password }),
-    });
-    if (!res.ok) {
-      throw new Error(`Login failed: ${res.statusText}`);
-    }
-    return res.json() as Promise<{ token: string; fullName: string }>;
-  }
+  const res = await fetch(`${this.baseUrl}/login`, {
+    method: "POST",
+    headers: this.headers(),
+    body: JSON.stringify({ username, password }),
+  });
+  if (!res.ok) throw new Error(`Login failed: ${res.statusText}`);
+  const data = await res.json();
+  this.token = data.token; // <- store token here
+  return data;
+}
+
 
   /**
    * Logout the current user.
