@@ -1,5 +1,14 @@
-// LoginScreen - contains UI for the login page
-// This screen allows users to log in with their username and password
+/**LoginScreen - contains UI for the login page
+ * 
+ * This screen allows users to log in with their username and password
+ * and handles authentication via the API client.
+ * 
+ * This file is used for user authentication and navigation to the main menu upon successful login.
+ * It provides a simple and user-friendly interface for users to enter their credentials.
+ * 
+ * Changes: Added error handling for login failures and input validation to ensure both fields are filled.
+ * This improves user experience by providing feedback on incorrect login attempts.
+ */
 
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
