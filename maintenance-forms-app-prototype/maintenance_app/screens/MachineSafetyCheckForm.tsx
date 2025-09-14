@@ -261,9 +261,9 @@ const addSubcheck = () => {
         if (res.status !== "success") {
           throw new Error(res.message ?? "Failed to create zone.");
         }
-        const created = { id: res.data.id, name: res.data.name };
-        setZones(prev => [...prev, created].sort((a,b) => a.name.localeCompare(b.name)));
-        zone = created;
+        const createdZone = { id: res.data.id, name: res.data.name };
+        setZones(prev => [...prev, createdZone].sort((a,b) => a.name.localeCompare(b.name)));
+        zone = createdZone;
       }
 
       // 3. Ensure the item exists (create if needed)
@@ -283,7 +283,7 @@ const addSubcheck = () => {
           item_type: itemTypeLabel,
           zone_id: zone.id
         };
-        setItems(prev => [...prev, createdItem]);;
+        setItems(prev => [...prev, createdItem]);
       }
 
       // 4. Validate and build the payload
