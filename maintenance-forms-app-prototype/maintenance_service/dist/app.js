@@ -331,7 +331,7 @@ app.get("/subcheck-templates/by-label", (request, response) => {
     response.json({ status: "success", data: rows });
 });
 // Health check endpoint
-app.get("/healthz", (_request, response) => response.json({ ok: true }));
+app.get("/healthy", (_request, response) => response.json({ ok: true }));
 // Start the server
 app.listen(3001, () => {
     console.log("Server is running on http://localhost:3001");
