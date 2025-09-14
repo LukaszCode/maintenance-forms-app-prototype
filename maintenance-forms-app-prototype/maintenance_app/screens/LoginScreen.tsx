@@ -21,6 +21,7 @@ import { api } from "../src/services/apiClient";
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
+  const engineerName = "Guest"; // Default name for header when not logged in
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -43,19 +44,19 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       navigation.navigate("MainMenu", {
         engineerName: res.fullName,
       });
-    } catch (err: any) {
-      alert(err.message || "Login failed.");
+    } catch (error: any) {
+      alert(error.message || "Login failed.");
     }
   };
-
 
   return (
     <View style={globalStyles.container}>
       {/* Shared Header */}
       <AppHeader
-        engineerName={"Guest"}
-        onSignOut={() => navigation.navigate("Login")}
+        engineerName={engineerName}
+        onSignOut={async () => navigation.navigate("Login")}
       />
+
 
       {/* Card */}
       <View style={globalStyles.card}>

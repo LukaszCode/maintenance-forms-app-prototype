@@ -270,7 +270,12 @@ const addSubcheck = () => {
 
   return (
     <View style={globalStyles.container}>
-      <AppHeader engineerName={engineerName} onSignOut={() => navigation.navigate("Login")} />
+      {/* Shared Header */}
+      <AppHeader
+        engineerName={engineerName}
+        onSignOut={() => navigation.navigate("Login")}
+      />
+
 
       <TouchableOpacity
         style={[globalStyles.button, globalStyles.secondaryButton, globalStyles.backButton]}
