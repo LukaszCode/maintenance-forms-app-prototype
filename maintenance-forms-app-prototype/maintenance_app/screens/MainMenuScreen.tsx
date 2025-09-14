@@ -1,3 +1,5 @@
+// Main Menu Screen - serves as the main menu for accessing different maintenance formsin a category-based layout
+
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -21,9 +23,9 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
       {/* Back Button */}
       <TouchableOpacity
         style={[
-          globalStyles.button,
-          globalStyles.secondaryButton,
-          globalStyles.backButton,
+          globalStyles.button, // provides the same shape as other buttons
+          globalStyles.secondaryButton, //provides the button grey overlay
+          globalStyles.backButton, // provides the back button size
         ]}
         onPress={() => navigation.goBack()}
       >
@@ -32,7 +34,7 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
 
       {/* Card with Test Types */}
       <View style={globalStyles.card}>
-        <Text style={globalStyles.cardTitle}>Choose the test type</Text>
+        <Text style={globalStyles.cardTitle}>Choose the check category</Text>
 
         <TouchableOpacity
           style={[globalStyles.button, globalStyles.primaryButton]}
@@ -40,7 +42,7 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
             navigation.navigate("FacilitiesMenu", { engineerName })
           }
         >
-          <Text style={globalStyles.primaryButtonText}>Facility Checks</Text>
+          <Text style={globalStyles.primaryButtonText}>Facility Check</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -50,7 +52,7 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
           }
         >
           <Text style={globalStyles.primaryButtonText}>
-            Maintenance Routine Checks
+            Machine Safety Check
           </Text>
         </TouchableOpacity>
 
@@ -58,7 +60,9 @@ const MainMenuScreen: React.FC<Props> = ({ navigation, route }) => {
           style={[globalStyles.button, globalStyles.secondaryButton]}
           onPress={() => alert("Add Check Type coming soon")}
         >
-          <Text style={globalStyles.secondaryButtonText}>Add Check Type</Text>
+          <Text style={globalStyles.secondaryButtonText}>
+            Add Check Category
+          </Text>
         </TouchableOpacity>
       </View>
 

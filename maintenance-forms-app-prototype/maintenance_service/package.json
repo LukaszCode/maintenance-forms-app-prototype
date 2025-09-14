@@ -1,0 +1,31 @@
+{
+  "name": "maintenance-service",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Backend for Maintenance Forms Prototype",
+  "scripts": {
+    "migrate": "ts-node ./dist/migrate.js",
+    "dev": "ts-node-dev ./dist/app.js",
+    "build": "tsc -p tsconfig.json",
+    "start": "ts-node ./dist/app.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.2.0",
+    "body-parser": "1.20.3",
+    "cors": "2.8.5",
+    "express": "4.21.2",
+    "node": "^22.19.0",
+    "zod": "3.25.6"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/body-parser": "1.19.5",
+    "@types/cors": "2.8.17",
+    "@types/express": "4.17.21",
+    "@types/node": "22.7.4",
+    "ts-node": "10.9.2",
+    "ts-node-dev": "2.0.0",
+    "typescript": "5.4.5"
+  }
+}
