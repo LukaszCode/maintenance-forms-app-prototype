@@ -22,7 +22,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // DB file sits next to this file
-const dbPath = path.join(__dirname, "maintenance_checks.sqlite");
+const dbPath = path.join(__dirname, "..", "maintenance_checks.sqlite");
 
 export type SqliteDb = BetterSqlite3Database;
 export const db: SqliteDb = new (Database as any)(dbPath);

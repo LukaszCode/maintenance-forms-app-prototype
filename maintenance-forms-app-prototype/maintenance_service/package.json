@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "description": "Backend for Maintenance Forms Prototype",
   "scripts": {
-    "migrate": "ts-node ./data-layer/db/migrations/migrate.ts",
+    "migrate": "node ./data-layer/db/migrations/migrate.js",
     "dev": "ts-node-dev --loader ts-node/esm ./app.ts",
     "build": "tsc",
     "start": "node ./dist/app.js"
