@@ -40,19 +40,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   };
 
 
-  try {
-    const res = await api.login(username, password);
-    api.setToken(res.token); // <-- store token in API client
-
-    navigation.navigate("MainMenu", {
-      engineerName: res.fullName,
-    });
-  } catch (err: any) {
-    alert(err.message || "Login failed.");
-  }
-};
-
-
   return (
     <View style={globalStyles.container}>
       {/* Shared Header */}
