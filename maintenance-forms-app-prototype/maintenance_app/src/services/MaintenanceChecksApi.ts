@@ -19,6 +19,15 @@ export class MaintenanceChecksApi {
     };
   }
 
+  /**
+   * Sets the authentication token for the API client.
+   * @param token - The authentication token.
+   */
+  setToken(token: string) {
+  this.token = token;
+}
+
+
   // -- User management --
 
   /**
