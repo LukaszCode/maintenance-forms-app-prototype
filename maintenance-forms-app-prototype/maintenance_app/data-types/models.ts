@@ -36,7 +36,7 @@ export interface Inspection {
   inspectionDate: string;
   inspectionCategory: InspectionCategory;
   itemId: number; // <-- Foreign Key to item
-  inspectedBy: number; // <-- Foreign Key to user
+  inspectorId: number; // <-- Foreign Key to user
   siteId: number; // <-- Foreign Key to site
   zoneId: number; // <-- Foreign Key to zone
   subchecks: Subcheck[]; // Array of subchecks for each inspection
