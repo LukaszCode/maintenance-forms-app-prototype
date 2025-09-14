@@ -58,10 +58,6 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
       .catch(() => setItemTypes([]));
   }, []);
 
-  /**
-   * Selected item ID (not used directly in the form, but can be useful for future enhancements).
-   */
-  const [itemId, setItemId] = useState<number | null>(null);
 
   /**
    * Load all sites, item types per category at mount.
@@ -96,6 +92,8 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
       const created = {id: res.data.id, name: res.data.name};
       setSites(prev => [...prev, created].sort((a,b) => a.name.localeCompare(b.name)));
       site = created;
+    }
+    return site;
   }
 
 

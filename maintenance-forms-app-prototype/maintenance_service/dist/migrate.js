@@ -3,97 +3,115 @@ import { db } from "./data-layer/db/sqlite.js";
 // ----- SCHEMA -----
 db.exec(`
   PRAGMA foreign_keys = ON;
-
+  
+  -- USERS
   CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY,
     username TEXT NOT NULL UNIQUE,
     full_name TEXT NOT NULL,
-    password_hash TEXT,              -- optional for later
-    role TEXT 
-    NOT NULL CHECK (role IN ('Engineer','Manager','Admin')) DEFAULT 'Engineer',
-    email TEXT
+    password_hash TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('Engineer','Manager','Admin')),
+    email TEXT NOT NULL
   );
 
-  -- Sites are unique by (site_name, building_number)
+  -- SITES
   CREATE TABLE IF NOT EXISTS sites (
     site_id INTEGER PRIMARY KEY,
     site_name TEXT NOT NULL,
-    building_number TEXT,
-    site_address TEXT,
-    UNIQUE (site_name, building_number)
+    site_address TEXT
   );
 
-  -- Zones: keep zone_name; unique per site
+  -- ZONES
   CREATE TABLE IF NOT EXISTS zones (
     zone_id INTEGER PRIMARY KEY,
     zone_name TEXT NOT NULL,
     zone_description TEXT,
-    site_id INTEGER NOT NULL REFERENCES sites(site_id) ON DELETE CASCADE
+    site_id INTEGER NOT NULL,
+    FOREIGN KEY (site_id) REFERENCES sites(site_id) ON DELETE CASCADE
   );
 
+  -- ITEM TYPES (Used in templates)
   CREATE TABLE IF NOT EXISTS item_types (
     item_type_id INTEGER PRIMARY KEY,
-    inspection_category TEXT NOT NULL CHECK (inspection_category IN ('Facility','Machine Safety')),
-    item_type_label TEXT NOT NULL,
-    item_type_description TEXT
-  );
-  
-  -- Items: item_type references item_types(item_type_label) for easier reading
-  CREATE TABLE IF NOT EXISTS items (
-    item_id INTEGER PRIMARY KEY,
-    item_type TEXT NOT NULL REFERENCES item_types(item_type_label) ON DELETE CASCADE,
-    item_name TEXT NOT NULL,
-    item_description TEXT,
-    zone_id INTEGER NOT NULL REFERENCES zones(zone_id) ON DELETE CASCADE
+    item_type_label TEXT NOT NULL UNIQUE
   );
 
-  -- Column name 'category' matches your backend code
+  -- ITEMS
+  CREATE TABLE IF NOT EXISTS items (
+    item_id INTEGER PRIMARY KEY,
+    item_type TEXT NOT NULL,
+    item_name TEXT NOT NULL,
+    item_description TEXT,
+    zone_id INTEGER NOT NULL,
+    FOREIGN KEY (zone_id) REFERENCES zones(zone_id) ON DELETE CASCADE,
+    FOREIGN KEY (item_type) REFERENCES item_types(item_type_label) ON DELETE CASCADE
+  );
+
+  -- INSPECTIONS
   CREATE TABLE IF NOT EXISTS inspections (
     inspection_id INTEGER PRIMARY KEY,
     inspection_date TEXT NOT NULL,
-    category TEXT NOT NULL CHECK (category IN ('Facility','Machine Safety')),
-    item_id INTEGER NOT NULL REFERENCES items(item_id) ON DELETE RESTRICT,
-    engineer_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT,
+    inspection_category TEXT NOT NULL CHECK (inspection_category IN ('Facility', 'Machine Safety')),
+    item_id INTEGER NOT NULL,
+    engineer_id INTEGER NOT NULL,
+    site_id INTEGER NOT NULL,
+    zone_id INTEGER NOT NULL,
     comment TEXT,
-    overall_result TEXT CHECK (overall_result IN ('pass','fail','incomplete'))
+    FOREIGN KEY (item_id) REFERENCES items(item_id) ON DELETE RESTRICT,
+    FOREIGN KEY (engineer_id) REFERENCES users(user_id) ON DELETE RESTRICT,
+    FOREIGN KEY (site_id) REFERENCES sites(site_id) ON DELETE CASCADE,
+    FOREIGN KEY (zone_id) REFERENCES zones(zone_id) ON DELETE CASCADE
   );
 
+  -- SUBCHECK TEMPLATES
   CREATE TABLE IF NOT EXISTS subcheck_templates (
-    sub_template_id INTEGER PRIMARY KEY,
-    item_type_id INTEGER NOT NULL REFERENCES item_types(item_type_id) ON DELETE CASCADE,
-    sub_template_label TEXT NOT NULL,
-    sub_template_description TEXT,
-    value_type TEXT NOT NULL CHECK (value_type IN ('boolean','number','TEXT')),
-    sub_template_mandatory INTEGER NOT NULL DEFAULT 1 CHECK (sub_template_mandatory IN (0,1)),
-    pass_criteria TEXT
-  );
-
-  CREATE TABLE IF NOT EXISTS subcheck_results (
-    sub_result_id INTEGER PRIMARY KEY,
-    inspection_id INTEGER NOT NULL REFERENCES inspections(inspection_id) ON DELETE CASCADE,
-    sub_template_id INTEGER REFERENCES subcheck_templates(sub_template_id) ON DELETE SET NULL,
-    sub_result_label TEXT NOT NULL,
-    sub_result_description TEXT,
-    value_type TEXT NOT NULL CHECK (value_type IN ('boolean','number','TEXT')),
-    sub_result_mandatory INTEGER NOT NULL CHECK (sub_result_mandatory IN (0,1)),
+    subcheck_template_id INTEGER PRIMARY KEY,
+    item_type TEXT NOT NULL,
+    subcheck_name TEXT NOT NULL,
+    subcheck_description TEXT,
+    value_type TEXT NOT NULL CHECK (value_type IN ('string','number','boolean')),
     pass_criteria TEXT,
-    result TEXT CHECK (result IN ('pass','fail','na')),
-    comment TEXT,
-    reading_number REAL,
-    reading_text TEXT
+    FOREIGN KEY (item_type) REFERENCES item_types(item_type_label)
   );
 
-  -- Indexes / uniqueness
-  CREATE UNIQUE INDEX IF NOT EXISTS uq_zones_descr_site_name ON zones(site_id, zone_name, zone_description COLLATE NOCASE);
-  CREATE INDEX IF NOT EXISTS idx_zones_site       ON zones(site_id);
-  CREATE INDEX IF NOT EXISTS idx_items_zone       ON items(zone_id);
-  CREATE INDEX IF NOT EXISTS idx_items_type       ON items(item_type);
-  CREATE INDEX IF NOT EXISTS idx_items_name       ON items(item_name COLLATE NOCASE);
-  CREATE INDEX IF NOT EXISTS idx_items_desc       ON items(item_description COLLATE NOCASE);
-  CREATE INDEX IF NOT EXISTS idx_inspections_eng  ON inspections(engineer_id);
-  CREATE INDEX IF NOT EXISTS idx_inspections_item ON inspections(item_id);
-  CREATE INDEX IF NOT EXISTS idx_inspections_date ON inspections(inspection_date);
-  CREATE INDEX IF NOT EXISTS idx_subchecks_insp   ON subcheck_results(inspection_id);
+  -- SUBCHECK RESULTS
+  CREATE TABLE IF NOT EXISTS subchecks (
+    subcheck_id INTEGER PRIMARY KEY,
+    inspection_id INTEGER NOT NULL,
+    subcheck_name TEXT NOT NULL,
+    subcheck_description TEXT,
+    value_type TEXT NOT NULL CHECK (value_type IN ('string','number','boolean')),
+    pass_criteria TEXT,
+    status TEXT NOT NULL CHECK (status IN ('pass', 'fail')),
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+  );
+
+  -- RESULTS (caching result per inspection)
+  CREATE TABLE IF NOT EXISTS results (
+    result_id INTEGER PRIMARY KEY,
+    inspection_id INTEGER NOT NULL UNIQUE,
+    overall_status TEXT NOT NULL CHECK (overall_status IN ('pass', 'fail')),
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+  );
+
+  -- READINGS
+  CREATE TABLE IF NOT EXISTS readings (
+    reading_id INTEGER PRIMARY KEY,
+    inspection_id INTEGER NOT NULL,
+    parameter_id INTEGER NOT NULL,  -- e.g. subcheck_id or parameter template
+    value TEXT NOT NULL,
+    unit TEXT NOT NULL,
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+  );
+
+  -- ATTACHMENTS
+  CREATE TABLE IF NOT EXISTS attachments (
+    attachment_id INTEGER PRIMARY KEY,
+    inspection_id INTEGER NOT NULL,
+    file_path TEXT NOT NULL,
+    caption TEXT,
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+  );
 `);
 
-console.log("Migration (schema) OK.");
+console.log("Database schema created.");
