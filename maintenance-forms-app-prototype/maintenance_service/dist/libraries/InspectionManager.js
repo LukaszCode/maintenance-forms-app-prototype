@@ -1,4 +1,4 @@
-import { db } from "../data-layer/sqlite.js";
+import { db } from "../data-layer/db/sqlite.js";
 import { InspectionForm } from "../libraries/InspectionForm.js";
 /**
  * InspectionManager
@@ -29,7 +29,19 @@ export class InspectionManager {
          * @param {InspectionForm} form - The inspection form data.
          * @returns {number} - The resolved engineer ID.
          */
-        const engineerId = this.resolveEngineerId(form);
+        const resolveEngineerId = (form) => {
+            // If engineerId is already a number, return it
+            if (Number.isInteger(form.engineerId)) {
+                return form.engineerId;
+            }
+            // Otherwise, look up the engineer by name
+            const row = db
+                .prepare(`SELECT user_id FROM users WHERE username = ?`)
+                .get(form.engineerId);
+            return row?.user_id;
+        };
+        // Resolve the engineer ID
+        const engineerId = resolveEngineerId(form);
         if (!Number.isInteger(engineerId)) {
             throw new Error("Engineer ID (or a known engineer name) is required.");
         }

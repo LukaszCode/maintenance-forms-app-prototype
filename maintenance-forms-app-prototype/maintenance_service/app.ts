@@ -11,7 +11,7 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { InspectionManager } from "./libraries/InspectionManager.js";
-import { db } from "./data-layer/sqlite.js";
+import { db } from "./data-layer/db/sqlite.js";
 
 const app = express();
 

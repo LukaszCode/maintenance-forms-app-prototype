@@ -1,5 +1,5 @@
 import { info } from "console";
-import { db } from "../data-layer/sqlite.js";
+import { db } from "../data-layer/db/sqlite.js";
 import { InspectionForm } from "../libraries/InspectionForm.js";
 import type { SubcheckInput, ValueType } from "../libraries/InspectionForm.js";
 
