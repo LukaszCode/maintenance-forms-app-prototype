@@ -546,7 +546,6 @@ app.post("/register", async (req, res) => {
     const username = email.split("@")[0];
 
     const passwordHash = await bcrypt.hash(password, 10);
-
     const info = db.prepare(`
       INSERT INTO users (username, full_name, password_hash, role, email)
       VALUES (?, ?, ?, 'Engineer', ?)
