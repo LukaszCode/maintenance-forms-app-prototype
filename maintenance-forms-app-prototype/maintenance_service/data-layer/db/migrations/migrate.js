@@ -34,6 +34,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS item_types (
     item_type_id INTEGER PRIMARY KEY,
     item_type_label TEXT NOT NULL UNIQUE
+    item_category TEXT NOT NULL CHECK (item_category IN ('Facility', 'Machine Safety'))
   );
 
   -- ITEMS

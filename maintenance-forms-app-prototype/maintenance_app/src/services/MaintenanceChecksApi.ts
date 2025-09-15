@@ -233,6 +233,7 @@ export class MaintenanceChecksApi {
     return fetch(`${BASE_URL}/item-types${q}`).then(r => r.json());
   }
 
+
   /**
    * Retrieve subcheck templates based on item type ID.
    * @param itemTypeId - The ID of the item type to filter templates.

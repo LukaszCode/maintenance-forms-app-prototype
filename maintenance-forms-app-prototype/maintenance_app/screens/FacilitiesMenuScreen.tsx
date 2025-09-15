@@ -18,7 +18,7 @@ const FacilitiesMenuScreen: React.FC<Props> = ({ navigation, route }) => {
   const [facilityChecks, setFacilityChecks] = React.useState<string[]>([]);
 
   useEffect(() => {
-    const fetchFacilityChecks = async () =>{
+    const fetchFacilityChecks = async () => {
       try {
         const res = await api.itemTypes("Facility");
         const labels = res.data?.map((types: { label: any }) => types.label) ?? [];
