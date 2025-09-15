@@ -544,6 +544,7 @@ app.post("/register", async (req, res) => {
 
   try {
     const username = email.split("@")[0];
+
     const passwordHash = await bcrypt.hash(password, 10);
 
     const info = db.prepare(`
