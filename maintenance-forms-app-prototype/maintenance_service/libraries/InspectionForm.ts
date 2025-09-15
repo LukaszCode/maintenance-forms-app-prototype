@@ -12,6 +12,7 @@
  * @param {Subcheck[]} subchecks - An array of subchecks associated with the inspection.
  * @param {string} comment - Additional comments related to the inspection.
  * @param {string} engineerName - The name of the engineer conducting the inspection.
+ * 
  *
  * @returns {InspectionForm} - The created inspection form.
  *
@@ -44,6 +45,8 @@ export class InspectionForm {
   subchecks!: SubcheckInput[];
   comment?: string | null;
   engineerName?: string;
+  engineerEmail?: string;
+  engineerPassword?: "user_input_password"; // placeholder to indicate password should be provided by user
 
   constructor(params: {
     inspectionId?: number;

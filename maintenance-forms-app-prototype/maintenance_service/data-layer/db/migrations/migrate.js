@@ -7,11 +7,11 @@ db.exec(`
   -- USERS
   CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY,
-    username TEXT NOT NULL UNIQUE,
+    username TEXT NOT NULL,
     full_name TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('Engineer','Manager','Admin')),
-    email TEXT NOT NULL
+    email TEXT NOT NULL UNIQUE
   );
 
   -- SITES

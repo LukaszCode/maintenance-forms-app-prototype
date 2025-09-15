@@ -2,8 +2,9 @@ import { info } from "console";
 import { db } from "../data-layer/db/sqlite.js";
 import { InspectionForm } from "../libraries/InspectionForm.js";
 import type { SubcheckInput, ValueType } from "../libraries/InspectionForm.js";
+import bcrypt from "bcrypt";
 
-/**
+/**npx 
  * InspectionManager
  *
  * DB-backed service for creating and reading inspections.
@@ -28,39 +29,6 @@ export class InspectionManager {
 
   createInspection(form: InspectionForm): InspectionForm {
     this.assertBasicForm(form);
-
-    /**
-     * Find the engineer ID from the form data or auto-generate the user ID.
-     * This can be either the engineer's name (string) or their ID (number).
-     * @param {InspectionForm} form - The inspection form data.
-     * @returns {number} - The resolved engineer ID.
-     */
-    const resolveEngineerId = (form: InspectionForm): number | undefined => {
-      // If engineerId is already a number, return it
-      if (Number.isInteger(form.engineerId)) {
-        return form.engineerId;
-      }
-      // Otherwise, look up the engineer by name
-      const row = db
-        .prepare(`SELECT user_id FROM users WHERE username = ?`)
-        .get(form.engineerId) as { user_id: number } | undefined;
-      return row?.user_id;
-    };
-
-    // Resolve the engineer ID
-    const engineerId = resolveEngineerId(form);
-    if (!Number.isInteger(engineerId)) {
-      throw new Error("Engineer ID (or a known engineer name) is required.");
-    }
-
-    /**
-     * Run the database transaction for inserting the inspection and its subchecks.
-     * This ensures that all inserts are dynamic and can be rolled back if any fail.
-     * @param {InspectionForm} formData - The inspection form data.
-     * @returns {InspectionForm} - The saved inspection reloaded from the database.
-     * @throws {Error} - If any part of the transaction fails.
-     *
-     */
 
     const runTransaction = db.transaction((formData: InspectionForm) => {
       // 1) Find the item type 
@@ -369,38 +337,47 @@ export class InspectionManager {
     }
   }
 
-  /** Resolve engineer id either from form.engineerId or by engineerName lookup.
+  /** Resolve engineer id either from form.engineerId or by engineer email lookup.
    * If engineerName not found, auto-create a new user.
    */
   private resolveEngineerId(form: InspectionForm): number | undefined {
-    if (Number.isInteger((form as any).engineerId)) {
-      return (form as any).engineerId as number;
+    if (Number.isInteger(form.engineerId)) {
+      return form.engineerId!;
     }
-    if (form.engineerName && form.engineerName.trim()) {
-      const name = form.engineerName.trim();
-      const found = db
-        .prepare(`SELECT user_id FROM users WHERE full_name=?`)
-        .get(name) as { user_id: number } | undefined;
-      if (found) {
-        return found.user_id;
-      }
+    const email = form.engineerEmail?.trim();
+    if (!email) {
+      throw new Error("engineerEmail is required.");
+    }
+    // Lookup engineer by email
+    const existing = db
+      .prepare(`
+        SELECT user_id FROM users WHERE email = ?
+      `)
+      .get(email) as { user_id: number } | undefined;
 
-      // Auto-create a new engineer user
-      const info = db
-        .prepare(
-          `
-        INSERT INTO users(username, full_name, role, email)
-        VALUES(?,?, 'Engineer', ?)
-      `
-        )
-        .run(
-          name.toLowerCase().replace(/\s+/g, "_"),
-          name,
-          `${name.toLowerCase().replace(/\s+/g, ".")}@example.com`
-        );
-      return Number(info.lastInsertRowid);
+    if (existing) {
+      return existing.user_id;
     }
-    return undefined;
+
+    // Auto-create a new engineer user
+    const name = form.engineerName?.trim() || email.split("@")[0];
+    const username = name.toLowerCase().replace(/\s+/g, ".");
+
+    const rawPassword = form.engineerPassword?.trim() 
+    if(!rawPassword) {
+      throw new Error("Engineer password is required to create new user.");
+    }
+
+    const hashedPassword = bcrypt.hashSync(rawPassword, 10);
+
+    const info = db
+      .prepare(`
+        INSERT INTO users (username, full_name, role, password_hash, email)
+        VALUES (?, ?, ?, ?, ?)
+      `)
+      .run(username, name, "engineer", hashedPassword, email);
+
+    return Number(info.lastInsertRowid);
   }
 
   /** 'pass' if all subchecks are 'pass' or 'na', otherwise 'fail'. */

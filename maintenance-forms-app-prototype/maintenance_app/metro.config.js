@@ -16,7 +16,5 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, "node_modules"),
 ];
 
-// Prevent accidental duplicate module resolution
-config.resolver.disableHierarchicalLookup = true;
 
 module.exports = config;

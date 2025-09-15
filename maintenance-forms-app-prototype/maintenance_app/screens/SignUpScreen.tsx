@@ -29,7 +29,9 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
   }
   try {
     const fullName = `${firstName.trim()} ${surname.trim()}`;
-    const res = await api.registerUser(fullName, password);
+    const username = `${firstName.trim().toLowerCase()}.${surname.trim().toLowerCase()}`; // Auto-generated
+
+    const res = await api.registerUser(email.trim(), password.trim(), fullName);
 
     if (res?.status !== "success") {
       alert(res?.message || "Registration failed.");

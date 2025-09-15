@@ -12,6 +12,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import { InspectionManager } from "./libraries/InspectionManager.js";
 import { db } from "./data-layer/db/sqlite.js";
+import bcrypt from "bcrypt";
 
 const app = express();
 
@@ -521,6 +522,42 @@ app.get("/subcheck-templates/by-label", (request, response) => {
   });
 });
 
+/**
+ * Register a new user (engineer).
+ * This endpoint allows the registration of a new user with the role of "Engineer".
+ * It requires an email, password, and full name.
+ * If the email is already registered, it returns a conflict error.
+ * Passwords are hashed before storing in the database for security.
+ * @param {Object} request - The HTTP request object.
+ * @returns {Object} The HTTP response with the created user data or an error message.
+ */
+app.post("/register", async (req, res) => {
+  const { email, password, fullName } = req.body;
+  console.log("➡️ /register called with:", req.body);
+
+  if (!email || !password || !fullName) {
+    return res.status(400).json({ status: "error", message: "Missing required fields" });
+  }
+
+  try {
+    const username = email.split("@")[0];
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const info = db.prepare(`
+      INSERT INTO users (username, full_name, password_hash, role, email)
+      VALUES (?, ?, ?, 'Engineer', ?)
+    `).run(username, fullName, passwordHash, email);
+
+    res.status(201).json({ status: "success", userId: info.lastInsertRowid });
+  } catch (err: any) {
+    if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return res.status(409).json({ status: "error", message: "Email already registered" });
+    }
+
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
+
 
 /**
  * Retrieve all sites.
@@ -743,6 +780,6 @@ app.get("/subcheck-templates", (request, response) => {
 app.get("/health", (_request, response) => response.json({ ok: true }));
 
 // Start the server
-app.listen(3001, () => {
-  console.log("Server is running on http://localhost:3001");
+app.listen(3001, '0.0.0.0', () => {
+  console.log("Server is running on http://192.168.0.6:3001");
 });
