@@ -9,6 +9,8 @@
  * author: Lukasz Brzozowski
  */
 
+import { BASE_URL } from "src/config/api";
+
 export class MaintenanceChecksApi {
   constructor(private baseUrl: string, private token?: string) {}
 
@@ -19,48 +21,59 @@ export class MaintenanceChecksApi {
     };
   }
 
+  /**
+   * Sets the authentication token for the API client.
+   * @param token - The authentication token.
+   */
+  setToken(token: string) {
+  this.token = token;
+}
+
+
   // -- User management --
 
   /**
    * Register a new user with the API.
-   * @param username - The username of the new user.
+   * @param email - The email of the new user.
    * @param password - The password of the new user.
+   * @param fullName - The full name of the new user.
    * 
    * @returns A promise that resolves to the created user.
    */
-  registerUser(username: string, password: string) {
-    return fetch(`${this.baseUrl}/register`, {
+  registerUser(email: string, password: string, fullName: string) {
+    console.log(BASE_URL);
+    return fetch(`${BASE_URL}/register`, {
       method: "POST",
       headers: this.headers(),
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ email, password, fullName }),
     }).then(r => r.json());
-
   }
 
   /**
    * Login an existing user with the API.
-   * @param username - The username of the user.
+   * @param email - The email of the user.
    * @param password - The password of the user.
    * @returns A promise that resolves to the login response.
    */
-  async login(username: string, password: string) {
-    const res = await fetch(`${this.baseUrl}/login`, {
-      method: "POST",
-      headers: this.headers(),
-      body: JSON.stringify({ username, password }),
-    });
-    if (!res.ok) {
-      throw new Error(`Login failed: ${res.statusText}`);
-    }
-    return res.json() as Promise<{ token: string; fullName: string }>;
-  }
+  async login(email: string, password: string) {
+  const res = await fetch(`${BASE_URL}/login`, {
+    method: "POST",
+    headers: this.headers(),
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) throw new Error(`Login failed: ${res.statusText}`);
+  const data = await res.json();
+  this.token = data.token; // <- store token here
+  return data;
+}
+
 
   /**
    * Logout the current user.
    * @returns A promise that resolves when the logout is successful.
    */
   async logout() {
-    const res = await fetch(`${this.baseUrl}/logout`, {
+    const res = await fetch(`${BASE_URL}/logout`, {
       method: "POST",
       headers: this.headers(),
     });
@@ -78,7 +91,7 @@ export class MaintenanceChecksApi {
    * @returns A promise that resolves to the created inspection.
    */
   createInspection(inspectionData:any) {
-    return fetch(`${this.baseUrl}/inspections`, {
+    return fetch(`${BASE_URL}/inspections`, {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify(inspectionData),
@@ -91,7 +104,7 @@ export class MaintenanceChecksApi {
    * @returns A promise that resolves to the inspection data.
    */
   getInspection(id:number) {
-    return fetch(`${this.baseUrl}/inspections/${id}`)
+    return fetch(`${BASE_URL}/inspections/${id}`)
     .then(r => r.json());
   }
 
@@ -101,7 +114,7 @@ export class MaintenanceChecksApi {
    * @returns A promise that resolves to the created site.
    */
   createSite(siteName: string, buildingNumber?: string, siteAddress?: string) {
-    return fetch(`${this.baseUrl}/sites`, {
+    return fetch(`${BASE_URL}/sites`, {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify({ siteName, buildingNumber, siteAddress }),
@@ -117,7 +130,7 @@ export class MaintenanceChecksApi {
    */
 
   ensureSite(siteName:string, buildingNumber?:string, siteAddress?:string) {
-    return fetch(`${this.baseUrl}/sites/ensure`, {
+    return fetch(`${BASE_URL}/sites/ensure`, {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify({ siteName, buildingNumber, siteAddress }),
@@ -130,7 +143,7 @@ export class MaintenanceChecksApi {
    * @returns A promise that resolves to the list of sites.
    */
   sites() {
-     return fetch(`${this.baseUrl}/sites`).then(r => r.json()); 
+     return fetch(`${BASE_URL}/sites`).then(r => r.json()); 
     }
 
   /**
@@ -143,7 +156,7 @@ export class MaintenanceChecksApi {
    */
 
   createZone (siteId: number, zoneName: string, zoneDescription?: string) {
-    return fetch(`${this.baseUrl}/zones`, {
+    return fetch(`${BASE_URL}/zones`, {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify({ siteId, zoneName, zoneDescription}),
@@ -158,7 +171,7 @@ export class MaintenanceChecksApi {
    * @returns A promise that resolves to the existing or created zone.
    */
   ensureZone(siteId: number, zoneName: string, zoneDescription?: string) {
-    return fetch(`${this.baseUrl}/zones/ensure`, {
+    return fetch(`${BASE_URL}/zones/ensure`, {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify({ siteId, zoneName, zoneDescription }),
@@ -172,7 +185,7 @@ export class MaintenanceChecksApi {
    */
   zones(siteId?: number) {
     const q = siteId ? `?siteId=${siteId}` : "";
-    return fetch(`${this.baseUrl}/zones${q}`).then(r => r.json());
+    return fetch(`${BASE_URL}/zones${q}`).then(r => r.json());
   }
 
 /**
@@ -185,7 +198,7 @@ export class MaintenanceChecksApi {
    */
 
   createItem(zoneId: number, itemType: string, itemName: string, itemDescription?: string) {
-    return fetch(`${this.baseUrl}/items`, {
+    return fetch(`${BASE_URL}/items`, {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify({ zoneId, itemType, itemName, itemDescription }),
@@ -207,7 +220,7 @@ export class MaintenanceChecksApi {
       qs.push(`itemType=${encodeURIComponent(itemType)}`);
     }
     const q = qs.length ? `?${qs.join("&")}` : "";
-    return fetch(`${this.baseUrl}/items${q}`).then(r => r.json());
+    return fetch(`${BASE_URL}/items${q}`).then(r => r.json());
   }
 
   /**
@@ -217,8 +230,9 @@ export class MaintenanceChecksApi {
    */
   itemTypes(category?: string) {
     const q = category ? `?category=${encodeURIComponent(category)}` : "";
-    return fetch(`${this.baseUrl}/item-types${q}`).then(r => r.json());
+    return fetch(`${BASE_URL}/item-types${q}`).then(r => r.json());
   }
+
 
   /**
    * Retrieve subcheck templates based on item type ID.
@@ -226,7 +240,7 @@ export class MaintenanceChecksApi {
    * @returns A promise that resolves to the list of subcheck templates.
    */
   templatesByTypeId(itemTypeId:number) {
-    return fetch(`${this.baseUrl}/subcheck-templates?itemTypeId=${itemTypeId}`)
+    return fetch(`${BASE_URL}/subcheck-templates?itemTypeId=${itemTypeId}`)
     .then(r => r.json());
   }
 
@@ -236,7 +250,7 @@ export class MaintenanceChecksApi {
    * @returns A promise that resolves to the list of subcheck templates.
    */
   templatesByLabel(itemTypeLabel:string) {
-    return fetch(`${this.baseUrl}/subcheck-templates/by-label?itemType=${encodeURIComponent(itemTypeLabel)}`)
+    return fetch(`${BASE_URL}/subcheck-templates/by-label?itemType=${encodeURIComponent(itemTypeLabel)}`)
     .then(r => r.json());
   }
   

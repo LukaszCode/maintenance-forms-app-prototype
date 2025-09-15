@@ -1,5 +1,4 @@
-import { db } from "./data-layer/db/sqlite.js";
-
+import { db } from "../sqlite.js";
 // ----- SCHEMA -----
 db.exec(`
   PRAGMA foreign_keys = ON;
@@ -113,5 +112,4 @@ db.exec(`
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
   );
 `);
-
 console.log("Database schema created.");

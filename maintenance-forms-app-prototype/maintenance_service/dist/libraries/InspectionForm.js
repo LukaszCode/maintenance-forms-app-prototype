@@ -13,6 +13,7 @@
  * @param {string} comment - Additional comments related to the inspection.
  * @param {string} engineerName - The name of the engineer conducting the inspection.
  *
+ *
  * @returns {InspectionForm} - The created inspection form.
  *
  * author: Lukasz Brzozowski

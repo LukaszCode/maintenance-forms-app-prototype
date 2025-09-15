@@ -7,6 +7,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { globalStyles } from "../styles/globalStyles";
 import { RootStackParamList } from "../App";
 import AppHeader from "../components/AppHeader";
+import { api } from "../src/services/apiClient";
 
 type Props = NativeStackScreenProps<RootStackParamList, "SignUp">;
 
@@ -16,14 +17,35 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleCreateAccount = () => {
-    if (!firstName || !surname || !email || !password) {
-      alert("Please fill in all fields.");
+
+  /**
+   * Handles user registration by sending data to the API.
+   * @returns A promise that resolves when the registration is complete.
+   */
+  const handleCreateAccount = async () => {
+  if (!firstName || !surname || !email || !password) {
+    alert("Please fill in all fields.");
+    return;
+  }
+  try {
+    const fullName = `${firstName.trim()} ${surname.trim()}`;
+    const username = `${firstName.trim().toLowerCase()}.${surname.trim().toLowerCase()}`; // Auto-generated
+
+    const res = await api.registerUser(email.trim(), password.trim(), fullName);
+
+    if (res?.status !== "success") {
+      alert(res?.message || "Registration failed.");
       return;
     }
-    alert(`Account created for ${firstName} ${surname}`);
+
+    alert("Account created successfully. Please log in.");
     navigation.navigate("Login");
-  };
+  } catch (err: any) {
+    alert(`Error: ${err.message || "Registration failed."}`);
+  }
+};
+
+
 
   return (
     <View style={globalStyles.container}>
@@ -64,7 +86,7 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
           style={globalStyles.input}
           value={email}
           onChangeText={setEmail}
-          placeholder="email@company.co.uk"
+          placeholder="Email"
           keyboardType="email-address"
         />
 

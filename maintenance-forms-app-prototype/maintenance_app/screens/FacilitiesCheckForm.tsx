@@ -33,7 +33,7 @@ const FacilitiesCheckForm: React.FC<Props> = ({ navigation, route }) => {
   const [dateString, setDateString] = useState(new Date().toISOString().slice(0,10));
   const [siteName, setSiteName] = useState("");
   const [zoneName, setZoneName] = useState("");
-  const [itemTypeLabel, setItemTypeLabel] = useState("Emergency Lighting");
+  const [itemTypeLabel, setItemTypeLabel] = useState("");
   const [itemName, setItemName] = useState("");
   const [comment, setComment] = useState("");
   const [newCheckName, setNewCheckName] = useState("");
@@ -242,6 +242,45 @@ const addSubcheck = () => {
 
   const onSave = async () => {
     try {
+      //1. Ensure the site exists (create if needed)
+      const site = await ensureSiteExists();
+      if (!site) {
+        throw new Error("Site name is required.");
+      }
+
+      //2. Ensure the zone exists (create if needed)
+      let zone = zones.find(z => z.name === zoneName.trim());
+      if (!zone) {
+        const res = await api.createZone(site.id, zoneName.trim());
+        if (res.status !== "success") {
+          throw new Error(res.message ?? "Failed to create zone.");
+        }
+        const createdZone = { id: res.data.id, name: res.data.name };
+        setZones(prev => [...prev, createdZone].sort((a,b) => a.name.localeCompare(b.name)));
+        zone = createdZone;
+      }
+      //3. Ensure the item exists (create if needed)
+      const item = items.find(i => 
+        i.name.toLowerCase() === itemName.trim().toLowerCase() &&
+        i.zone_id === zone!.id &&
+        i.item_type === itemTypeLabel
+      );
+      if (!item) {
+        const res = await api.createItem(zone.id, itemTypeLabel, itemName.trim());
+        if (res.status !== "success") {
+          throw new Error(res.message ?? "Failed to create item.");
+        }
+        const createdItem = { 
+          id: res.data.id, 
+          name: res.data.name, 
+          item_type: itemTypeLabel,
+          zone_id: zone.id, 
+        };
+
+        setItems(prev => [...prev, createdItem]);
+      }
+
+      //4. Validate and build the payload
       const { payload } = validateAndBuildFormPayload({
         dateString,
         engineerName,
@@ -270,7 +309,12 @@ const addSubcheck = () => {
 
   return (
     <View style={globalStyles.container}>
-      <AppHeader engineerName={engineerName} onSignOut={() => navigation.navigate("Login")} />
+      {/* Shared Header */}
+      <AppHeader
+        engineerName={engineerName}
+        onSignOut={() => navigation.navigate("Login")}
+      />
+
 
       <TouchableOpacity
         style={[globalStyles.button, globalStyles.secondaryButton, globalStyles.backButton]}
@@ -281,7 +325,7 @@ const addSubcheck = () => {
 
       <ScrollView contentContainerStyle={{ paddingVertical: 10 }}>
         <View style={globalStyles.card}>
-          <Text style={globalStyles.cardTitle}>Facility Inspection</Text>
+          <Text style={globalStyles.cardTitle}>Facility Check</Text>
 
           {/* Date */}
           <View style={globalStyles.formRow}>

@@ -4,6 +4,10 @@
  * More details: https://expressjs.com/en/starter/installing.html
  *               https://expressjs.com/en/guide/routing.html
  *               TM352 - Block 2 - Express.js and RESTful APIs
+ * 
+ * This file is part of the Maintenance Forms App backend service.
+ * 
+ * author: Lukasz Brzozowski
  *
  */
 
@@ -12,6 +16,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import { InspectionManager } from "./libraries/InspectionManager.js";
 import { db } from "./data-layer/db/sqlite.js";
+import bcrypt from "bcrypt";
 
 const app = express();
 
@@ -521,6 +526,93 @@ app.get("/subcheck-templates/by-label", (request, response) => {
   });
 });
 
+/**
+ * Register a new user (engineer).
+ * This endpoint allows the registration of a new user with the role of "Engineer".
+ * It requires an email, password, and full name.
+ * If the email is already registered, it returns a conflict error.
+ * Passwords are hashed before storing in the database for security.
+ * @param {Object} request - The HTTP request object.
+ * @returns {Object} The HTTP response with the created user data or an error message.
+ */
+app.post("/register", async (req, res) => {
+  const { email, password, fullName } = req.body;
+
+  if (!email || !password || !fullName) {
+    return res.status(400).json({ status: "error", message: "Missing required fields" });
+  }
+
+  try {
+    const username = email.split("@")[0];
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const info = db.prepare(`
+      INSERT INTO users (username, full_name, password_hash, role, email)
+      VALUES (?, ?, ?, 'Engineer', ?)
+    `).run(username, fullName, passwordHash, email);
+
+    res.status(201).json({ status: "success", userId: info.lastInsertRowid });
+  } catch (err: any) {
+    if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return res.status(409).json({ status: "error", message: "Email already registered" });
+    }
+
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
+
+/**
+ * User login endpoint.
+ * This endpoint allows users to log in by providing their email and password.
+ * It verifies the credentials and returns a mock token and user details upon successful authentication.
+ * @param {Object} req - The HTTP request object.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Object} The HTTP response with the login status, token, and user details or an error message.
+ * @throws {Error} If the login process fails due to server issues.
+ * @returns {Object} The HTTP response with the login status, token, and user details or an error message.
+*/
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ status: "error", message: "Missing email or password" });
+  }
+
+  try {
+    const user = db
+      .prepare(`SELECT user_id, email, full_name, password_hash FROM users WHERE email = ?`)
+      .get(email) as {
+        user_id: number;
+        email: string;
+        full_name: string;
+        password_hash: string;
+      } | undefined;
+
+    if (!user) {
+      return res.status(401).json({ status: "error", message: "Invalid credentials" });
+    }
+
+    const match = await bcrypt.compare(password, user.password_hash);
+
+    if (!match) {
+      return res.status(401).json({ status: "error", message: "Invalid credentials" });
+    }
+
+    // Simulate a JWT/token generation (in a real app I will use a library like jsonwebtoken)
+    const fakeToken = `mock-token-${user.user_id}`;
+
+    res.json({
+      status: "success",
+      token: fakeToken,
+      userId: user.user_id,
+      fullName: user.full_name,
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ status: "error", message: "Login failed" });
+  }
+});
+
 
 /**
  * Retrieve all sites.
@@ -594,6 +686,39 @@ app.get("/inspections/:id", (request, response) => {
   }
   response.json({ status: "success", data: singleInspection });
 });
+
+/**
+ * Retrieve all inspections (summary view).
+ *
+ * @param {Object} request - The HTTP request object.
+ * @param {Object} response - The HTTP response object.
+ * @returns {Object} The HTTP response with the list of inspection summaries.
+ */
+app.get("/inspections", (_request, response) => {
+  const rows = db
+    .prepare(`
+      SELECT 
+        i.inspection_id AS id,
+        i.inspection_date AS date,
+        i.category,
+        i.item_id,
+        it.item_name,
+        z.zone_label AS zoneName,
+        s.site_name AS siteName,
+        u.full_name AS engineerName,
+        i.overall_result AS result
+      FROM inspections i
+      JOIN items it ON i.item_id = it.item_id
+      JOIN zones z ON it.zone_id = z.zone_id
+      JOIN sites s ON z.site_id = s.site_id
+      JOIN users u ON i.engineer_id = u.user_id
+      ORDER BY i.inspection_date DESC, i.inspection_id DESC
+    `)
+    .all();
+
+  response.json({ status: "success", data: rows });
+});
+
 
 /**
  * Read item types by inspection category (Facilities or Machine Safety)
@@ -710,7 +835,6 @@ app.get("/subcheck-templates", (request, response) => {
 app.get("/health", (_request, response) => response.json({ ok: true }));
 
 // Start the server
-app.listen(3001, () => {
-  console.log("Server is running on http://localhost:3001");
+app.listen(3001, '0.0.0.0', () => {
+  console.log("Server is running on http://192.168.0.6:3001");
 });
-

@@ -7,27 +7,41 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
 import { globalStyles } from "../styles/globalStyles";
 import AppHeader from "../components/AppHeader";
+import { api } from "../src/services/apiClient";
+import { useEffect } from "react";
 
 type Props = NativeStackScreenProps<RootStackParamList, "MachineSafetyMenu">;
 
 const MachineSafetyMenuScreen: React.FC<Props> = ({ navigation, route }) => {
   const { engineerName } = route.params;
 
-  // List of machine safety checks
-  const machineSafetyChecks = [
-    "Print Machine",
-    "Die-Cut Machine",
-    "Bespoke Finishing Machine",
-    "Finishing Machine",
-  ];
+  // List of facility checks dynamically fetched from the API
+  const [machineSafetyChecks, setMachineSafetyChecks] = React.useState<string[]>([]);
 
-  const handleCheckPress = (check: string) => {
-    if (check === "Print Machine") {
-      alert("Navigate to Print Machine Form");
-      // navigation.navigate("PrintMachine", { engineerName });
-    } else {
-      alert(`${check} form is not implemented yet.`);
-    }
+  useEffect(() => {
+    const fetchMachineSafetyChecks = async () =>{
+      try {
+        const res = await api.itemTypes("Machine Safety");
+        const labels = res.data?.map((types: { label: any }) => types.label) ?? [];
+        setMachineSafetyChecks(labels);
+      } catch (error) {
+        console.error("Failed to fetch machine safety checks:", error);
+        setMachineSafetyChecks([]);
+      }
+    };
+
+    fetchMachineSafetyChecks();
+  }, []);
+
+  /**
+   * Opens the form corresponding to the selected machine safety check.
+   * @param check - The machine safety check type to open
+   * Currently, this function just shows an alert.
+   * In a complete implementation, it would navigate to the corresponding form screen.
+   */
+  
+  const openForm = (check: string) => {
+    alert(`Navigate to ${check} Form`);
   };
 
   return (
@@ -72,7 +86,7 @@ const MachineSafetyMenuScreen: React.FC<Props> = ({ navigation, route }) => {
             <TouchableOpacity
               key={index}
               style={[globalStyles.button, globalStyles.primaryButton]}
-              onPress={() => handleCheckPress(check)}
+              onPress={() => openForm(check)}
             >
               <Text style={globalStyles.primaryButtonText}>{check}</Text>
             </TouchableOpacity>
