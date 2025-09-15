@@ -5,9 +5,10 @@
  * 
  * This file is used for user authentication and navigation to the main menu upon successful login.
  * It provides a simple and user-friendly interface for users to enter their credentials.
+ * It also includes navigation to the Sign Up screen for new users.
  * 
- * Changes: Added error handling for login failures and input validation to ensure both fields are filled.
- * This improves user experience by providing feedback on incorrect login attempts.
+ * author: Lukasz Brzozowski
+ * 
  */
 
 import React, { useState } from "react";
@@ -22,7 +23,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const engineerName = "Guest"; // Default name for header when not logged in
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   /**
@@ -32,13 +33,13 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
    */
   
   const handleLogin = async () => {
-    if (!username.trim() || !password.trim()) {
-      alert("Please enter both username and password.");
+    if (!email.trim() || !password.trim()) {
+      alert("Please enter both email and password.");
       return;
     }
 
     try {
-      const res = await api.login(username, password);
+      const res = await api.login(email, password);
       api.setToken(res.token); // <-- store token in API client
 
       navigation.navigate("MainMenu", {
@@ -62,12 +63,12 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       <View style={globalStyles.card}>
         <Text style={globalStyles.cardTitle}>Log in</Text>
 
-        <Text>Username</Text>
+        <Text>Email</Text>
         <TextInput
           style={globalStyles.input}
-          value={username}
-          onChangeText={setUsername}
-          placeholder="Enter username"
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Enter email"
         />
 
         <Text>Password</Text>

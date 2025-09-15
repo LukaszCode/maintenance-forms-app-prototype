@@ -5,6 +5,10 @@
  *               https://expressjs.com/en/guide/routing.html
  *               TM352 - Block 2 - Express.js and RESTful APIs
  *
+ * This file is part of the Maintenance Forms App backend service.
+ *
+ * author: Lukasz Brzozowski
+ *
  */
 import express from "express";
 import cors from "cors";
@@ -476,7 +480,6 @@ app.get("/subcheck-templates/by-label", (request, response) => {
  */
 app.post("/register", async (req, res) => {
     const { email, password, fullName } = req.body;
-    console.log("➡️ /register called with:", req.body);
     if (!email || !password || !fullName) {
         return res.status(400).json({ status: "error", message: "Missing required fields" });
     }
@@ -494,6 +497,46 @@ app.post("/register", async (req, res) => {
             return res.status(409).json({ status: "error", message: "Email already registered" });
         }
         res.status(500).json({ status: "error", message: err.message });
+    }
+});
+/**
+ * User login endpoint.
+ * This endpoint allows users to log in by providing their email and password.
+ * It verifies the credentials and returns a mock token and user details upon successful authentication.
+ * @param {Object} req - The HTTP request object.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Object} The HTTP response with the login status, token, and user details or an error message.
+ * @throws {Error} If the login process fails due to server issues.
+ * @returns {Object} The HTTP response with the login status, token, and user details or an error message.
+*/
+app.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ status: "error", message: "Missing email or password" });
+    }
+    try {
+        const user = db
+            .prepare(`SELECT user_id, email, full_name, password_hash FROM users WHERE email = ?`)
+            .get(email);
+        if (!user) {
+            return res.status(401).json({ status: "error", message: "Invalid credentials" });
+        }
+        const match = await bcrypt.compare(password, user.password_hash);
+        if (!match) {
+            return res.status(401).json({ status: "error", message: "Invalid credentials" });
+        }
+        // Simulate a JWT/token generation (in a real app I will use a library like jsonwebtoken)
+        const fakeToken = `mock-token-${user.user_id}`;
+        res.json({
+            status: "success",
+            token: fakeToken,
+            userId: user.user_id,
+            fullName: user.full_name,
+        });
+    }
+    catch (err) {
+        console.error("Login error:", err);
+        res.status(500).json({ status: "error", message: "Login failed" });
     }
 });
 /**

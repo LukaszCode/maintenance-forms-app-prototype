@@ -1,3 +1,13 @@
+/**
+ * InspectionManager.ts
+ * This file contains the InspectionManager class, which is responsible for managing inspections.
+ * It provides methods to create and retrieve inspections from the database.
+ * It ensures data integrity and handles relationships between inspections, subchecks, and templates.
+ * It uses transactions to ensure that all related data is inserted correctly.
+ * It also includes validation to ensure that the data being inserted is valid.
+ *
+ * author: Lukasz Brzozowski
+ */
 import { db } from "../data-layer/db/sqlite.js";
 import { InspectionForm } from "../libraries/InspectionForm.js";
 import bcrypt from "bcrypt";
