@@ -74,6 +74,16 @@ This prototype supports:
 
 10. Scan the QR code with Expo Go or run in an emulator
 
+### API Base URL configuration
+
+The React Native frontend reads its backend base URL from the Expo configuration (`extra.apiBaseUrl`). A local fallback of `http://192.168.0.6:3001` is defined in `maintenance_app/app.json`, but you should override it per environment by setting the `EXPO_PUBLIC_API_BASE_URL` environment variable before building or starting the app.
+
+- **Expo Go / local development** – create an env file such as `.env.local` that contains `EXPO_PUBLIC_API_BASE_URL=http://<your-local-ip>:3001` and run `npx expo start --env-file .env.local`. You can also prefix the command directly, for example `EXPO_PUBLIC_API_BASE_URL=http://192.168.0.6:3001 npx expo start`.
+- **EAS builds** – define the variable in `eas.json` under the `env` key for each build profile or create a secret with `eas secret:create --name EXPO_PUBLIC_API_BASE_URL --value https://api.example.com --scope project` so that the value is injected during the build.
+- **Production releases / CI** – ensure your build or update pipeline exports the variable before invoking Expo commands, e.g. `EXPO_PUBLIC_API_BASE_URL=https://api.example.com eas build --profile production` or by configuring the variable in your hosting provider's environment settings.
+
+If the default development host changes, update the fallback inside `maintenance_app/app.json` (and keep `maintenance_app/app.config.ts` aligned) so that contributors without custom environment variables can still run the project.
+
 ## Usage
 
 - Log in with your engineer account.
