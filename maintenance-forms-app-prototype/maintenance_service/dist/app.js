@@ -355,7 +355,7 @@ app.post("/items/ensure", (request, response) => {
     const info = db
         .prepare(`
       INSERT INTO items
-      (item_type, item_name, description, zone_id)
+      (item_type, item_name, item_description, zone_id)
       VALUES (?,?,?,?)`)
         .run(itemType, itemName, description, zoneId);
     response.json({
