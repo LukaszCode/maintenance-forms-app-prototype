@@ -2,6 +2,21 @@ import { db } from "../sqlite.ts";
 
 // ----- SCHEMA -----
 db.exec(`
+  PRAGMA foreign_keys = OFF;
+
+  DROP TABLE IF EXISTS attachments;
+  DROP TABLE IF EXISTS readings;
+  DROP TABLE IF EXISTS subcheck_results;
+  DROP TABLE IF EXISTS subchecks;
+  DROP TABLE IF EXISTS results;
+  DROP TABLE IF EXISTS inspections;
+  DROP TABLE IF EXISTS items;
+  DROP TABLE IF EXISTS subcheck_templates;
+  DROP TABLE IF EXISTS item_types;
+  DROP TABLE IF EXISTS zones;
+  DROP TABLE IF EXISTS sites;
+  DROP TABLE IF EXISTS users;
+
   PRAGMA foreign_keys = ON;
   
   -- USERS
@@ -10,7 +25,7 @@ db.exec(`
     username TEXT NOT NULL,
     full_name TEXT NOT NULL,
     password_hash TEXT NOT NULL,
-    role TEXT NOT NULL CHECK (role IN ('Engineer','Manager','Admin')),
+    role TEXT NOT NULL CHECK (role IN ('Engineer','Manager','Admin', 'engineer', 'manager', 'admin')),
     email TEXT NOT NULL UNIQUE
   );
 
@@ -27,14 +42,18 @@ db.exec(`
     zone_name TEXT NOT NULL,
     zone_description TEXT,
     site_id INTEGER NOT NULL,
-    FOREIGN KEY (site_id) REFERENCES sites(site_id) ON DELETE CASCADE
+    FOREIGN KEY (site_id) REFERENCES sites(site_id) ON DELETE CASCADE,
+    UNIQUE (zone_name, site_id)  -- Ensure unique zone names within a site
   );
 
   -- ITEM TYPES (Used in templates)
   CREATE TABLE IF NOT EXISTS item_types (
     item_type_id INTEGER PRIMARY KEY,
     item_type_label TEXT NOT NULL UNIQUE
-    item_category TEXT NOT NULL CHECK (item_category IN ('Facility', 'Machine Safety'))
+    inspection_category TEXT NOT NULL CHECK (inspection_category IN ('Facility', 'Machine Safety')),
+    item_type_label TEXT NOT NULL,
+    item_type_description TEXT,
+    UNIQUE (item_type_label)
   );
 
   -- ITEMS

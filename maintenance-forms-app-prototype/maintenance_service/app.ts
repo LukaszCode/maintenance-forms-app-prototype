@@ -134,13 +134,13 @@ app.post("/zones", (request, response) => {
       .status(400)
       .json({ 
         status: "error", 
-        message: "Zone label is required" 
+        message: "Zone name is required" 
       });
   }
 
   const info = db
     .prepare(`
-      INSERT OR IGNORE INTO zones (zone_label, zone_description, site_id)
+      INSERT OR IGNORE INTO zones (zone_name, zone_description, site_id)
       VALUES (?, ?, ?)`)
     .run(zoneName.trim(), zoneDescription ?? null, siteId);
 
@@ -150,12 +150,12 @@ app.post("/zones", (request, response) => {
         SELECT zone_id AS id
         FROM zones
         WHERE site_id=? 
-        AND zone_label=?`)
+        AND zone_name=?`)
       .get(siteId, zoneName.trim()) as { id: number } | undefined)?.id;
 
     response.json({
        status: "success", 
-       data: { id, zone_label: zoneName.trim(), siteId }
+       data: { id, zone_name: zoneName.trim(), siteId }
     });
 });
 
@@ -306,7 +306,7 @@ app.post("/zones/ensure", (request, response) => {
       SELECT zone_id AS id
       FROM zones
       WHERE site_id=?
-      AND zone_label=?`)
+      AND zone_name=?`)
     .get(siteId, zoneLabel) as { id: number } | undefined;
 
   if (exists) {
@@ -320,7 +320,7 @@ app.post("/zones/ensure", (request, response) => {
 
   const info = db
     .prepare(`
-      INSERT INTO zones (zone_label, zone_description, site_id)
+      INSERT INTO zones (zone_name, zone_description, site_id)
       VALUES (?,?,?)`)
     .run(zoneLabel, description, siteId);
 
@@ -397,7 +397,7 @@ app.post("/items/ensure", (request, response) => {
   const info = db
     .prepare(`
       INSERT INTO items
-      (item_type, item_name, description, zone_id)
+      (item_type, item_name, item_description, zone_id)
       VALUES (?,?,?,?)`)
     .run(itemType, itemName, description, zoneId);
 
@@ -650,12 +650,12 @@ app.get("/zones", (request, response) => {
     .prepare(`
       SELECT 
         zone_id AS id, 
-        zone_label AS name,
+        zone_name AS name,
         zone_description AS description, 
         site_id 
       FROM zones 
       WHERE (? IS NULL OR site_id=?) 
-      ORDER BY zone_label`)
+      ORDER BY zone_name`)
     .all(siteId, siteId);
   response.json({ 
     status: "success", 
@@ -700,10 +700,10 @@ app.get("/inspections", (_request, response) => {
       SELECT 
         i.inspection_id AS id,
         i.inspection_date AS date,
-        i.category,
+        i.inspection_category AS category,
         i.item_id,
         it.item_name,
-        z.zone_label AS zoneName,
+        z.zone_name AS zoneName,
         s.site_name AS siteName,
         u.full_name AS engineerName,
         i.overall_result AS result
@@ -786,7 +786,7 @@ app.get("/items", (request, response) => {
       WHERE (? IS NULL OR zone_id = ?)
       AND (? IS NULL OR item_type = ?)
       ORDER BY item_name`)
-    .all({zoneId, itemType});
+    .all(zoneId, zoneId, itemType, itemType);
 
   response.json({ status: "success", data: rows });
 });

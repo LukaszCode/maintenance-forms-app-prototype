@@ -11,7 +11,8 @@
       "@logic/*": ["business-logic/*"]
 
     },
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["../maintenance_service/**", "node_modules"]
