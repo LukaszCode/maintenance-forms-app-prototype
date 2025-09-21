@@ -2,20 +2,6 @@ import { db } from "../sqlite.ts";
 
 // ----- SCHEMA -----
 db.exec(`
-  PRAGMA foreign_keys = OFF;
-
-  DROP TABLE IF EXISTS attachments;
-  DROP TABLE IF EXISTS readings;
-  DROP TABLE IF EXISTS subcheck_results;
-  DROP TABLE IF EXISTS subchecks;
-  DROP TABLE IF EXISTS results;
-  DROP TABLE IF EXISTS inspections;
-  DROP TABLE IF EXISTS items;
-  DROP TABLE IF EXISTS subcheck_templates;
-  DROP TABLE IF EXISTS item_types;
-  DROP TABLE IF EXISTS zones;
-  DROP TABLE IF EXISTS sites;
-  DROP TABLE IF EXISTS users;
 
   PRAGMA foreign_keys = ON;
   
