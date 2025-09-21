@@ -700,7 +700,7 @@ app.get("/inspections", (_request, response) => {
       SELECT 
         i.inspection_id AS id,
         i.inspection_date AS date,
-        i.category,
+        i.inspection_category AS category,
         i.item_id,
         it.item_name,
         z.zone_name AS zoneName,
