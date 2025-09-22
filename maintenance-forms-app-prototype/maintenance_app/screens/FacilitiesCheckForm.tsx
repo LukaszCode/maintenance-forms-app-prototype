@@ -259,25 +259,29 @@ const addSubcheck = () => {
         setZones(prev => [...prev, createdZone].sort((a,b) => a.name.localeCompare(b.name)));
         zone = createdZone;
       }
+      if (!zone) {
+        throw new Error("Zone could not be determined.");
+      }
       //3. Ensure the item exists (create if needed)
-      const item = items.find(i => 
+      let item = items.find(i =>
         i.name.toLowerCase() === itemName.trim().toLowerCase() &&
-        i.zone_id === zone!.id &&
+        i.zone_id === zone.id &&
         i.item_type === itemTypeLabel
       );
+      let createdItem: ItemRow | null = null;
       if (!item) {
         const res = await api.createItem(zone.id, itemTypeLabel, itemName.trim());
         if (res.status !== "success") {
           throw new Error(res.message ?? "Failed to create item.");
         }
-        const createdItem = { 
+        const newItem: ItemRow = {
           id: res.data.id, 
           name: res.data.name, 
           item_type: itemTypeLabel,
           zone_id: zone.id, 
         };
 
-        setItems(prev => [...prev, createdItem]);
+        setItems(prev => [...prev, newItem]);
       }
 
       //4. Validate and build the payload
