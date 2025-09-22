@@ -145,17 +145,16 @@ app.post("/zones", (request, response) => {
     .run(zoneName.trim(), zoneDescription ?? null, siteId);
 
   const id = Number(info.lastInsertRowid) ||
-    (db
-      .prepare(`
+      db.prepare(`
         SELECT zone_id AS id
         FROM zones
         WHERE site_id=? 
         AND zone_name=?`)
-      .get(siteId, zoneName.trim()) as { id: number } | undefined)?.id;
-
+      .get(siteId, zoneName.trim())?.id;
+    const name = zoneName.trim();
     response.json({
-       status: "success", 
-       data: { id, zone_name: zoneName.trim(), siteId }
+       status: "success",
+       data: { id, name: zone_name: name, siteId }
     });
 });
 
@@ -187,14 +186,6 @@ app.post("/items", (request, response) => {
       .json({ 
         status: "error", 
         message: "Item type is required" 
-      });
-  }
-  if (!itemName?.trim()) {
-    return response
-      .status(400)
-      .json({ 
-        status: "error", 
-        message: "Item name is required" 
       });
   }
 
