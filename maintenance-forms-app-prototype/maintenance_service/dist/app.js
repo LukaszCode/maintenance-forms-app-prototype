@@ -137,7 +137,7 @@ app.post("/zones", (request, response) => {
             .get(siteId, zoneName.trim())?.id;
     response.json({
         status: "success",
-        data: { id, zone_name: zoneName.trim(), siteId }
+        data: { id, name, zone_name: name, siteId }
     });
 });
 /**
@@ -193,7 +193,7 @@ app.post("/items", (request, response) => {
             .get(zoneId, itemType.trim(), itemName.trim())?.id;
     response.json({
         status: "success",
-        data: { id, item_name: itemName.trim(), zone_id: zoneId, item_type: itemType.trim() }
+        data: { id, name, item_name: name, zone_id: zoneId, item_type: itemType.trim() }
     });
 });
 /**
@@ -620,7 +620,7 @@ app.get("/inspections", (_request, response) => {
       SELECT 
         i.inspection_id AS id,
         i.inspection_date AS date,
-        i.category,
+        i.inspection_category AS category,
         i.item_id,
         it.item_name,
         z.zone_name AS zoneName,

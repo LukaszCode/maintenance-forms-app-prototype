@@ -508,20 +508,20 @@ app.get("/subcheck-templates/by-label", (request, response) => {
   const rows = db
     .prepare(`
       SELECT 
-        sub_template_id AS id,
-        sub_template_label AS name,
-        sub_template_description AS description,
+        subcheck_template_id AS id,
+        subcheck_template_label AS name,
+        subcheck_template_description AS description,
         value_type AS valueType,
         pass_criteria AS passCriteria,
-        sub_template_mandatory AS mandatory
+        subcheck_template_mandatory AS mandatory
       FROM subcheck_templates
       WHERE item_type_id = ?
-      ORDER BY sub_template_id`)
+      ORDER BY subcheck_template_id`)
 
     .all(typeRow.item_type_id);
 
   response.json({ 
-    status: "success", 
+    status: "success",
     data: rows 
   });
 });
@@ -817,15 +817,15 @@ app.get("/subcheck-templates", (request, response) => {
   const rows = db
     .prepare(`
       SELECT 
-        sub_template_id AS id,
-        sub_template_label AS name,
-        sub_template_description AS description,
+        subcheck_template_id AS id,
+        subcheck_template_label AS name,
+        subcheck_template_description AS description,
         value_type AS valueType,
         pass_criteria AS passCriteria,
-        sub_template_mandatory AS mandatory
+        subcheck_template_mandatory AS mandatory
       FROM subcheck_templates
       WHERE item_type_id = ?
-      ORDER BY sub_template_id`)
+      ORDER BY subcheck_template_id`)
     .all(itemTypeId);
 
   response.json({ status: "success", data: rows });
