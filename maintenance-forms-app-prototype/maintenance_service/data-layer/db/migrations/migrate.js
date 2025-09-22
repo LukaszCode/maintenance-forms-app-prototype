@@ -1,7 +1,7 @@
 import { db } from "../sqlite.ts";
 
 // ----- SCHEMA -----
-db.exec(`
+db.exec(`                                                                                                                                                                                                                     
 
   PRAGMA foreign_keys = ON;
   

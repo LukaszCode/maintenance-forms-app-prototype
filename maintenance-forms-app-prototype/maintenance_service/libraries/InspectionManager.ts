@@ -276,7 +276,7 @@ export class InspectionManager {
       inspectionId: inspectionRow.inspection_id,
       engineerId: inspectionRow.engineer_id,
       inspectionDate: inspectionRow.inspection_date, // we will set this to string in InspectionForm.ts
-      inspectionCategory: inspectionRow.category,
+      inspectionCategory: inspectionRow.inspection_category,
       itemId: inspectionRow.item_id,
       subchecks,
       comment: inspectionRow.comment ?? null,
