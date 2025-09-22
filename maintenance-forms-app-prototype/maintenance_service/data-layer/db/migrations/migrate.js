@@ -8,7 +8,7 @@ db.exec(`
   -- USERS
   CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY,
-    username TEXT NOT NULL,
+    username TEXT NOT NULL UNIQUE,
     full_name TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('Engineer','Manager','Admin', 'engineer', 'manager', 'admin')),
@@ -60,36 +60,40 @@ db.exec(`
     inspection_category TEXT NOT NULL CHECK (inspection_category IN ('Facility', 'Machine Safety')),
     item_id INTEGER NOT NULL,
     engineer_id INTEGER NOT NULL,
-    site_id INTEGER NOT NULL,
-    zone_id INTEGER NOT NULL,
     comment TEXT,
+    overall_result TEXT NOT NULL CHECK (overall_result IN ('pass', 'fail')),
     FOREIGN KEY (item_id) REFERENCES items(item_id) ON DELETE RESTRICT,
-    FOREIGN KEY (engineer_id) REFERENCES users(user_id) ON DELETE RESTRICT,
-    FOREIGN KEY (site_id) REFERENCES sites(site_id) ON DELETE CASCADE,
-    FOREIGN KEY (zone_id) REFERENCES zones(zone_id) ON DELETE CASCADE
+    FOREIGN KEY (engineer_id) REFERENCES users(user_id) ON DELETE RESTRICT
   );
 
   -- SUBCHECK TEMPLATES
   CREATE TABLE IF NOT EXISTS subcheck_templates (
     subcheck_template_id INTEGER PRIMARY KEY,
-    item_type TEXT NOT NULL,
-    subcheck_name TEXT NOT NULL,
-    subcheck_description TEXT,
-    value_type TEXT NOT NULL CHECK (value_type IN ('string','number','boolean')),
+    item_type_id INTEGER NOT NULL,
+    subcheck_template_label TEXT NOT NULL,
+    subcheck_template_description TEXT,
+    value_type TEXT NOT NULL CHECK (value_type IN ('TEXT','number','boolean')),
+    subcheck_template_mandatory INTEGER NOT NULL DEFAULT 1 CHECK (subcheck_template_mandatory IN (0,1)),
     pass_criteria TEXT,
-    FOREIGN KEY (item_type) REFERENCES item_types(item_type_label)
+    FOREIGN KEY (item_type_id) REFERENCES item_types(item_type_id) ON DELETE CASCADE,
+    UNIQUE (item_type_id, subcheck_template_label)
   );
 
   -- SUBCHECK RESULTS
-  CREATE TABLE IF NOT EXISTS subchecks (
-    subcheck_id INTEGER PRIMARY KEY,
+  CREATE TABLE IF NOT EXISTS subcheck_results (
+    subcheck_result_id INTEGER PRIMARY KEY,
     inspection_id INTEGER NOT NULL,
-    subcheck_name TEXT NOT NULL,
-    subcheck_description TEXT,
-    value_type TEXT NOT NULL CHECK (value_type IN ('string','number','boolean')),
+    subcheck_template_id INTEGER NOT NULL,
+    subcheck_result_label TEXT NOT NULL,
+    subcheck_result_description TEXT,
+    value_type TEXT NOT NULL CHECK (value_type IN ('TEXT','number','boolean')),
+    subcheck_result_mandatory INTEGER NOT NULL CHECK (subcheck_result_mandatory IN (0,1)),
     pass_criteria TEXT,
-    status TEXT NOT NULL CHECK (status IN ('pass', 'fail')),
-    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+    result TEXT NOT NULL CHECK (result IN ('pass','fail','na')),
+    reading_number REAL,
+    reading_text TEXT,
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE,
+    FOREIGN KEY (subcheck_template_id) REFERENCES subcheck_templates(subcheck_template_id) ON DELETE SET NULL
   );
 
   -- RESULTS (caching result per inspection)
@@ -104,7 +108,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS readings (
     reading_id INTEGER PRIMARY KEY,
     inspection_id INTEGER NOT NULL,
-    parameter_id INTEGER NOT NULL,  -- e.g. subcheck_id or parameter template
+    parameter_id INTEGER NOT NULL,
     value TEXT NOT NULL,
     unit TEXT NOT NULL,
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
