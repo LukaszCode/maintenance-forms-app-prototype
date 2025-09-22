@@ -35,9 +35,8 @@ db.exec(`
   -- ITEM TYPES (Used in templates)
   CREATE TABLE IF NOT EXISTS item_types (
     item_type_id INTEGER PRIMARY KEY,
-    item_type_label TEXT NOT NULL UNIQUE
+    item_type_label TEXT NOT NULL UNIQUE,
     inspection_category TEXT NOT NULL CHECK (inspection_category IN ('Facility', 'Machine Safety')),
-    item_type_label TEXT NOT NULL,
     item_type_description TEXT,
     UNIQUE (item_type_label)
   );
