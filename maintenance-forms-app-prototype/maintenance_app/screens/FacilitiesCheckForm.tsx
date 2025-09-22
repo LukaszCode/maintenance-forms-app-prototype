@@ -281,18 +281,30 @@ const addSubcheck = () => {
           zone_id: zone.id, 
         };
 
+        createdItem = newItem;
         setItems(prev => [...prev, newItem]);
+        item = newItem;
       }
+      if (!item) {
+        throw new Error("Item could not be determined.");
+      }
+
+      const ensuredItem = createdItem ?? item;
+      const nextSites = sites.some((s) => s.id === site.id) ? sites : [...sites, site];
+      const nextZones = zones.some((z) => z.id === zone.id) ? zones : [...zones, zone];
+      const nextItems = items.some((it) => it.id === ensuredItem.id)
+        ? items
+        : [...items, ensuredItem];
 
       //4. Validate and build the payload
       const { payload } = validateAndBuildFormPayload({
         dateString,
         engineerName,
         category: "Facility",
-        siteName,
-        zoneName,
+        siteName: site.name,
+        zoneName: zone.name,
         itemType: itemTypeLabel,
-        itemName,
+        itemName: ensuredItem.name,
         comment,
         sites,
         zones,
