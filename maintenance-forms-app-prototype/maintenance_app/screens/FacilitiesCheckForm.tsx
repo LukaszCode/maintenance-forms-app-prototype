@@ -259,36 +259,52 @@ const addSubcheck = () => {
         setZones(prev => [...prev, createdZone].sort((a,b) => a.name.localeCompare(b.name)));
         zone = createdZone;
       }
+      if (!zone) {
+        throw new Error("Zone could not be determined.");
+      }
       //3. Ensure the item exists (create if needed)
-      const item = items.find(i => 
+      let item = items.find(i =>
         i.name.toLowerCase() === itemName.trim().toLowerCase() &&
-        i.zone_id === zone!.id &&
+        i.zone_id === zone.id &&
         i.item_type === itemTypeLabel
       );
+      let createdItem: ItemRow | null = null;
       if (!item) {
         const res = await api.createItem(zone.id, itemTypeLabel, itemName.trim());
         if (res.status !== "success") {
           throw new Error(res.message ?? "Failed to create item.");
         }
-        const createdItem = { 
+        const newItem: ItemRow = {
           id: res.data.id, 
           name: res.data.name, 
           item_type: itemTypeLabel,
           zone_id: zone.id, 
         };
 
-        setItems(prev => [...prev, createdItem]);
+        createdItem = newItem;
+        setItems(prev => [...prev, newItem]);
+        item = newItem;
       }
+      if (!item) {
+        throw new Error("Item could not be determined.");
+      }
+
+      const ensuredItem = createdItem ?? item;
+      const nextSites = sites.some((s) => s.id === site.id) ? sites : [...sites, site];
+      const nextZones = zones.some((z) => z.id === zone.id) ? zones : [...zones, zone];
+      const nextItems = items.some((it) => it.id === ensuredItem.id)
+        ? items
+        : [...items, ensuredItem];
 
       //4. Validate and build the payload
       const { payload } = validateAndBuildFormPayload({
         dateString,
         engineerName,
         category: "Facility",
-        siteName,
-        zoneName,
+        siteName: site.name,
+        zoneName: zone.name,
         itemType: itemTypeLabel,
-        itemName,
+        itemName: ensuredItem.name,
         comment,
         sites,
         zones,

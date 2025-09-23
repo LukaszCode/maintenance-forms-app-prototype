@@ -152,10 +152,11 @@ app.post("/zones", (request, response) => {
         WHERE site_id=? 
         AND zone_name=?`)
       .get(siteId, zoneName.trim()) as { id: number } | undefined)?.id;
-
-    response.json({
-       status: "success", 
-       data: { id, zone_name: zoneName.trim(), siteId }
+      
+      const name = zoneName.trim();
+      response.json({
+        status: "success", 
+        data: { id, name, zone_name: name, siteId}
     });
 });
 
@@ -214,11 +215,12 @@ app.post("/items", (request, response) => {
         AND item_name=?`)
       .get(zoneId, itemType.trim(), itemName.trim()) as { id: number } | undefined)?.id;
 
-    response.json({ 
-      status: "success", 
-      data: { id, item_name: itemName.trim(), zone_id: zoneId, item_type: itemType.trim() }
-    });
-});
+      const name = itemName.trim()
+      response.json({ 
+        status: "success", 
+        data: { id, name, item_name: name, zone_id: zoneId, item_type: itemType.trim() }
+      });
+  });
 
 /**
  * Create a new site, by (siteName)  (create if not existing)

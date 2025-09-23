@@ -98,7 +98,7 @@ export class InspectionManager {
         .prepare(`
           INSERT INTO inspections
             (inspection_date,
-            category,
+            inspection_category,
             item_id,
             engineer_id,
             comment,

@@ -272,21 +272,25 @@ const addSubcheck = () => {
         i.item_type === itemTypeLabel &&
         i.zone_id === zone.id
       );
+      let createdItem: ItemRow | null = null;
       if (!item) {
         const res = await api.createItem(zone.id, itemTypeLabel, itemName.trim());
         if (res.status !== "success") {
           throw new Error(res.message ?? "Failed to create item.");
         }
-        const createdItem = {
+        const newItem: ItemRow = {
           id: res.data.id,
           name: res.data.name,
           item_type: itemTypeLabel,
           zone_id: zone.id
         };
-        setItems(prev => [...prev, createdItem]);
+        setItems(prev => [...prev, newItem]);
       }
 
       // 4. Validate and build the payload
+      const itemsForValidation = [...items, createdItem ?? item].filter(
+        (i): i is ItemRow => Boolean(i)
+      );
       const { payload } = validateAndBuildFormPayload({
         dateString,
         engineerName,
@@ -298,7 +302,7 @@ const addSubcheck = () => {
         comment,
         sites: [...sites, site],
         zones : [...zones, zone],
-        items,
+        items: itemsForValidation,
         subchecksUi: subchecks,
       });
 
