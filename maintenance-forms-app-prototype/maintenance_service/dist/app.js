@@ -127,17 +127,18 @@ app.post("/zones", (request, response) => {
       INSERT OR IGNORE INTO zones (zone_name, zone_description, site_id)
       VALUES (?, ?, ?)`)
         .run(zoneName.trim(), zoneDescription ?? null, siteId);
-    const id = Number(info.lastInsertRowid) ||
-        db
-            .prepare(`
+    const row = db
+        .prepare(`
         SELECT zone_id AS id
         FROM zones
         WHERE site_id=? 
         AND zone_name=?`)
-            .get(siteId, zoneName.trim())?.id;
+        .get(siteId, zoneName.trim());
+    const id = Number(info.lastInsertRowid) || row?.id;
+    const name = zoneName.trim();
     response.json({
         status: "success",
-        data: { id, zone_name: zoneName.trim(), siteId }
+        data: { id, name, zone_name: name, siteId }
     });
 });
 /**
@@ -191,9 +192,10 @@ app.post("/items", (request, response) => {
         AND item_type=?
         AND item_name=?`)
             .get(zoneId, itemType.trim(), itemName.trim())?.id;
+    const name = itemName.trim();
     response.json({
         status: "success",
-        data: { id, item_name: itemName.trim(), zone_id: zoneId, item_type: itemType.trim() }
+        data: { id, name, item_name: name, zone_id: zoneId, item_type: itemType.trim() }
     });
 });
 /**
@@ -620,7 +622,7 @@ app.get("/inspections", (_request, response) => {
       SELECT 
         i.inspection_id AS id,
         i.inspection_date AS date,
-        i.category,
+        i.inspection_category AS category,
         i.item_id,
         it.item_name,
         z.zone_name AS zoneName,
