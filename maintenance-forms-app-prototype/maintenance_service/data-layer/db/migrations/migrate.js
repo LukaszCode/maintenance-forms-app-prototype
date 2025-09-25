@@ -67,32 +67,32 @@ db.exec(`
 
   -- SUBCHECK TEMPLATES
   CREATE TABLE IF NOT EXISTS subcheck_templates (
-    subcheck_template_id INTEGER PRIMARY KEY,
+    sub_template_id INTEGER PRIMARY KEY,
     item_type_id INTEGER NOT NULL,
-    subcheck_template_label TEXT NOT NULL,
-    subcheck_template_description TEXT,
+    sub_template_label TEXT NOT NULL,
+    sub_template_description TEXT,
     value_type TEXT NOT NULL CHECK (value_type IN ('TEXT','number','boolean')),
-    subcheck_template_mandatory INTEGER NOT NULL DEFAULT 1 CHECK (subcheck_template_mandatory IN (0,1)),
+    sub_template_mandatory INTEGER NOT NULL DEFAULT 1 CHECK (sub_template_mandatory IN (0,1)),
     pass_criteria TEXT,
     FOREIGN KEY (item_type_id) REFERENCES item_types(item_type_id) ON DELETE CASCADE,
-    UNIQUE (item_type_id, subcheck_template_label)
+    UNIQUE (item_type_id, sub_template_label)
   );
 
   -- SUBCHECK RESULTS
   CREATE TABLE IF NOT EXISTS subcheck_results (
-    subcheck_result_id INTEGER PRIMARY KEY,
+    sub_result_id INTEGER PRIMARY KEY,
     inspection_id INTEGER NOT NULL,
-    subcheck_template_id INTEGER NOT NULL,
-    subcheck_result_label TEXT NOT NULL,
-    subcheck_result_description TEXT,
+    sub_template_id INTEGER,
+    sub_result_label TEXT NOT NULL,
+    sub_result_description TEXT,
     value_type TEXT NOT NULL CHECK (value_type IN ('TEXT','number','boolean')),
-    subcheck_result_mandatory INTEGER NOT NULL CHECK (subcheck_result_mandatory IN (0,1)),
+    sub_result_mandatory INTEGER NOT NULL CHECK (sub_result_mandatory IN (0,1)),
     pass_criteria TEXT,
     result TEXT NOT NULL CHECK (result IN ('pass','fail','na')),
     reading_number REAL,
     reading_text TEXT,
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE,
-    FOREIGN KEY (subcheck_template_id) REFERENCES subcheck_templates(subcheck_template_id) ON DELETE SET NULL
+    FOREIGN KEY (sub_template_id) REFERENCES subcheck_templates(sub_template_id) ON DELETE SET NULL
   );
 
   -- RESULTS (caching result per inspection)

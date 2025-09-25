@@ -70,7 +70,7 @@ export class InspectionManager {
             const mandatoryRows = db
                 .prepare(`
           SELECT
-            sub_template_label, sub_template_mandatory 
+            sub_template_label, sub_template_mandatory
           FROM subcheck_templates
           WHERE item_type_id = ?`)
                 .all(typeRow.item_type_id);
@@ -86,7 +86,7 @@ export class InspectionManager {
                 .prepare(`
           INSERT INTO inspections
             (inspection_date,
-            category,
+            inspection_category,
             item_id,
             engineer_id,
             comment,
@@ -114,13 +114,13 @@ export class InspectionManager {
                 // Try to match a template by (item_type_id, sub_template_label)
                 let subcheckTemplate = db
                     .prepare(`
-            SELECT 
-              sub_template_id, 
-              value_type, 
-              sub_template_mandatory, 
+            SELECT
+              sub_template_id,
+              value_type,
+              sub_template_mandatory,
               pass_criteria
             FROM subcheck_templates
-            WHERE item_type_id = ? 
+            WHERE item_type_id = ?
             AND sub_template_label = ?`)
                     .get(typeId, subcheck.subcheckName);
                 // If no template found, create one on the fly
@@ -129,11 +129,11 @@ export class InspectionManager {
                     const infoSubTemplate = db
                         .prepare(`
               INSERT INTO subcheck_templates
-                (item_type_id, 
-                sub_template_label, 
-                sub_template_description, 
-                value_type, 
-                sub_template_mandatory, 
+                (item_type_id,
+                sub_template_label,
+                sub_template_description,
+                value_type,
+                sub_template_mandatory,
                 pass_criteria)
               VALUES (?,?,?,?,?,?)`)
                         .run(typeId, subcheck.subcheckName, subcheck.subcheckDescription ?? "", dbValueType, 1, // mandatory by default
@@ -211,7 +211,7 @@ export class InspectionManager {
             inspectionId: inspectionRow.inspection_id,
             engineerId: inspectionRow.engineer_id,
             inspectionDate: inspectionRow.inspection_date, // we will set this to string in InspectionForm.ts
-            inspectionCategory: inspectionRow.category,
+            inspectionCategory: inspectionRow.inspection_category,
             itemId: inspectionRow.item_id,
             subchecks,
             comment: inspectionRow.comment ?? null,
