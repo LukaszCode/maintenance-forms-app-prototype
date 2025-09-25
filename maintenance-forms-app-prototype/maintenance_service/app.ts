@@ -144,19 +144,19 @@ app.post("/zones", (request, response) => {
       VALUES (?, ?, ?)`)
     .run(zoneName.trim(), zoneDescription ?? null, siteId);
 
-  const id = Number(info.lastInsertRowid) ||
-    db
+  const row = db
       .prepare(`
         SELECT zone_id AS id
         FROM zones
         WHERE site_id=? 
         AND zone_name=?`)
-      .get(siteId, zoneName.trim())?.id;
-      
-      const name = zoneName.trim();
-      response.json({
-        status: "success", 
-        data: { id, name, zone_name: name, siteId}
+      .get(siteId, zoneName.trim()) as { id: number } | undefined;
+  const id = Number(info.lastInsertRowid) || row?.id;
+
+  const name = zoneName.trim();
+  response.json({
+    status: "success",
+    data: { id, name, zone_name: name, siteId }
     });
 });
 
