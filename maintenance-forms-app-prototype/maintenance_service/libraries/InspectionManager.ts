@@ -80,11 +80,11 @@ export class InspectionManager {
       const mandatoryRows = db
         .prepare(`
           SELECT
-            sub_template_label, sub_template_mandatory 
+            subcheck_template_label, subcheck_template_mandatory 
           FROM subcheck_templates
           WHERE item_type_id = ?`)
-        .all(typeRow.item_type_id) as Array<{ sub_template_label: string; sub_template_mandatory: 0 | 1 }>;
-      mandatoryRows.forEach(row => mandatoryMap.set(row.sub_template_label, row.sub_template_mandatory));
+        .all(typeRow.item_type_id) as Array<{ subcheck_template_label: string; subcheck_template_mandatory: 0 | 1 }>;
+      mandatoryRows.forEach(row => mandatoryMap.set(row.subcheck_template_label, row.subcheck_template_mandatory));
       
       // 4) Compute overall result based on the mandatory subchecks
       const overallResult = this.computeOverall(formData.subchecks, mandatoryMap);
@@ -118,11 +118,11 @@ export class InspectionManager {
       const insertSubcheck = db.prepare(`
         INSERT INTO subcheck_results
           (inspection_id,
-          sub_template_id,
-          sub_result_label,
-          sub_result_description,
+          subcheck_template_id,
+          subcheck_result_label,
+          subcheck_result_description,
           value_type,
-          sub_result_mandatory,
+          subcheck_result_mandatory,
           pass_criteria,
           result,
           reading_number,
@@ -137,18 +137,18 @@ export class InspectionManager {
         let subcheckTemplate = db
           .prepare(`
             SELECT 
-              sub_template_id, 
+              subcheck_template_id, 
               value_type, 
-              sub_template_mandatory, 
+              subcheck_template_mandatory, 
               pass_criteria
             FROM subcheck_templates
             WHERE item_type_id = ? 
-            AND sub_template_label = ?`)
+            AND subcheck_template_label = ?`)
           .get(typeId, subcheck.subcheckName) as
           | {
-              sub_template_id: number;
+              subcheck_template_id: number;
               value_type: "boolean" | "number" | "TEXT";
-              sub_template_mandatory: 1 | 0;
+              subcheck_template_mandatory: 1 | 0;
               pass_criteria: string | null;
             }
           | undefined;
@@ -177,9 +177,9 @@ export class InspectionManager {
               subcheck.passCriteria ?? "true"
             );
           subcheckTemplate = {
-            sub_template_id: Number(infoSubTemplate.lastInsertRowid),
+            subcheck_template_id: Number(infoSubTemplate.lastInsertRowid),
             value_type: this.toDbValueType(subcheck.valueType),
-            sub_template_mandatory: 1,
+            subcheck_template_mandatory: 1,
             pass_criteria: subcheck.passCriteria ?? "true",
           };
           // Update the mandatoryMap
@@ -188,12 +188,12 @@ export class InspectionManager {
         // Insert the subcheck result, linking to the template if available
         // Use template values as defaults if not provided in the subcheck
         const dbValueType = subcheckTemplate.value_type ?? this.toDbValueType(subcheck.valueType);
-        const mandatory = subcheckTemplate.sub_template_mandatory ?? 1;
+        const mandatory = subcheckTemplate.subcheck_template_mandatory ?? 1;
         const passCriteria = subcheckTemplate.pass_criteria ?? subcheck.passCriteria ?? "true";
 
         insertSubcheck.run(
           inspectionId,
-          subcheckTemplate.sub_template_id ?? null,
+          subcheckTemplate.subcheck_template_id ?? null,
           subcheck.subcheckName,
           subcheck.subcheckDescription ?? "",
           dbValueType,
@@ -245,18 +245,18 @@ export class InspectionManager {
     const inspectionSubchecks = db
       .prepare(
         `SELECT 
-          sub_result_label,
-          sub_result_description,
+          subcheck_result_label,
+          subcheck_result_description,
           value_type,
           pass_criteria,
           result
         FROM subcheck_results
         WHERE inspection_id = ?
-        ORDER BY sub_result_id`
+        ORDER BY subcheck_result_id`
       )
       .all(id) as Array<{
-      sub_result_label: string;
-      sub_result_description: string | null;
+      subcheck_result_label: string;
+      subcheck_result_description: string | null;
       value_type: "boolean" | "number" | "TEXT";
       pass_criteria: string | null;
       result: "pass" | "fail" | "na";
@@ -264,8 +264,8 @@ export class InspectionManager {
 
     const subchecks: SubcheckInput[] = inspectionSubchecks.map(
       (resultParameter) => ({
-        subcheckName: resultParameter.sub_result_label,
-        subcheckDescription: resultParameter.sub_result_description ?? "",
+        subcheckName: resultParameter.subcheck_result_label,
+        subcheckDescription: resultParameter.subcheck_result_description ?? "",
         valueType: this.fromDbValueType(resultParameter.value_type),
         passCriteria: resultParameter.pass_criteria ?? "",
         status: resultParameter.result,
@@ -318,11 +318,11 @@ export class InspectionManager {
    */
   private assertBasicForm(f: InspectionForm) {
     if (!f.inspectionDate)
-      throw new Error("inspectionDate is required (ISO string).");
+      throw new Error("Inspection date is required (ISO string).");
     if (!f.inspectionCategory)
-      throw new Error("inspectionCategory is required.");
+      throw new Error("Inspection category is required.");
     if (!Number.isInteger(f.itemId))
-      throw new Error("itemId must be an integer.");
+      throw new Error("Item ID must be an integer.");
     if (!Array.isArray(f.subchecks) || f.subchecks.length === 0) {
       throw new Error("At least one subcheck is required.");
     }
@@ -336,15 +336,15 @@ export class InspectionManager {
       !subcheckParameter.subcheckName ||
       !subcheckParameter.subcheckName.trim()
     ) {
-      throw new Error("subcheckName is required.");
+      throw new Error("Subcheck name is required.");
     }
     if (
       !["string", "number", "boolean"].includes(subcheckParameter.valueType)
     ) {
-      throw new Error("valueType must be 'string' | 'number' | 'boolean'.");
+      throw new Error("Value type must be 'string' | 'number' | 'boolean'.");
     }
     if (!["pass", "fail", "na"].includes(subcheckParameter.status)) {
-      throw new Error("status must be 'pass' | 'fail' | 'na'.");
+      throw new Error("Status must be 'pass' | 'fail' | 'na'.");
     }
   }
 
@@ -357,7 +357,7 @@ export class InspectionManager {
     }
     const email = form.engineerEmail?.trim();
     if (!email) {
-      throw new Error("engineerEmail is required.");
+      throw new Error("Email address is required.");
     }
     // Lookup engineer by email
     const existing = db
@@ -376,7 +376,7 @@ export class InspectionManager {
 
     const rawPassword = form.engineerPassword?.trim() 
     if(!rawPassword) {
-      throw new Error("Engineer password is required to create new user.");
+      throw new Error("Password is required to create new user.");
     }
 
     const hashedPassword = bcrypt.hashSync(rawPassword, 10);

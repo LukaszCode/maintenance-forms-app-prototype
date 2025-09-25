@@ -145,13 +145,13 @@ app.post("/zones", (request, response) => {
     .run(zoneName.trim(), zoneDescription ?? null, siteId);
 
   const id = Number(info.lastInsertRowid) ||
-    (db
+    db
       .prepare(`
         SELECT zone_id AS id
         FROM zones
         WHERE site_id=? 
         AND zone_name=?`)
-      .get(siteId, zoneName.trim()) as { id: number } | undefined)?.id;
+      .get(siteId, zoneName.trim())?.id;
       
       const name = zoneName.trim();
       response.json({
