@@ -144,34 +144,23 @@ app.post("/zones", (request, response) => {
       VALUES (?, ?, ?)`)
     .run(zoneName.trim(), zoneDescription ?? null, siteId);
 
-  const info = db
-    .prepare(`
-      INSERT OR IGNORE INTO zones (zone_name, zone_description, site_id)
-      VALUES (?, ?, ?)`)
-    .run(zoneName.trim(), zoneDescription ?? null, siteId);
-
-  const row = db
-    .prepare(`
-      SELECT zone_id AS id
-      FROM zones
-      WHERE site_id=?
-      AND zone_name=?`)
-    .get(siteId, zoneName.trim()) as { id: number } | undefined;
-
-  const id = Number(info.lastInsertRowid) || row?.id;
-  const name = zoneName.trim();
-
-  response.json({
-    status: "success",
-    data: { id, name, siteId }
-  });
-});
 
-        SELECT zone_id AS id
-        FROM zones
-        WHERE site_id=? 
-        AND zone_name=?`)
-    });
+  const row = db
+    .prepare(`
+      SELECT zone_id AS id
+      FROM zones
+      WHERE site_id=?
+      AND zone_name=?`)
+    .get(siteId, zoneName.trim()) as { id: number } | undefined;
+
+  const id = Number(info.lastInsertRowid) || row?.id;
+  const name = zoneName.trim();
+
+  response.json({
+    status: "success",
+    data: { id, name, siteId }
+  });
+  
 });
 
 /**
