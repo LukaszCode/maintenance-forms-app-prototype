@@ -80,12 +80,20 @@ export class InspectionManager {
       const mandatoryRows = db
         .prepare(`
           SELECT
+<<<<<<< HEAD
             subcheck_template_label, subcheck_template_mandatory
+=======
+            subcheck_template_label, subcheck_template_mandatory 
+>>>>>>> 0a2a2a9300439920da6d372ac21d65772c96f734
           FROM subcheck_templates
           WHERE item_type_id = ?`)
         .all(typeRow.item_type_id) as Array<{ subcheck_template_label: string; subcheck_template_mandatory: 0 | 1 }>;
       mandatoryRows.forEach(row => mandatoryMap.set(row.subcheck_template_label, row.subcheck_template_mandatory));
+<<<<<<< HEAD
 
+=======
+      
+>>>>>>> 0a2a2a9300439920da6d372ac21d65772c96f734
       // 4) Compute overall result based on the mandatory subchecks
       const overallResult = this.computeOverall(formData.subchecks, mandatoryMap);
 
@@ -318,11 +326,11 @@ export class InspectionManager {
    */
   private assertBasicForm(f: InspectionForm) {
     if (!f.inspectionDate)
-      throw new Error("inspectionDate is required (ISO string).");
+      throw new Error("Inspection date is required (ISO string).");
     if (!f.inspectionCategory)
-      throw new Error("inspectionCategory is required.");
+      throw new Error("Inspection category is required.");
     if (!Number.isInteger(f.itemId))
-      throw new Error("itemId must be an integer.");
+      throw new Error("Item ID must be an integer.");
     if (!Array.isArray(f.subchecks) || f.subchecks.length === 0) {
       throw new Error("At least one subcheck is required.");
     }
@@ -336,15 +344,15 @@ export class InspectionManager {
       !subcheckParameter.subcheckName ||
       !subcheckParameter.subcheckName.trim()
     ) {
-      throw new Error("subcheckName is required.");
+      throw new Error("Subcheck name is required.");
     }
     if (
       !["string", "number", "boolean"].includes(subcheckParameter.valueType)
     ) {
-      throw new Error("valueType must be 'string' | 'number' | 'boolean'.");
+      throw new Error("Value type must be 'string' | 'number' | 'boolean'.");
     }
     if (!["pass", "fail", "na"].includes(subcheckParameter.status)) {
-      throw new Error("status must be 'pass' | 'fail' | 'na'.");
+      throw new Error("Status must be 'pass' | 'fail' | 'na'.");
     }
   }
 
@@ -357,7 +365,7 @@ export class InspectionManager {
     }
     const email = form.engineerEmail?.trim();
     if (!email) {
-      throw new Error("engineerEmail is required.");
+      throw new Error("Email address is required.");
     }
     // Lookup engineer by email
     const existing = db
@@ -376,7 +384,7 @@ export class InspectionManager {
 
     const rawPassword = form.engineerPassword?.trim() 
     if(!rawPassword) {
-      throw new Error("Engineer password is required to create new user.");
+      throw new Error("Password is required to create new user.");
     }
 
     const hashedPassword = bcrypt.hashSync(rawPassword, 10);
