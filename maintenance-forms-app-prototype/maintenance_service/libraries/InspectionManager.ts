@@ -15,7 +15,7 @@ import { InspectionForm } from "../libraries/InspectionForm.js";
 import type { SubcheckInput, ValueType } from "../libraries/InspectionForm.js";
 import bcrypt from "bcrypt";
 
-/**npx 
+/** 
  * InspectionManager
  *
  * DB-backed service for creating and reading inspections.
@@ -87,7 +87,7 @@ export class InspectionManager {
 >>>>>>> 0a2a2a9300439920da6d372ac21d65772c96f734
           FROM subcheck_templates
           WHERE item_type_id = ?`)
-        .all(typeRow.item_type_id) as Array<{ subcheck_template_label: string; subcheck_template_mandatory: 0 | 1 }>;
+        .all(typeId) as Array<{ subcheck_template_label: string; subcheck_template_mandatory: 0 | 1 }>;
       mandatoryRows.forEach(row => mandatoryMap.set(row.subcheck_template_label, row.subcheck_template_mandatory));
 <<<<<<< HEAD
 
