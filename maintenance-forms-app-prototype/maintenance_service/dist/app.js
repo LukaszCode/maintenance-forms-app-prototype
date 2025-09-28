@@ -135,10 +135,10 @@ app.post("/zones", (request, response) => {
       AND zone_name=?`)
         .get(siteId, zoneName.trim());
     const id = Number(info.lastInsertRowid) || row?.id;
-    const name = zoneName.trim();
+    response.json({ status: "success", data: { id, name: zoneName.trim() } });
     response.json({
         status: "success",
-        data: { id, name, siteId }
+        data: { id, name: zoneName.trim(), siteId }
     });
 });
 /**
