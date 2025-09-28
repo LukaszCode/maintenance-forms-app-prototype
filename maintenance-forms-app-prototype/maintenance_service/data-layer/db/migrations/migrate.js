@@ -1,7 +1,20 @@
 import { db } from "../sqlite.ts";
 
 // ----- SCHEMA -----
-db.exec(`
+db.exec(`                                                                                                                                                                                                                     
+
+  PRAGMA foreign_keys = OFF;
+  DROP TABLE users;
+  DROP TABLE sites;
+  DROP TABLE zones;
+  DROP TABLE item_types;
+  DROP TABLE items;
+  DROP TABLE inspections;
+  DROP TABLE subcheck_results;
+  DROP TABLE subcheck_templates;
+  DROP TABLE results;
+  DROP TABLE readings;
+  DROP TABLE attachments;
 
   PRAGMA foreign_keys = ON;
   

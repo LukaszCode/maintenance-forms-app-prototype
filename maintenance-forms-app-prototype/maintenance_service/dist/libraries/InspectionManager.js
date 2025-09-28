@@ -11,7 +11,7 @@
 import { db } from "../data-layer/db/sqlite.js";
 import { InspectionForm } from "../libraries/InspectionForm.js";
 import bcrypt from "bcrypt";
-/**npx
+/**
  * InspectionManager
  *
  * DB-backed service for creating and reading inspections.
@@ -70,11 +70,11 @@ export class InspectionManager {
             const mandatoryRows = db
                 .prepare(`
           SELECT
-            sub_template_label, sub_template_mandatory 
+            subcheck_template_label, subcheck_template_mandatory 
           FROM subcheck_templates
           WHERE item_type_id = ?`)
-                .all(typeRow.item_type_id);
-            mandatoryRows.forEach(row => mandatoryMap.set(row.sub_template_label, row.sub_template_mandatory));
+                .all(typeId);
+            mandatoryRows.forEach(row => mandatoryMap.set(row.subcheck_template_label, row.subcheck_template_mandatory));
             // 4) Compute overall result based on the mandatory subchecks
             const overallResult = this.computeOverall(formData.subchecks, mandatoryMap);
             // 5) Enforce comment if overall is 'fail'
@@ -86,7 +86,7 @@ export class InspectionManager {
                 .prepare(`
           INSERT INTO inspections
             (inspection_date,
-            category,
+            inspection_category,
             item_id,
             engineer_id,
             comment,
@@ -98,11 +98,11 @@ export class InspectionManager {
             const insertSubcheck = db.prepare(`
         INSERT INTO subcheck_results
           (inspection_id,
-          sub_template_id,
-          sub_result_label,
-          sub_result_description,
+          subcheck_template_id,
+          subcheck_result_label,
+          subcheck_result_description,
           value_type,
-          sub_result_mandatory,
+          subcheck_result_mandatory,
           pass_criteria,
           result,
           reading_number,
@@ -111,17 +111,17 @@ export class InspectionManager {
             // 7) Insert each subcheck - create template on-the-fly if missing
             for (const subcheck of formData.subchecks) {
                 this.assertSubcheck(subcheck);
-                // Try to match a template by (item_type_id, sub_template_label)
+                // Try to match a template by (item_type_id, subcheck_template_label)
                 let subcheckTemplate = db
                     .prepare(`
             SELECT 
-              sub_template_id, 
+              subcheck_template_id, 
               value_type, 
-              sub_template_mandatory, 
+              subcheck_template_mandatory, 
               pass_criteria
             FROM subcheck_templates
             WHERE item_type_id = ? 
-            AND sub_template_label = ?`)
+            AND subcheck_template_label = ?`)
                     .get(typeId, subcheck.subcheckName);
                 // If no template found, create one on the fly
                 if (!subcheckTemplate) {
@@ -130,18 +130,18 @@ export class InspectionManager {
                         .prepare(`
               INSERT INTO subcheck_templates
                 (item_type_id, 
-                sub_template_label, 
-                sub_template_description, 
+                subcheck_template_label, 
+                subcheck_template_description, 
                 value_type, 
-                sub_template_mandatory, 
+                subcheck_template_mandatory, 
                 pass_criteria)
               VALUES (?,?,?,?,?,?)`)
                         .run(typeId, subcheck.subcheckName, subcheck.subcheckDescription ?? "", dbValueType, 1, // mandatory by default
                     subcheck.passCriteria ?? "true");
                     subcheckTemplate = {
-                        sub_template_id: Number(infoSubTemplate.lastInsertRowid),
+                        subcheck_template_id: Number(infoSubTemplate.lastInsertRowid),
                         value_type: this.toDbValueType(subcheck.valueType),
-                        sub_template_mandatory: 1,
+                        subcheck_template_mandatory: 1,
                         pass_criteria: subcheck.passCriteria ?? "true",
                     };
                     // Update the mandatoryMap
@@ -150,9 +150,9 @@ export class InspectionManager {
                 // Insert the subcheck result, linking to the template if available
                 // Use template values as defaults if not provided in the subcheck
                 const dbValueType = subcheckTemplate.value_type ?? this.toDbValueType(subcheck.valueType);
-                const mandatory = subcheckTemplate.sub_template_mandatory ?? 1;
+                const mandatory = subcheckTemplate.subcheck_template_mandatory ?? 1;
                 const passCriteria = subcheckTemplate.pass_criteria ?? subcheck.passCriteria ?? "true";
-                insertSubcheck.run(inspectionId, subcheckTemplate.sub_template_id ?? null, subcheck.subcheckName, subcheck.subcheckDescription ?? "", dbValueType, mandatory, passCriteria, subcheck.status, // 'pass'|'fail'|'na'
+                insertSubcheck.run(inspectionId, subcheckTemplate.subcheck_template_id ?? null, subcheck.subcheckName, subcheck.subcheckDescription ?? "", dbValueType, mandatory, passCriteria, subcheck.status, // 'pass'|'fail'|'na'
                 null, // reading_number (optional)
                 null // reading_text (optional)
                 );
@@ -191,18 +191,18 @@ export class InspectionManager {
             return undefined;
         const inspectionSubchecks = db
             .prepare(`SELECT 
-          sub_result_label,
-          sub_result_description,
+          subcheck_result_label,
+          subcheck_result_description,
           value_type,
           pass_criteria,
           result
         FROM subcheck_results
         WHERE inspection_id = ?
-        ORDER BY sub_result_id`)
+        ORDER BY subcheck_result_id`)
             .all(id);
         const subchecks = inspectionSubchecks.map((resultParameter) => ({
-            subcheckName: resultParameter.sub_result_label,
-            subcheckDescription: resultParameter.sub_result_description ?? "",
+            subcheckName: resultParameter.subcheck_result_label,
+            subcheckDescription: resultParameter.subcheck_result_description ?? "",
             valueType: this.fromDbValueType(resultParameter.value_type),
             passCriteria: resultParameter.pass_criteria ?? "",
             status: resultParameter.result,
@@ -211,7 +211,7 @@ export class InspectionManager {
             inspectionId: inspectionRow.inspection_id,
             engineerId: inspectionRow.engineer_id,
             inspectionDate: inspectionRow.inspection_date, // we will set this to string in InspectionForm.ts
-            inspectionCategory: inspectionRow.category,
+            inspectionCategory: inspectionRow.inspection_category,
             itemId: inspectionRow.item_id,
             subchecks,
             comment: inspectionRow.comment ?? null,
@@ -248,11 +248,11 @@ export class InspectionManager {
      */
     assertBasicForm(f) {
         if (!f.inspectionDate)
-            throw new Error("inspectionDate is required (ISO string).");
+            throw new Error("Inspection date is required (ISO string).");
         if (!f.inspectionCategory)
-            throw new Error("inspectionCategory is required.");
+            throw new Error("Inspection category is required.");
         if (!Number.isInteger(f.itemId))
-            throw new Error("itemId must be an integer.");
+            throw new Error("Item ID must be an integer.");
         if (!Array.isArray(f.subchecks) || f.subchecks.length === 0) {
             throw new Error("At least one subcheck is required.");
         }
@@ -264,13 +264,13 @@ export class InspectionManager {
     assertSubcheck(subcheckParameter) {
         if (!subcheckParameter.subcheckName ||
             !subcheckParameter.subcheckName.trim()) {
-            throw new Error("subcheckName is required.");
+            throw new Error("Subcheck name is required.");
         }
         if (!["string", "number", "boolean"].includes(subcheckParameter.valueType)) {
-            throw new Error("valueType must be 'string' | 'number' | 'boolean'.");
+            throw new Error("Value type must be 'string' | 'number' | 'boolean'.");
         }
         if (!["pass", "fail", "na"].includes(subcheckParameter.status)) {
-            throw new Error("status must be 'pass' | 'fail' | 'na'.");
+            throw new Error("Status must be 'pass' | 'fail' | 'na'.");
         }
     }
     /** Resolve engineer id either from form.engineerId or by engineer email lookup.
@@ -282,7 +282,7 @@ export class InspectionManager {
         }
         const email = form.engineerEmail?.trim();
         if (!email) {
-            throw new Error("engineerEmail is required.");
+            throw new Error("Email address is required.");
         }
         // Lookup engineer by email
         const existing = db
@@ -298,7 +298,7 @@ export class InspectionManager {
         const username = name.toLowerCase().replace(/\s+/g, ".");
         const rawPassword = form.engineerPassword?.trim();
         if (!rawPassword) {
-            throw new Error("Engineer password is required to create new user.");
+            throw new Error("Password is required to create new user.");
         }
         const hashedPassword = bcrypt.hashSync(rawPassword, 10);
         const info = db
@@ -310,15 +310,15 @@ export class InspectionManager {
         return Number(info.lastInsertRowid);
     }
     /** 'pass' if all subchecks are 'pass' or 'na', otherwise 'fail'. */
-    computeOverall(subs, mandatoryMap) {
-        const ok = subs.every(sub => {
-            const isMandatory = (mandatoryMap?.get(sub.subcheckName) ?? 1) === 1;
+    computeOverall(subchecks, mandatoryMap) {
+        const ok = subchecks.every(subcheck => {
+            const isMandatory = (mandatoryMap?.get(subcheck.subcheckName) ?? 1) === 1;
             if (isMandatory) {
                 // If mandatory, must be 'pass'
-                return sub.status === "pass";
+                return subcheck.status === "pass";
             }
             // If not mandatory, can be 'pass' or 'na'
-            return sub.status === "pass" || sub.status === "na";
+            return subcheck.status === "pass" || subcheck.status === "na";
         });
         return ok ? "pass" : "fail";
     }

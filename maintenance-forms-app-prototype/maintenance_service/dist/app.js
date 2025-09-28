@@ -127,17 +127,18 @@ app.post("/zones", (request, response) => {
       INSERT OR IGNORE INTO zones (zone_name, zone_description, site_id)
       VALUES (?, ?, ?)`)
         .run(zoneName.trim(), zoneDescription ?? null, siteId);
-    const id = Number(info.lastInsertRowid) ||
-        db
-            .prepare(`
-        SELECT zone_id AS id
-        FROM zones
-        WHERE site_id=? 
-        AND zone_name=?`)
-            .get(siteId, zoneName.trim())?.id;
+    const row = db
+        .prepare(`
+      SELECT zone_id AS id
+      FROM zones
+      WHERE site_id=?
+      AND zone_name=?`)
+        .get(siteId, zoneName.trim());
+    const id = Number(info.lastInsertRowid) || row?.id;
+    response.json({ status: "success", data: { id, name: zoneName.trim() } });
     response.json({
         status: "success",
-        data: { id, zone_name: zoneName.trim(), siteId }
+        data: { id, name: zoneName.trim(), siteId }
     });
 });
 /**
@@ -167,14 +168,6 @@ app.post("/items", (request, response) => {
             .json({
             status: "error",
             message: "Item type is required"
-        });
-    }
-    if (!itemName?.trim()) {
-        return response
-            .status(400)
-            .json({
-            status: "error",
-            message: "Item name is required"
         });
     }
     const info = db
@@ -454,15 +447,15 @@ app.get("/subcheck-templates/by-label", (request, response) => {
     const rows = db
         .prepare(`
       SELECT 
-        sub_template_id AS id,
-        sub_template_label AS name,
-        sub_template_description AS description,
+        subcheck_template_id AS id,
+        subcheck_template_label AS name,
+        subcheck_template_description AS description,
         value_type AS valueType,
         pass_criteria AS passCriteria,
-        sub_template_mandatory AS mandatory
+        subcheck_template_mandatory AS mandatory
       FROM subcheck_templates
       WHERE item_type_id = ?
-      ORDER BY sub_template_id`)
+      ORDER BY subcheck_template_id`)
         .all(typeRow.item_type_id);
     response.json({
         status: "success",
@@ -620,7 +613,7 @@ app.get("/inspections", (_request, response) => {
       SELECT 
         i.inspection_id AS id,
         i.inspection_date AS date,
-        i.category,
+        i.inspection_category AS category,
         i.item_id,
         it.item_name,
         z.zone_name AS zoneName,
@@ -721,15 +714,15 @@ app.get("/subcheck-templates", (request, response) => {
     const rows = db
         .prepare(`
       SELECT 
-        sub_template_id AS id,
-        sub_template_label AS name,
-        sub_template_description AS description,
+        subcheck_template_id AS id,
+        subcheck_template_label AS name,
+        subcheck_template_description AS description,
         value_type AS valueType,
         pass_criteria AS passCriteria,
-        sub_template_mandatory AS mandatory
+        subcheck_template_mandatory AS mandatory
       FROM subcheck_templates
       WHERE item_type_id = ?
-      ORDER BY sub_template_id`)
+      ORDER BY subcheck_template_id`)
         .all(itemTypeId);
     response.json({ status: "success", data: rows });
 });
