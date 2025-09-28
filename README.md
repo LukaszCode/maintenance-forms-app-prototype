@@ -65,7 +65,7 @@ This prototype supports:
 6. Run the backend service
    ```bash
    cd app_service
-   npm run dev
+   npm start run
 
 8. Start the frontend
    ```bash
