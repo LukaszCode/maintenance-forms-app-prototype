@@ -154,13 +154,13 @@ app.post("/zones", (request, response) => {
     .get(siteId, zoneName.trim()) as { id: number } | undefined;
 
   const id = Number(info.lastInsertRowid) || row?.id;
-  const name = zoneName.trim();
+  response.json({ status: "success", data: { id, name: zoneName.trim() } });
 
   response.json({
     status: "success",
-    data: { id, name, siteId }
+    data: { id, name: zoneName.trim(), siteId }
   });
-  
+
 });
 
 /**
