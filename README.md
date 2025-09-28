@@ -59,8 +59,7 @@ This prototype supports:
    
 4. Set up the database
    ```bash
-   cd data-layer
-   ts-node migrate.ts
+   npm run migrate
 
 6. Run the backend service
    ```bash
