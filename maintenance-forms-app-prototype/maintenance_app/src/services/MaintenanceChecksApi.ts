@@ -9,7 +9,7 @@
  * author: Lukasz Brzozowski
  */
 
-import { BASE_URL } from "src/config/api";
+import { BASE_URL } from "../config/api";
 
 export class MaintenanceChecksApi {
   constructor(private baseUrl: string, private token?: string) {}
