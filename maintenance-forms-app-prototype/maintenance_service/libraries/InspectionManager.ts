@@ -80,20 +80,12 @@ export class InspectionManager {
       const mandatoryRows = db
         .prepare(`
           SELECT
-<<<<<<< HEAD
-            subcheck_template_label, subcheck_template_mandatory
-=======
             subcheck_template_label, subcheck_template_mandatory 
->>>>>>> 0a2a2a9300439920da6d372ac21d65772c96f734
           FROM subcheck_templates
           WHERE item_type_id = ?`)
         .all(typeId) as Array<{ subcheck_template_label: string; subcheck_template_mandatory: 0 | 1 }>;
       mandatoryRows.forEach(row => mandatoryMap.set(row.subcheck_template_label, row.subcheck_template_mandatory));
-<<<<<<< HEAD
-
-=======
       
->>>>>>> 0a2a2a9300439920da6d372ac21d65772c96f734
       // 4) Compute overall result based on the mandatory subchecks
       const overallResult = this.computeOverall(formData.subchecks, mandatoryMap);
 
