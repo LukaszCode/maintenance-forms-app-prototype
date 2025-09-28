@@ -59,6 +59,7 @@ This prototype supports:
    
 4. Set up the database
    ```bash
+   cd maintenance_service
    npm run migrate
 
 6. Run the backend service
