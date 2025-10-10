@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@tsconfig/react-native": "^3.0.7",
+    "@types/babel__core": "^7.20.5"
+  }
+}
