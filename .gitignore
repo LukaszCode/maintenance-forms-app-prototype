@@ -7,3 +7,7 @@ ios/
 .env
 *.log
 *.lock
+
+# Database files
+*.sqlite
+*.sqlite-journal
